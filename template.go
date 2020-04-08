@@ -10,28 +10,35 @@ import (
 //   - variables are enclosed in the % character
 //   - variables not defined in data are returned as is, allowing nested templates
 //   - use %% for the % character
-//   - using fmt words returns an error
-func templateExec(w io.Writer, tmpl string, data map[string]interface{}) error {
-	fragments := strings.Split(tmpl, "%")
-	s := fragments[0]
-	var args []interface{}
-	for i, f := range fragments[1:] {
-		switch f {
-		case "":
-			continue
-		case "t", "b", "c", "d", "o", "O", "q", "x", "X", "U", "e", "E", "f", "F", "g", "G", "s", "p", "T":
-			return fmt.Errorf("cannot use fmt verb: %s", f)
-		}
-		if v, ok := data[f]; ok {
-			s += "%v"
-			args = append(args, v)
-			continue
-		}
-		if i%2 == 0 {
-			f = "%%" + f + "%%"
-		}
-		s += f
+func templateExec(w io.Writer, tmpl string, data map[string]string) error {
+	const sep = "%"
+	fragments := strings.Split(tmpl, sep)
+	if len(fragments)%2 == 0 {
+		return fmt.Errorf("imbalanced separator %q", sep)
 	}
-	_, err := fmt.Fprintf(w, s, args...)
-	return err
+	var pos int // fragment position in the template
+	for i, f := range fragments {
+		if i%2 == 0 {
+			// Text.
+			if _, err := io.WriteString(w, f); err != nil {
+				return err
+			}
+			pos += len(f) + 1
+			continue
+		}
+		// Variable.
+		ppos := pos
+		pos += len(f) + 1
+		if v, ok := data[f]; ok {
+			// Variable defined.
+			f = v
+		} else {
+			// Variable not found, keep it as is.
+			f = tmpl[ppos-1 : pos]
+		}
+		if _, err := io.WriteString(w, f); err != nil {
+			return err
+		}
+	}
+	return nil
 }

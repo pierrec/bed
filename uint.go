@@ -2,6 +2,7 @@ package serializer
 
 import (
 	"encoding/binary"
+	"io"
 	"math/bits"
 )
 
@@ -41,13 +42,19 @@ func packUint64(buf []byte, x uint64) int {
 	n := 1
 	if size := 8 - bits.LeadingZeros64(x)/8; size > 0 {
 		n = size
-		if c := uint8(x >> (8 * (n - 1))); packIsSmall(c) {
+		if last := uint8(x >> (8 * (n - 1))); packIsSmall(last) {
 			// Pack the last byte into the header.
-			buf[0] = c
+			buf[0] = last
 		}
 	}
 	buf[0] |= packSize(n)
 	return n + 1
+}
+
+func packUint64To(w io.Writer, buf []byte, x uint64) error {
+	n := packUint64(buf, x)
+	_, err := w.Write(buf[:n])
+	return err
 }
 
 // unpackUint64 unpacks buf and returns the value.
@@ -63,4 +70,31 @@ func unpackUint64(buf []byte) (x uint64) {
 		x |= uint64(b[i]) << (8 * i)
 	}
 	return
+}
+
+func unpackUint64From(r io.Reader, buf []byte) (uint64, error) {
+	if br, ok := r.(io.ByteReader); ok {
+		b, err := br.ReadByte()
+		if err != nil {
+			return 0, err
+		}
+		buf[0] = b
+	} else if _, err := io.ReadFull(r, buf[:1]); err != nil {
+		return 0, err
+	}
+	h := buf[0]
+	b := buf[1:]
+	size := unpackSize(h)
+	if _, err := io.ReadFull(r, b[:size]); err != nil {
+		return 0, err
+	}
+	var x uint64
+	if last, ok := unpackSmall(h); ok {
+		size--
+		x |= uint64(last) << (8 * size)
+	}
+	for i := 0; i < size; i++ {
+		x |= uint64(b[i]) << (8 * i)
+	}
+	return x, nil
 }
