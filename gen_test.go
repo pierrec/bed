@@ -30,7 +30,7 @@ import "io"
 		{"basic_gen.go", pkgserial, testpkg.Basic{}},
 		{"slice_gen.go", pkgserial, testpkg.Slice{}},
 		{"array_gen.go", pkgserial, testpkg.Array{}},
-		{"composite_gen.go", pkgheader, testpkg.Composite{}},
+		{"composite_gen.go", pkgheader, testpkg.CompositeOnly{}},
 	} {
 		label := fmt.Sprintf("%T", tc.data)
 		t.Run(label, func(t *testing.T) {

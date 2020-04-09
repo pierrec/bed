@@ -149,3 +149,8 @@ func Read_bytes(r io.Reader, buf []byte) ([]byte, error) {
 	}
 	return buf, nil
 }
+
+func Read_bytea(r io.Reader, buf []byte) error {
+	_, err := io.ReadFull(r, buf)
+	return err
+}

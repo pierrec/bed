@@ -102,3 +102,8 @@ func Write_bytes(w io.Writer, buf []byte, v []byte) error {
 	_, err := w.Write(v)
 	return err
 }
+
+func Write_bytea(w io.Writer, v []byte) error {
+	_, err := w.Write(v)
+	return err
+}

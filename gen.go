@@ -74,6 +74,7 @@ const (
 	_ uint8 = iota
 	isSlice
 	isArray
+	isByteArray
 	isStruct
 	isMap
 )
@@ -117,9 +118,15 @@ func walkDataType(p []string, ident string, data interface{}) ([]genRecord, []in
 		if err != nil {
 			return nil, nil, err
 		}
-		k := subrecords[0].Kind
-		records = []genRecord{
-			{Is: isArray, Ident: ident, Kind: k, Include: subrecords},
+		if k := subrecords[0].Kind; len(subrecords) == 1 && k == "uint8" {
+			// Special case: [...]byte
+			records = []genRecord{
+				{Is: isByteArray, Ident: ident, Kind: "bytea", Name: "bytea"},
+			}
+		} else {
+			records = []genRecord{
+				{Is: isArray, Ident: ident, Kind: k, Include: subrecords},
+			}
 		}
 		deps = append(deps, subdeps...)
 	//case reflect.Map:
@@ -172,11 +179,12 @@ func walkDataType(p []string, ident string, data interface{}) ([]genRecord, []in
 }
 
 type genConfig struct {
-	Call   string
-	Slice  string
-	Array  string
-	Struct string
-	Map    string
+	Call      string
+	Slice     string
+	Array     string
+	ByteArray string
+	Struct    string
+	Map       string
 }
 
 func genMarshalBinTo(w io.Writer, records []genRecord, receiver string, data interface{}) error {
@@ -198,6 +206,9 @@ func (%rcv% *%type%) MarshalBinaryTo(w io.Writer) (err error) {`
 	%tab%_s := %idlevel%
 	%tab%for _i := 0; _i < len(_s); _i++ {%include%	%tab%}
 %tab%}`
+		bytearray = `
+%tab%err = %pkg%.Write_bytea(w, %conv%[:]); if err != nil { return }
+`
 		structt = `
 %tab%err = %id%.MarshalBinaryTo(w); if err != nil { return }
 `
@@ -230,11 +241,12 @@ func (%rcv% *%type%) MarshalBinaryTo(w io.Writer) (err error) {`
 	}
 	err := genBody(0, w, records,
 		genConfig{
-			Call:   call,
-			Slice:  slice,
-			Array:  array,
-			Struct: structt,
-			Map:    mapp,
+			Call:      call,
+			Slice:     slice,
+			Array:     array,
+			ByteArray: bytearray,
+			Struct:    structt,
+			Map:       mapp,
 		},
 		m,
 		conv)
@@ -341,6 +353,8 @@ func genBody(level int, w io.Writer, records []genRecord, tmpls genConfig, data 
 			s = tmpls.Slice
 		case isArray:
 			s = tmpls.Array
+		case isByteArray:
+			s = tmpls.ByteArray
 		case isStruct:
 			s = tmpls.Struct
 		case isMap:
@@ -388,6 +402,9 @@ func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {`
 	%tab%for _i := 0; _i < len(_s); _i++ {%include%	%tab%}
 %tab%}
 `
+		bytearray = `
+%tab%err = %pkg%.Read_bytea(r, %value%[:]); if err != nil { return }
+`
 		structt = `
 %tab%err = %id%.UnmarshalBinaryFrom(r); if err != nil { return }
 `
@@ -422,11 +439,12 @@ func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {`
 	}
 	err := genBody(0, w, records,
 		genConfig{
-			Call:   call,
-			Slice:  slice,
-			Array:  array,
-			Struct: structt,
-			Map:    mapp,
+			Call:      call,
+			Slice:     slice,
+			Array:     array,
+			ByteArray: bytearray,
+			Struct:    structt,
+			Map:       mapp,
 		},
 		m,
 		conv)

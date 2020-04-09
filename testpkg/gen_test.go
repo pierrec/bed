@@ -11,20 +11,21 @@ import (
 )
 
 func TestGen(t *testing.T) {
+	_if := func(v ...interface{}) []interface{} { return v }
 	type tcase struct {
 		out  string
-		data interface{}
+		data []interface{}
 	}
 	for _, tc := range []tcase{
-		{"basic_gen.go", Basic{}},
-		{"slice_gen.go", Slice{}},
-		{"array_gen.go", Array{}},
-		{"composite_gen.go", Composite{}},
+		{"basic_gen.go", _if(Basic{})},
+		{"slice_gen.go", _if(Slice{})},
+		{"array_gen.go", _if(Array{})},
+		{"composite_gen.go", _if(CompositeOnly{}, Composite{})},
 	} {
 		label := fmt.Sprintf("%T", tc.data)
 		t.Run(label, func(t *testing.T) {
 
-			typ := reflect.TypeOf(tc.data)
+			typ := reflect.TypeOf(tc.data[0])
 			from := reflect.New(typ).Interface().(serializer.Interface)
 			var buf bytes.Buffer
 			if err := from.MarshalBinaryTo(&buf); err != nil {
