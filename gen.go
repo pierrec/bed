@@ -203,7 +203,7 @@ func (%rcv% *%type%) MarshalBinaryTo(w io.Writer) (err error) {`
 %tab%}`
 		array = `
 %tab%{
-	%tab%_s := %idlevel%
+	%tab%_s := &%idlevel%
 	%tab%for _i := 0; _i < len(_s); _i++ {%include%	%tab%}
 %tab%}`
 		bytearray = `
@@ -398,7 +398,7 @@ func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {`
 `
 		array = `
 %tab%{
-	%tab%_s := %idlevel%
+	%tab%_s := &%idlevel%
 	%tab%for _i := 0; _i < len(_s); _i++ {%include%	%tab%}
 %tab%}
 `
