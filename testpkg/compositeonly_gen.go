@@ -18,6 +18,11 @@ func (self *CompositeOnly) MarshalBinaryTo(w io.Writer) (err error) {
 		return
 	}
 
+	err = self.Map.MarshalBinaryTo(w)
+	if err != nil {
+		return
+	}
+
 	return
 }
 
@@ -33,6 +38,11 @@ func (self *CompositeOnly) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	}
 
 	err = self.Array.UnmarshalBinaryFrom(r)
+	if err != nil {
+		return
+	}
+
+	err = self.Map.UnmarshalBinaryFrom(r)
 	if err != nil {
 		return
 	}

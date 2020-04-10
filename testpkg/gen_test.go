@@ -12,6 +12,7 @@ import (
 
 func TestGen(t *testing.T) {
 	var (
+		_s    = func(v ...int) []int { return v }
 		basic = &Basic{
 			Int:        -100,
 			Int8:       -80,
@@ -57,6 +58,10 @@ func TestGen(t *testing.T) {
 			Complex128: [4]complex128{11, 22, 33, 44},
 			String:     [4]string{"one", "two", "three", "four"},
 		}
+		mapp = &Map{
+			StringInt:  map[string]int{"a": 1, "b": 2},
+			StringInts: map[string][]int{"a": _s(1, 11), "b": _s(2, 22)},
+		}
 	)
 	for _, tc := range []interface{}{
 		basic, slice, array,
@@ -64,6 +69,7 @@ func TestGen(t *testing.T) {
 			Basic: *basic,
 			Slice: *slice,
 			Array: *array,
+			Map:   *mapp,
 		},
 		&Composite{
 			Bytes: []byte("I am a slice of bytes"),

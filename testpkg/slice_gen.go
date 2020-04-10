@@ -211,7 +211,7 @@ func (self *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	} else {
 		self.Int = self.Int[:_n]
 	}
-	{
+	if _n > 0 {
 		_s := self.Int
 		for _i := 0; _i < _n; _i++ {
 			_int, err = serializer.Read_int(r, _b)
@@ -231,7 +231,7 @@ func (self *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	} else {
 		self.Int8 = self.Int8[:_n]
 	}
-	{
+	if _n > 0 {
 		_s := self.Int8
 		for _i := 0; _i < _n; _i++ {
 			_int8, err = serializer.Read_int8(r, _b)
@@ -251,7 +251,7 @@ func (self *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	} else {
 		self.Int16 = self.Int16[:_n]
 	}
-	{
+	if _n > 0 {
 		_s := self.Int16
 		for _i := 0; _i < _n; _i++ {
 			_int16, err = serializer.Read_int16(r, _b)
@@ -271,7 +271,7 @@ func (self *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	} else {
 		self.Int32 = self.Int32[:_n]
 	}
-	{
+	if _n > 0 {
 		_s := self.Int32
 		for _i := 0; _i < _n; _i++ {
 			_int32, err = serializer.Read_int32(r, _b)
@@ -291,7 +291,7 @@ func (self *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	} else {
 		self.Int64 = self.Int64[:_n]
 	}
-	{
+	if _n > 0 {
 		_s := self.Int64
 		for _i := 0; _i < _n; _i++ {
 			_int64, err = serializer.Read_int64(r, _b)
@@ -311,7 +311,7 @@ func (self *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	} else {
 		self.Uint = self.Uint[:_n]
 	}
-	{
+	if _n > 0 {
 		_s := self.Uint
 		for _i := 0; _i < _n; _i++ {
 			_uint, err = serializer.Read_uint(r, _b)
@@ -337,7 +337,7 @@ func (self *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	} else {
 		self.Uint16 = self.Uint16[:_n]
 	}
-	{
+	if _n > 0 {
 		_s := self.Uint16
 		for _i := 0; _i < _n; _i++ {
 			_uint16, err = serializer.Read_uint16(r, _b)
@@ -357,7 +357,7 @@ func (self *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	} else {
 		self.Uint32 = self.Uint32[:_n]
 	}
-	{
+	if _n > 0 {
 		_s := self.Uint32
 		for _i := 0; _i < _n; _i++ {
 			_uint32, err = serializer.Read_uint32(r, _b)
@@ -377,7 +377,7 @@ func (self *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	} else {
 		self.Uint64 = self.Uint64[:_n]
 	}
-	{
+	if _n > 0 {
 		_s := self.Uint64
 		for _i := 0; _i < _n; _i++ {
 			_uint64, err = serializer.Read_uint64(r, _b)
@@ -397,7 +397,7 @@ func (self *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	} else {
 		self.Complex64 = self.Complex64[:_n]
 	}
-	{
+	if _n > 0 {
 		_s := self.Complex64
 		for _i := 0; _i < _n; _i++ {
 			_complex64, err = serializer.Read_complex64(r, _b)
@@ -417,7 +417,7 @@ func (self *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	} else {
 		self.Complex128 = self.Complex128[:_n]
 	}
-	{
+	if _n > 0 {
 		_s := self.Complex128
 		for _i := 0; _i < _n; _i++ {
 			_complex128, err = serializer.Read_complex128(r, _b)
@@ -437,7 +437,7 @@ func (self *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	} else {
 		self.String = self.String[:_n]
 	}
-	{
+	if _n > 0 {
 		_s := self.String
 		for _i := 0; _i < _n; _i++ {
 			_string, err = serializer.Read_string(r, _b)
