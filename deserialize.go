@@ -6,6 +6,13 @@ import (
 	"math"
 )
 
+func Read_bool(r io.Reader, buf []byte) (bool, error) {
+	if _, err := io.ReadFull(r, buf[:1]); err != nil {
+		return false, err
+	}
+	return buf[0] != 0, nil
+}
+
 func Read_int(r io.Reader, buf []byte) (int, error) {
 	v, err := unpackUint64From(r, buf)
 	if err != nil {

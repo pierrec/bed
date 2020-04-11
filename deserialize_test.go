@@ -8,6 +8,29 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
+func TestRead_bool(t *testing.T) {
+	for _, tc := range []bool{false, true} {
+		label := fmt.Sprintf("%v", tc)
+		t.Run(label, func(t *testing.T) {
+			var buf [16]byte
+			b := buf[:]
+			rw := new(bytes.Buffer)
+
+			err := Write_bool(rw, b, tc)
+			if err != nil {
+				t.Error(err)
+			}
+			v, err := Read_bool(rw, b)
+			if err != nil {
+				t.Error(err)
+			}
+			if got, want := v, tc; got != want {
+				t.Errorf("got %v; want %v", got, want)
+			}
+		})
+	}
+}
+
 func TestRead_int(t *testing.T) {
 	for _, tc := range []int{0, 1, 10, 128, 256, 1014, 1 << 10, 1 << 20} {
 		label := fmt.Sprintf("%v", tc)

@@ -9,6 +9,8 @@ import (
 func Write_bool(w io.Writer, buf []byte, v bool) error {
 	if v {
 		buf[0] = 1
+	} else {
+		buf[0] = 0
 	}
 	_, err := w.Write(buf[:1])
 	return err
