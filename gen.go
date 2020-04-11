@@ -102,7 +102,7 @@ type genRecord struct {
 	Key     []genRecord // map key
 }
 
-type convFunc func(genRecord) (value, conv string)
+type convFunc func(genRecord) (id, value, conv string)
 
 const (
 	_ uint8 = iota
@@ -111,6 +111,7 @@ const (
 	isByteArray
 	isStruct
 	isMap
+	isPointer
 )
 
 func walkDataType(p []string, ident string, data interface{}) ([]genRecord, []interface{}, error) {
@@ -128,27 +129,27 @@ func walkDataType(p []string, ident string, data interface{}) ([]genRecord, []in
 			{RKind: kind, Ident: ident, Kind: kind.String(), Name: typ.String()},
 		}
 	case reflect.Slice:
-		typ = typ.Elem()
-		value := reflect.New(typ).Elem()
-		subrecords, subdeps, err := walkDataType(append(p, typ.String()), ident, value.Interface())
+		etyp := typ.Elem()
+		value := reflect.New(etyp).Elem()
+		subrecords, subdeps, err := walkDataType(append(p, etyp.String()), ident, value.Interface())
 		if err != nil {
 			return nil, nil, err
 		}
-		if k := subrecords[0].Kind; len(subrecords) == 1 && k == "uint8" {
+		if len(subrecords) == 1 && subrecords[0].Kind == "uint8" {
 			// Special case: []byte
 			records = []genRecord{
 				{RKind: kind, Ident: ident, Kind: "bytes", Name: "bytes"},
 			}
 		} else {
 			records = []genRecord{
-				{RKind: kind, Is: isSlice, Ident: ident, Kind: "[]" + k, Include: subrecords},
+				{RKind: kind, Is: isSlice, Ident: ident, Kind: typ.String(), Include: subrecords},
 			}
 		}
 		deps = append(deps, subdeps...)
 	case reflect.Array:
-		typ = typ.Elem()
-		value := reflect.New(typ).Elem()
-		subrecords, subdeps, err := walkDataType(append(p, typ.String()), ident, value.Interface())
+		etyp := typ.Elem()
+		value := reflect.New(etyp).Elem()
+		subrecords, subdeps, err := walkDataType(append(p, etyp.String()), ident, value.Interface())
 		if err != nil {
 			return nil, nil, err
 		}
@@ -159,7 +160,7 @@ func walkDataType(p []string, ident string, data interface{}) ([]genRecord, []in
 			}
 		} else {
 			records = []genRecord{
-				{RKind: kind, Is: isArray, Ident: ident, Kind: k, Include: subrecords},
+				{RKind: kind, Is: isArray, Ident: ident, Kind: typ.String(), Include: subrecords},
 			}
 		}
 		deps = append(deps, subdeps...)
@@ -174,9 +175,8 @@ func walkDataType(p []string, ident string, data interface{}) ([]genRecord, []in
 		if err != nil {
 			return nil, nil, err
 		}
-		// Append the key definition to the value one.
 		records = []genRecord{
-			{RKind: kind, Is: isMap, Ident: ident, Kind: subrecords[0].Kind, Include: subrecords, Key: keyrecords}}
+			{RKind: kind, Is: isMap, Ident: ident, Kind: typ.String(), Include: subrecords, Key: keyrecords}}
 		deps = append(deps, subdeps...)
 		deps = append(deps, keydeps...)
 	case reflect.Struct:
@@ -209,6 +209,17 @@ func walkDataType(p []string, ident string, data interface{}) ([]genRecord, []in
 			records = append(records, s...)
 			deps = append(deps, d...)
 		}
+	case reflect.Ptr:
+		etyp := typ.Elem()
+		value := reflect.New(etyp).Elem()
+		subrecords, subdeps, err := walkDataType(append(p, etyp.String()), ident, value.Interface())
+		if err != nil {
+			return nil, nil, err
+		}
+		records = []genRecord{
+			{RKind: kind, Is: isPointer, Ident: ident, Kind: typ.String(), Include: subrecords},
+		}
+		deps = append(deps, subdeps...)
 	default:
 		path := strings.Join(p, ".")
 		err := fmt.Errorf("binary.Write: %s: unsupported type %T", path, data)
@@ -224,6 +235,7 @@ type genConfig struct {
 	ByteArray string
 	Struct    string
 	Map       string
+	Pointer   string
 }
 
 // genHeader writes the method header with pre declared variables if required.
@@ -265,14 +277,27 @@ func genHeader(w io.Writer, records []genRecord, withDecl bool, head string, dat
 }
 
 func genCheck(records []genRecord, s []string) []string {
+	// Cache layout strings.
+	m := map[reflect.Kind]string{
+		reflect.Slice: string('A' + reflect.Slice),
+		reflect.Array: string('A' + reflect.Array),
+		reflect.Uint8: string('A' + reflect.Uint8),
+	}
 	for _, rec := range records {
-		if rec.Kind == "bytes" {
-			s = append(s, string('A'+reflect.Uint8))
+		switch rec.Kind {
+		case "bytes":
+			s = append(s, m[reflect.Slice], m[reflect.Uint8])
+			continue
+		case "bytea":
+			s = append(s, m[reflect.Array], m[reflect.Uint8])
 			continue
 		}
-		s = append(s, string('A'+rec.RKind))
+		if _, ok := m[rec.RKind]; !ok {
+			m[rec.RKind] = string('A' + rec.RKind)
+		}
+		s = append(s, m[rec.RKind])
 		switch rec.Is {
-		case isSlice, isArray, isByteArray:
+		case isSlice, isArray, isByteArray, isPointer:
 			s = genCheck(rec.Include, s)
 		case isMap:
 			s = genCheck(rec.Key, s)
@@ -294,6 +319,8 @@ func genHeaderNext(records []genRecord, withDecl bool, vars map[string]string) {
 				vars["_n"] = "int"
 			}
 			genHeaderNext(rec.Key, withDecl, vars)
+			genHeaderNext(rec.Include, withDecl, vars)
+		case isArray, isPointer:
 			genHeaderNext(rec.Include, withDecl, vars)
 		}
 		switch kind := rec.Kind; kind {
@@ -324,16 +351,12 @@ func genBody(level int, w io.Writer, records []genRecord, tmpls genConfig, data 
 	wconv := sliceConv(conv)
 	kconv := keyConv(conv)
 	vconv := valueConv(conv)
+	pconv := pointerConv(conv)
 	doinc := func(ident, incname string, records []genRecord, conv convFunc) error {
 		include.Reset()
 		data["tab"] = inctab
 		if err := genBody(level+1, &include, records, tmpls, data, conv); err != nil {
 			return err
-		}
-		if level == 0 {
-			data["idlevel"] = ident
-		} else {
-			data["idlevel"] = "_s[_i]"
 		}
 		data["tab"] = tab
 		data[incname] = include.String()
@@ -366,12 +389,33 @@ func genBody(level int, w io.Writer, records []genRecord, tmpls genConfig, data 
 			}
 			data["kindkey"] = rec.Key[0].Kind
 			s = tmpls.Map
+		case isPointer:
+			if err := doinc(rec.Ident, "include", rec.Include, pconv); err != nil {
+				return err
+			}
+			s = tmpls.Pointer
+			var alloc string
+			switch rec.Include[0].Is {
+			case isPointer:
+				alloc = `
+%tab%%idlevel% = new(%kind%)`
+			case isSlice, isArray, isMap:
+				alloc = `
+%tab%%idlevel% = %kind%{}`
+			}
+			include.Reset()
+			data["tab"] = inctab
+			if err := templateExec(&include, alloc, data); err != nil {
+				return err
+			}
+			data["tab"] = tab
+			data["alloc"] = include.String()
 		default:
 			s = tmpls.Call
 		}
 		data["id"] = rec.Ident
 		data["kind"] = rec.Kind
-		data["value"], data["conv"] = conv(rec)
+		data["idlevel"], data["value"], data["conv"] = conv(rec)
 		if err := templateExec(w, s, data); err != nil {
 			return err
 		}
@@ -380,26 +424,34 @@ func genBody(level int, w io.Writer, records []genRecord, tmpls genConfig, data 
 }
 
 func sliceConv(conv convFunc) convFunc {
-	return func(rec genRecord) (string, string) {
+	return func(rec genRecord) (a, b, c string) {
 		const _s = "_s[_i]"
-		v, c := conv(rec)
-		return _s, strings.ReplaceAll(c, v, _s)
+		_, v, c := conv(rec)
+		return _s, _s, strings.ReplaceAll(c, v, _s)
 	}
 }
 
 func keyConv(conv convFunc) convFunc {
-	return func(rec genRecord) (string, string) {
+	return func(rec genRecord) (a, b, c string) {
 		const _s = "_i"
-		v, c := conv(rec)
-		return _s, strings.ReplaceAll(c, v, _s)
+		_, v, c := conv(rec)
+		return _s, _s, strings.ReplaceAll(c, v, _s)
 	}
 }
 
 func valueConv(conv convFunc) convFunc {
-	return func(rec genRecord) (string, string) {
+	return func(rec genRecord) (a, b, c string) {
 		const _s = "_s[_i]"
-		v, c := conv(rec)
-		return _s, strings.ReplaceAll(c, v, _s)
+		_, v, c := conv(rec)
+		return _s, _s, strings.ReplaceAll(c, v, _s)
+	}
+}
+
+func pointerConv(conv convFunc) convFunc {
+	return func(rec genRecord) (a, b, c string) {
+		i, v, c := conv(rec)
+		_s := "*" + v
+		return "*" + i, _s, strings.ReplaceAll(c, v, _s)
 	}
 }
 
@@ -428,7 +480,7 @@ func (%rcv% *%type%) MarshalBinaryTo(w io.Writer) (err error) {
 %tab%	for _i := 0; _i < len(_s); _i++ {%include%	%tab%}
 %tab%}`
 		bytearray = `
-%tab%err = %pkg%.Write_bytea(w, %conv%[:]); if err != nil { return }
+%tab%err = %pkg%.Write_bytea(w, (%conv%)[:]); if err != nil { return }
 `
 		structt = `
 %tab%err = %id%.MarshalBinaryTo(w); if err != nil { return }
@@ -439,6 +491,10 @@ func (%rcv% *%type%) MarshalBinaryTo(w io.Writer) (err error) {
 %tab%	err = %pkg%.Write_int(w, _b, len(_s)); if err != nil { return }
 %tab%	for _i := range _s {%includekey%%include%	%tab%}
 %tab%}`
+		pointer = `
+%tab%err = %pkg%.Write_bool(w, _b, %idlevel% == nil); if err != nil { return }
+%tab%if %idlevel% != nil {%include%	%tab%}
+`
 		tail = `
 	return
 }
@@ -452,13 +508,17 @@ func (%rcv% *%type%) MarshalBinaryTo(w io.Writer) (err error) {
 	if err := genHeader(w, records, false, head, m); err != nil {
 		return err
 	}
-	conv := func(rec genRecord) (string, string) {
+	conv := func(rec genRecord) (a, b, c string) {
+		id := rec.Ident
 		val := rec.Ident
 		kind := rec.Kind
-		if rec.Name == kind {
-			return val, val
+		if rec.Is == isPointer {
+			val = "*" + val
 		}
-		return val, fmt.Sprintf("%s(%s)", kind, val)
+		if rec.Name == kind {
+			return id, val, val
+		}
+		return id, val, fmt.Sprintf("%s(%s)", kind, val)
 	}
 	err := genBody(0, w, records,
 		genConfig{
@@ -468,6 +528,7 @@ func (%rcv% *%type%) MarshalBinaryTo(w io.Writer) (err error) {
 			ByteArray: bytearray,
 			Struct:    structt,
 			Map:       mapp,
+			Pointer:   pointer,
 		},
 		m,
 		conv)
@@ -493,7 +554,7 @@ func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {
 `
 		slice = `
 %tab%_n, err = %pkg%.Read_int(r, _b); if err != nil { return }
-%tab%if c := cap(%idlevel%); _n > c || c - _n > c/8 { %idlevel% = make(%kind%, _n) } else { %idlevel% = %idlevel%[:_n] }
+%tab%if c := cap(%idlevel%); _n > c || c - _n > c/8 { %idlevel% = make(%kind%, _n) } else { %idlevel% = (%idlevel%)[:_n] }
 %tab%if _n > 0 {
 %tab%	_s := %idlevel%
 %tab%	for _i := 0; _i < _n; _i++ {%include%	%tab%}
@@ -506,7 +567,7 @@ func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {
 %tab%}
 `
 		bytearray = `
-%tab%err = %pkg%.Read_bytea(r, %value%[:]); if err != nil { return }
+%tab%err = %pkg%.Read_bytea(r, (%value%)[:]); if err != nil { return }
 `
 		structt = `
 %tab%err = %id%.UnmarshalBinaryFrom(r); if err != nil { return }
@@ -514,11 +575,16 @@ func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		mapp = `
 %tab%_n, err = %pkg%.Read_int(r, _b); if err != nil { return }
 %tab%if _n > 0 {
-%tab%	%idlevel% = make(map[%kindkey%]%kind%, _n)
+%tab%	%idlevel% = make(%kind%, _n)
 %tab%	_s := %idlevel%
 %tab%	var _i %kindkey%
 %tab%	for _j := 0; _j < _n; _j++ {%includekey%%include%	%tab%}
 %tab%} else { %idlevel% = nil }
+`
+		pointer = `
+%tab%if isNil, _e := %pkg%.Read_bool(r, _b); _e != nil { return _e
+%tab%} else if isNil { %idlevel% = nil } else {%alloc%
+%include%%tab%}
 `
 		tail = `
 	return
@@ -533,13 +599,18 @@ func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if err := genHeader(w, records, true, head, m); err != nil {
 		return err
 	}
-	conv := func(rec genRecord) (string, string) {
+	conv := func(rec genRecord) (a, b, c string) {
+		id := rec.Ident
+		val := rec.Ident
 		kind := rec.Kind
 		conv := "_" + kind
-		if rec.Name == kind {
-			return rec.Ident, conv
+		if rec.Is == isPointer {
+			val = "*" + val
 		}
-		return rec.Ident, fmt.Sprintf("%s(%s)", rec.Name, conv)
+		if rec.Name == kind {
+			return id, val, conv
+		}
+		return id, val, fmt.Sprintf("%s(%s)", rec.Name, conv)
 	}
 	err := genBody(0, w, records,
 		genConfig{
@@ -549,6 +620,7 @@ func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {
 			ByteArray: bytearray,
 			Struct:    structt,
 			Map:       mapp,
+			Pointer:   pointer,
 		},
 		m,
 		conv)

@@ -8,7 +8,7 @@ import (
 )
 
 func (self *Composite) MarshalBinaryTo(w io.Writer) (err error) {
-	const _check = "IZZZ"
+	const _check = "XIZZZ"
 	var _buf [16]byte
 	_b := _buf[:]
 	err = serializer.Write_string(w, _b, _check)
@@ -40,7 +40,7 @@ func (self *Composite) MarshalBinaryTo(w io.Writer) (err error) {
 }
 
 func (self *Composite) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	const _check = "IZZZ"
+	const _check = "XIZZZ"
 	var _buf [16]byte
 	_b := _buf[:]
 	if s, err := serializer.Read_string(r, _b); err != nil {

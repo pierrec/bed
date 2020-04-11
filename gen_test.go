@@ -11,18 +11,19 @@ import (
 )
 
 func TestGen(t *testing.T) {
+	_s := func(v ...interface{}) []interface{} { return v }
 	config := serializer.Config{PkgName: "testpkg", Receiver: "self"}
 	type tcase struct {
 		out  string
-		data interface{}
+		data []interface{}
 	}
 	for _, tc := range []tcase{
-		{"basic_gen.go", testpkg.Basic{}},
-		{"slice_gen.go", testpkg.Slice{}},
-		{"array_gen.go", testpkg.Array{}},
-		{"compositeonly_gen.go", testpkg.CompositeOnly{}},
-		{"composite_gen.go", testpkg.Composite{}},
-		{"map_gen.go", testpkg.Map{}},
+		{"basic_gen.go", _s(testpkg.Basic{}, testpkg.BasicPtr{})},
+		{"slice_gen.go", _s(testpkg.Slice{}, testpkg.SlicePtr{})},
+		{"array_gen.go", _s(testpkg.Array{}, testpkg.ArrayPtr{})},
+		{"map_gen.go", _s(testpkg.Map{})},
+		{"compositeonly_gen.go", _s(testpkg.CompositeOnly{})},
+		{"composite_gen.go", _s(testpkg.Composite{})},
 	} {
 		label := fmt.Sprintf("%T", tc.data)
 		t.Run(label, func(t *testing.T) {
@@ -32,7 +33,7 @@ func TestGen(t *testing.T) {
 			}
 			defer out.Close()
 
-			if err := serializer.Gen(out, config, tc.data); err != nil {
+			if err := serializer.Gen(out, config, tc.data...); err != nil {
 				t.Fatal(err)
 			}
 		})
