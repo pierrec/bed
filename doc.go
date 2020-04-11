@@ -4,8 +4,6 @@
 // serialized fields not modified.
 package serializer
 
-//TODO map support
-//TODO layout check
 //TODO benchmarks
 //TODO version support?
 //TODO pack slice items in batches?

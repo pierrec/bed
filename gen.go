@@ -3,9 +3,21 @@ package serializer
 import (
 	"fmt"
 	"io"
+	"path"
 	"reflect"
 	"sort"
 	"strings"
+)
+
+type _error string
+
+func (e _error) Error() string { return string(e) }
+
+const ErrInvalidData _error = "invalid data layout"
+
+var (
+	localpkgPath = reflect.TypeOf(ErrInvalidData).PkgPath()
+	localpkgName = path.Base(localpkgPath)
 )
 
 // Interface is the interface added to types processed by Gen.
@@ -16,12 +28,34 @@ type Interface interface {
 
 var _Interface = reflect.TypeOf([]Interface(nil)).Elem()
 
+// Config defines the elements used to generate the code.
+type Config struct {
+	PkgName  string
+	Receiver string
+}
+
 // Gen generates the MarshalBinaryTo and UnmarshalBinaryFrom methods for
 // the provided types out to the given Writer.
-//
-// It does *not* generate the package header or imports.
-func Gen(out io.Writer, data ...interface{}) error {
-	const receiver = "self"
+func Gen(out io.Writer, config Config, data ...interface{}) error {
+	const imports = `package %pkgname%
+
+import (
+	"io"
+	"strings"
+
+	"%pkgpath%"
+)
+
+`
+	tdata := map[string]string{
+		"pkgname": config.PkgName,
+		"pkgpath": localpkgPath,
+	}
+	if err := templateExec(out, imports, tdata); err != nil {
+		return err
+	}
+
+	receiver := config.Receiver
 	for i := 0; i < len(data); i++ {
 		item := data[i]
 		records, deps, err := walkDataType(nil, receiver, item)
@@ -55,13 +89,12 @@ func hasType(name string, data []interface{}) bool {
 	return false
 }
 
-const pkgName = "serializer"
-
 // genRecord keeps track of the struct elements being serialized.
 // Slices are encoded as: <slice length><item0>...
 // Structs are encoded in their fields order.
 type genRecord struct {
 	Is      uint8
+	RKind   reflect.Kind
 	Ident   string      // target identifier
 	Kind    string      // target kind (only fixed size kinds)
 	Name    string      // target type name
@@ -92,7 +125,7 @@ func walkDataType(p []string, ident string, data interface{}) ([]genRecord, []in
 		reflect.Complex64, reflect.Complex128,
 		reflect.String:
 		records = []genRecord{
-			{Ident: ident, Kind: kind.String(), Name: typ.String()},
+			{RKind: kind, Ident: ident, Kind: kind.String(), Name: typ.String()},
 		}
 	case reflect.Slice:
 		typ = typ.Elem()
@@ -104,11 +137,11 @@ func walkDataType(p []string, ident string, data interface{}) ([]genRecord, []in
 		if k := subrecords[0].Kind; len(subrecords) == 1 && k == "uint8" {
 			// Special case: []byte
 			records = []genRecord{
-				{Ident: ident, Kind: "bytes", Name: "bytes"},
+				{RKind: kind, Ident: ident, Kind: "bytes", Name: "bytes"},
 			}
 		} else {
 			records = []genRecord{
-				{Is: isSlice, Ident: ident, Kind: "[]" + k, Include: subrecords},
+				{RKind: kind, Is: isSlice, Ident: ident, Kind: "[]" + k, Include: subrecords},
 			}
 		}
 		deps = append(deps, subdeps...)
@@ -122,11 +155,11 @@ func walkDataType(p []string, ident string, data interface{}) ([]genRecord, []in
 		if k := subrecords[0].Kind; len(subrecords) == 1 && k == "uint8" {
 			// Special case: [...]byte
 			records = []genRecord{
-				{Is: isByteArray, Ident: ident, Kind: "bytea", Name: "bytea"},
+				{RKind: kind, Is: isByteArray, Ident: ident, Kind: "bytea", Name: "bytea"},
 			}
 		} else {
 			records = []genRecord{
-				{Is: isArray, Ident: ident, Kind: k, Include: subrecords},
+				{RKind: kind, Is: isArray, Ident: ident, Kind: k, Include: subrecords},
 			}
 		}
 		deps = append(deps, subdeps...)
@@ -143,7 +176,7 @@ func walkDataType(p []string, ident string, data interface{}) ([]genRecord, []in
 		}
 		// Append the key definition to the value one.
 		records = []genRecord{
-			{Is: isMap, Ident: ident, Kind: subrecords[0].Kind, Include: subrecords, Key: keyrecords}}
+			{RKind: kind, Is: isMap, Ident: ident, Kind: subrecords[0].Kind, Include: subrecords, Key: keyrecords}}
 		deps = append(deps, subdeps...)
 		deps = append(deps, keydeps...)
 	case reflect.Struct:
@@ -151,7 +184,7 @@ func walkDataType(p []string, ident string, data interface{}) ([]genRecord, []in
 		if len(p) > 0 && typ.Name() != "" {
 			// Named struct type: add to the the list of dependents to get the marshal methods
 			// if it does not already implement the methods.
-			records = append(records, genRecord{Is: isStruct, Ident: ident, Kind: typ.String()})
+			records = append(records, genRecord{RKind: kind, Is: isStruct, Ident: ident, Kind: typ.String()})
 			if !reflect.New(typ).Type().Implements(_Interface) {
 				deps = append(deps, value.Interface())
 			}
@@ -193,75 +226,6 @@ type genConfig struct {
 	Map       string
 }
 
-func genMarshalBinTo(w io.Writer, records []genRecord, receiver string, data interface{}) error {
-	const (
-		head = `
-func (%rcv% *%type%) MarshalBinaryTo(w io.Writer) (err error) {`
-		call = `
-%tab%err = %pkg%.Write_%kind%(w, _b, %conv%); if err != nil { return }
-`
-		slice = `
-%tab%{
-%tab%	_s := %idlevel%
-%tab%	_n = len(_s)
-%tab%	err = %pkg%.Write_int(w, _b, _n); if err != nil { return }
-%tab%	for _i := 0; _i < _n; _i++ {%include%	%tab%}
-%tab%}`
-		array = `
-%tab%{
-%tab%	_s := &%idlevel%
-%tab%	for _i := 0; _i < len(_s); _i++ {%include%	%tab%}
-%tab%}`
-		bytearray = `
-%tab%err = %pkg%.Write_bytea(w, %conv%[:]); if err != nil { return }
-`
-		structt = `
-%tab%err = %id%.MarshalBinaryTo(w); if err != nil { return }
-`
-		mapp = `
-%tab%{
-%tab%	_s := %idlevel%
-%tab%	err = %pkg%.Write_int(w, _b, len(_s)); if err != nil { return }
-%tab%	for _i := range _s {%includekey%%include%	%tab%}
-%tab%}`
-		tail = `
-	return
-}
-`
-	)
-	m := map[string]string{
-		"pkg":  pkgName,
-		"rcv":  receiver,
-		"type": reflect.TypeOf(data).Name(),
-	}
-	if err := genHeader(w, records, false, head, m); err != nil {
-		return err
-	}
-	conv := func(rec genRecord) (string, string) {
-		val := rec.Ident
-		kind := rec.Kind
-		if rec.Name == kind {
-			return val, val
-		}
-		return val, fmt.Sprintf("%s(%s)", kind, val)
-	}
-	err := genBody(0, w, records,
-		genConfig{
-			Call:      call,
-			Slice:     slice,
-			Array:     array,
-			ByteArray: bytearray,
-			Struct:    structt,
-			Map:       mapp,
-		},
-		m,
-		conv)
-	if err == nil {
-		_, err = w.Write([]byte(tail))
-	}
-	return err
-}
-
 // genHeader writes the method header with pre declared variables if required.
 func genHeader(w io.Writer, records []genRecord, withDecl bool, head string, data map[string]string) error {
 	const decl = `	var %var% %kind%
@@ -269,9 +233,11 @@ func genHeader(w io.Writer, records []genRecord, withDecl bool, head string, dat
 	vars := make(map[string]string)
 	genHeaderNext(records, withDecl, vars)
 
+	data["check"] = strings.Join(genCheck(records, nil), "")
 	if err := templateExec(w, head, data); err != nil {
 		return err
 	}
+	delete(data, "check")
 	if len(vars) > 0 {
 		// Separate variable declarations from the rest of the function body.
 		if _, err := w.Write([]byte{'\n'}); err != nil {
@@ -296,6 +262,24 @@ func genHeader(w io.Writer, records []genRecord, withDecl bool, head string, dat
 	delete(data, "kind")
 
 	return nil
+}
+
+func genCheck(records []genRecord, s []string) []string {
+	for _, rec := range records {
+		if rec.Kind == "bytes" {
+			s = append(s, string('A'+reflect.Uint8))
+			continue
+		}
+		s = append(s, string('A'+rec.RKind))
+		switch rec.Is {
+		case isSlice, isArray, isByteArray:
+			s = genCheck(rec.Include, s)
+		case isMap:
+			s = genCheck(rec.Key, s)
+			s = genCheck(rec.Include, s)
+		}
+	}
+	return s
 }
 
 func genHeaderNext(records []genRecord, withDecl bool, vars map[string]string) {
@@ -326,12 +310,7 @@ func genHeaderNext(records []genRecord, withDecl bool, vars map[string]string) {
 			if withDecl {
 				vars["_bytes"] = "[]byte"
 			}
-		default:
-			continue
 		}
-		// Add a buffer as we have a Read or Write call.
-		vars["__buf"] = "[16]byte"
-		vars["_b"] = "= __buf[:]"
 	}
 }
 
@@ -424,10 +403,90 @@ func valueConv(conv convFunc) convFunc {
 	}
 }
 
+func genMarshalBinTo(w io.Writer, records []genRecord, receiver string, data interface{}) error {
+	const (
+		head = `
+func (%rcv% *%type%) MarshalBinaryTo(w io.Writer) (err error) {
+	const _check = "%check%"
+	var _buf [16]byte
+	_b := _buf[:]
+	err = %pkg%.Write_string(w, _b, _check); if err != nil { return }
+`
+		call = `
+%tab%err = %pkg%.Write_%kind%(w, _b, %conv%); if err != nil { return }
+`
+		slice = `
+%tab%{
+%tab%	_s := %idlevel%
+%tab%	_n = len(_s)
+%tab%	err = %pkg%.Write_int(w, _b, _n); if err != nil { return }
+%tab%	for _i := 0; _i < _n; _i++ {%include%	%tab%}
+%tab%}`
+		array = `
+%tab%{
+%tab%	_s := &%idlevel%
+%tab%	for _i := 0; _i < len(_s); _i++ {%include%	%tab%}
+%tab%}`
+		bytearray = `
+%tab%err = %pkg%.Write_bytea(w, %conv%[:]); if err != nil { return }
+`
+		structt = `
+%tab%err = %id%.MarshalBinaryTo(w); if err != nil { return }
+`
+		mapp = `
+%tab%{
+%tab%	_s := %idlevel%
+%tab%	err = %pkg%.Write_int(w, _b, len(_s)); if err != nil { return }
+%tab%	for _i := range _s {%includekey%%include%	%tab%}
+%tab%}`
+		tail = `
+	return
+}
+`
+	)
+	m := map[string]string{
+		"pkg":  localpkgName,
+		"rcv":  receiver,
+		"type": reflect.TypeOf(data).Name(),
+	}
+	if err := genHeader(w, records, false, head, m); err != nil {
+		return err
+	}
+	conv := func(rec genRecord) (string, string) {
+		val := rec.Ident
+		kind := rec.Kind
+		if rec.Name == kind {
+			return val, val
+		}
+		return val, fmt.Sprintf("%s(%s)", kind, val)
+	}
+	err := genBody(0, w, records,
+		genConfig{
+			Call:      call,
+			Slice:     slice,
+			Array:     array,
+			ByteArray: bytearray,
+			Struct:    structt,
+			Map:       mapp,
+		},
+		m,
+		conv)
+	if err == nil {
+		_, err = w.Write([]byte(tail))
+	}
+	return err
+}
+
 func genUnmarshalBinFrom(w io.Writer, records []genRecord, receiver string, data interface{}) error {
 	const (
 		head = `
-func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {`
+func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {
+	const _check = "%check%"
+	var _buf [16]byte
+	_b := _buf[:]
+	if s, err := %pkg%.Read_string(r, _b); err != nil { return err
+	} else if !strings.HasPrefix(s, _check) { return %pkg%.ErrInvalidData }
+`
 		call = `
 %tab%_%kind%, err = %pkg%.Read_%kind%(r, _b); if err != nil { return }
 %tab%%value% = %conv%
@@ -467,7 +526,7 @@ func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {`
 `
 	)
 	m := map[string]string{
-		"pkg":  pkgName,
+		"pkg":  localpkgName,
 		"rcv":  receiver,
 		"type": reflect.TypeOf(data).Name(),
 	}

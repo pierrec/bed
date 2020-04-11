@@ -2,8 +2,6 @@ package serializer_test
 
 import (
 	"fmt"
-	"io"
-	"log"
 	"os"
 	"path"
 	"testing"
@@ -13,26 +11,18 @@ import (
 )
 
 func TestGen(t *testing.T) {
-	const (
-		pkgheader = `package testpkg
-
-import "io"
-`
-		pkgserial = pkgheader + `import "github.com/pierrec/serializer"
-`
-	)
+	config := serializer.Config{PkgName: "testpkg", Receiver: "self"}
 	type tcase struct {
-		out    string
-		header string
-		data   interface{}
+		out  string
+		data interface{}
 	}
 	for _, tc := range []tcase{
-		{"basic_gen.go", pkgserial, testpkg.Basic{}},
-		{"slice_gen.go", pkgserial, testpkg.Slice{}},
-		{"array_gen.go", pkgserial, testpkg.Array{}},
-		{"compositeonly_gen.go", pkgheader, testpkg.CompositeOnly{}},
-		{"composite_gen.go", pkgserial, testpkg.Composite{}},
-		{"map_gen.go", pkgserial, testpkg.Map{}},
+		{"basic_gen.go", testpkg.Basic{}},
+		{"slice_gen.go", testpkg.Slice{}},
+		{"array_gen.go", testpkg.Array{}},
+		{"compositeonly_gen.go", testpkg.CompositeOnly{}},
+		{"composite_gen.go", testpkg.Composite{}},
+		{"map_gen.go", testpkg.Map{}},
 	} {
 		label := fmt.Sprintf("%T", tc.data)
 		t.Run(label, func(t *testing.T) {
@@ -42,11 +32,7 @@ import "io"
 			}
 			defer out.Close()
 
-			if _, err := io.WriteString(out, tc.header); err != nil {
-				log.Fatal(err)
-			}
-
-			if err := serializer.Gen(out, tc.data); err != nil {
+			if err := serializer.Gen(out, config, tc.data); err != nil {
 				t.Fatal(err)
 			}
 		})

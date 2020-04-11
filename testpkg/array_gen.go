@@ -1,11 +1,20 @@
 package testpkg
 
-import "io"
-import "github.com/pierrec/serializer"
+import (
+	"io"
+	"strings"
+
+	"github.com/pierrec/serializer"
+)
 
 func (self *Array) MarshalBinaryTo(w io.Writer) (err error) {
-	var __buf [16]byte
-	var _b = __buf[:]
+	const _check = "RCRDRERFRGRHRRJRKRLRPRQRY"
+	var _buf [16]byte
+	_b := _buf[:]
+	err = serializer.Write_string(w, _b, _check)
+	if err != nil {
+		return
+	}
 
 	{
 		_s := &self.Int
@@ -124,8 +133,15 @@ func (self *Array) MarshalBinaryTo(w io.Writer) (err error) {
 }
 
 func (self *Array) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	var __buf [16]byte
-	var _b = __buf[:]
+	const _check = "RCRDRERFRGRHRRJRKRLRPRQRY"
+	var _buf [16]byte
+	_b := _buf[:]
+	if s, err := serializer.Read_string(r, _b); err != nil {
+		return err
+	} else if !strings.HasPrefix(s, _check) {
+		return serializer.ErrInvalidData
+	}
+
 	var _complex128 complex128
 	var _complex64 complex64
 	var _int int
