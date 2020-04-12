@@ -17,36 +17,24 @@ func (c *CompositeOnly) MarshalBinaryTo(w io.Writer) (err error) {
 		return
 	}
 
-	{
-		_s := c.Basic
-		err = _s.MarshalBinaryTo(w)
-		if err != nil {
-			return
-		}
+	err = c.Basic.MarshalBinaryTo(w)
+	if err != nil {
+		return
 	}
 
-	{
-		_s := c.Slice
-		err = _s.MarshalBinaryTo(w)
-		if err != nil {
-			return
-		}
+	err = c.Slice.MarshalBinaryTo(w)
+	if err != nil {
+		return
 	}
 
-	{
-		_s := c.Array
-		err = _s.MarshalBinaryTo(w)
-		if err != nil {
-			return
-		}
+	err = c.Array.MarshalBinaryTo(w)
+	if err != nil {
+		return
 	}
 
-	{
-		_s := c.Map
-		err = _s.MarshalBinaryTo(w)
-		if err != nil {
-			return
-		}
+	err = c.Map.MarshalBinaryTo(w)
+	if err != nil {
+		return
 	}
 
 	return
@@ -61,36 +49,24 @@ func (c *CompositeOnly) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		return serializer.ErrInvalidData
 	}
 
-	{
-		_s := c.Basic
-		err = _s.UnmarshalBinaryFrom(r)
-		if err != nil {
-			return
-		}
+	err = c.Basic.UnmarshalBinaryFrom(r)
+	if err != nil {
+		return
 	}
 
-	{
-		_s := c.Slice
-		err = _s.UnmarshalBinaryFrom(r)
-		if err != nil {
-			return
-		}
+	err = c.Slice.UnmarshalBinaryFrom(r)
+	if err != nil {
+		return
 	}
 
-	{
-		_s := c.Array
-		err = _s.UnmarshalBinaryFrom(r)
-		if err != nil {
-			return
-		}
+	err = c.Array.UnmarshalBinaryFrom(r)
+	if err != nil {
+		return
 	}
 
-	{
-		_s := c.Map
-		err = _s.UnmarshalBinaryFrom(r)
-		if err != nil {
-			return
-		}
+	err = c.Map.UnmarshalBinaryFrom(r)
+	if err != nil {
+		return
 	}
 
 	return

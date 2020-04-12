@@ -7,7 +7,7 @@ import (
 	"github.com/pierrec/serializer"
 )
 
-const _MapLayout = "VCCVYCVYXCVWHHVWCCVCWCVWCWCVCZ"
+const _MapLayout = "VCCVYCVYXCVWHHVWCCVCWCVWCWCVCZVCWZ"
 
 func (m *Map) MarshalBinaryTo(w io.Writer) (err error) {
 	var _buf [16]byte
@@ -198,8 +198,32 @@ func (m *Map) MarshalBinaryTo(w io.Writer) (err error) {
 			}
 
 			{
-				_s := _s[_k]
-				err = _s.MarshalBinaryTo(w)
+				_struct := _s[_k]
+				err = _struct.MarshalBinaryTo(w)
+				if err != nil {
+					return
+				}
+			}
+		}
+	}
+	{
+		_s := m.IntStructPtr
+		err = serializer.Write_int(w, _b, len(_s))
+		if err != nil {
+			return
+		}
+		for _k := range _s {
+			err = serializer.Write_int(w, _b, _k)
+			if err != nil {
+				return
+			}
+
+			err = serializer.Write_bool(w, _b, _s[_k] == nil)
+			if err != nil {
+				return
+			}
+			if _s[_k] != nil {
+				err = _s[_k].MarshalBinaryTo(w)
 				if err != nil {
 					return
 				}
@@ -331,6 +355,7 @@ func (m *Map) UnmarshalBinaryFrom(r io.Reader) (err error) {
 			if _bool {
 				_k = nil
 			} else {
+				_k = new(uint)
 				_uint, err = serializer.Read_uint(r, _b)
 				if err != nil {
 					return
@@ -364,6 +389,7 @@ func (m *Map) UnmarshalBinaryFrom(r io.Reader) (err error) {
 			if _bool {
 				_k = nil
 			} else {
+				_k = new(int)
 				_int, err = serializer.Read_int(r, _b)
 				if err != nil {
 					return
@@ -403,6 +429,7 @@ func (m *Map) UnmarshalBinaryFrom(r io.Reader) (err error) {
 			if _bool {
 				_s[_k] = nil
 			} else {
+				_s[_k] = new(int)
 				_int, err = serializer.Read_int(r, _b)
 				if err != nil {
 					return
@@ -430,6 +457,7 @@ func (m *Map) UnmarshalBinaryFrom(r io.Reader) (err error) {
 			if _bool {
 				_k = nil
 			} else {
+				_k = new(int)
 				_int, err = serializer.Read_int(r, _b)
 				if err != nil {
 					return
@@ -444,6 +472,7 @@ func (m *Map) UnmarshalBinaryFrom(r io.Reader) (err error) {
 			if _bool {
 				_s[_k] = nil
 			} else {
+				_s[_k] = new(int)
 				_int, err = serializer.Read_int(r, _b)
 				if err != nil {
 					return
@@ -471,8 +500,42 @@ func (m *Map) UnmarshalBinaryFrom(r io.Reader) (err error) {
 			_k = _int
 
 			{
-				_s := _s[_k]
-				err = _s.UnmarshalBinaryFrom(r)
+				_struct := _s[_k]
+				err = _struct.UnmarshalBinaryFrom(r)
+				if err != nil {
+					return
+				}
+				_s[_k] = _struct
+			}
+		}
+	}
+
+	_n, err = serializer.Read_int(r, _b)
+	if err != nil {
+		return
+	}
+	if _n == 0 {
+		m.IntStructPtr = nil
+	} else {
+		m.IntStructPtr = make(map[int]*Basic, _n)
+		_s := m.IntStructPtr
+		var _k int
+		for _j := 0; _j < _n; _j++ {
+			_int, err = serializer.Read_int(r, _b)
+			if err != nil {
+				return
+			}
+			_k = _int
+
+			_bool, err = serializer.Read_bool(r, _b)
+			if err != nil {
+				return
+			}
+			if _bool {
+				_s[_k] = nil
+			} else {
+				_s[_k] = new(Basic)
+				err = _s[_k].UnmarshalBinaryFrom(r)
 				if err != nil {
 					return
 				}

@@ -22,28 +22,19 @@ func (c *Composite) MarshalBinaryTo(w io.Writer) (err error) {
 		return
 	}
 
-	{
-		_s := c.Basic
-		err = _s.MarshalBinaryTo(w)
-		if err != nil {
-			return
-		}
+	err = c.Basic.MarshalBinaryTo(w)
+	if err != nil {
+		return
 	}
 
-	{
-		_s := c.Slice
-		err = _s.MarshalBinaryTo(w)
-		if err != nil {
-			return
-		}
+	err = c.Slice.MarshalBinaryTo(w)
+	if err != nil {
+		return
 	}
 
-	{
-		_s := c.Array
-		err = _s.MarshalBinaryTo(w)
-		if err != nil {
-			return
-		}
+	err = c.Array.MarshalBinaryTo(w)
+	if err != nil {
+		return
 	}
 
 	return
@@ -66,28 +57,19 @@ func (c *Composite) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	}
 	c.Bytes = _bytes
 
-	{
-		_s := c.Basic
-		err = _s.UnmarshalBinaryFrom(r)
-		if err != nil {
-			return
-		}
+	err = c.Basic.UnmarshalBinaryFrom(r)
+	if err != nil {
+		return
 	}
 
-	{
-		_s := c.Slice
-		err = _s.UnmarshalBinaryFrom(r)
-		if err != nil {
-			return
-		}
+	err = c.Slice.UnmarshalBinaryFrom(r)
+	if err != nil {
+		return
 	}
 
-	{
-		_s := c.Array
-		err = _s.UnmarshalBinaryFrom(r)
-		if err != nil {
-			return
-		}
+	err = c.Array.UnmarshalBinaryFrom(r)
+	if err != nil {
+		return
 	}
 
 	return

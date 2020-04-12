@@ -914,7 +914,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _bool {
 		s.Int = nil
 	} else {
-		*s.Int = []int{}
+		s.Int = new([]int)
 		_n, err = serializer.Read_int(r, _b)
 		if err != nil {
 			return
@@ -943,7 +943,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _bool {
 		s.Int8 = nil
 	} else {
-		*s.Int8 = []int8{}
+		s.Int8 = new([]int8)
 		_n, err = serializer.Read_int(r, _b)
 		if err != nil {
 			return
@@ -972,7 +972,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _bool {
 		s.Int16 = nil
 	} else {
-		*s.Int16 = []int16{}
+		s.Int16 = new([]int16)
 		_n, err = serializer.Read_int(r, _b)
 		if err != nil {
 			return
@@ -1001,7 +1001,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _bool {
 		s.Int32 = nil
 	} else {
-		*s.Int32 = []int32{}
+		s.Int32 = new([]int32)
 		_n, err = serializer.Read_int(r, _b)
 		if err != nil {
 			return
@@ -1030,7 +1030,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _bool {
 		s.Int64 = nil
 	} else {
-		*s.Int64 = []int64{}
+		s.Int64 = new([]int64)
 		_n, err = serializer.Read_int(r, _b)
 		if err != nil {
 			return
@@ -1059,7 +1059,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _bool {
 		s.Uint = nil
 	} else {
-		*s.Uint = []uint{}
+		s.Uint = new([]uint)
 		_n, err = serializer.Read_int(r, _b)
 		if err != nil {
 			return
@@ -1088,6 +1088,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _bool {
 		s.Uint8 = nil
 	} else {
+		s.Uint8 = new([]byte)
 		_bytes, err = serializer.Read_bytes(r, _b)
 		if err != nil {
 			return
@@ -1102,7 +1103,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _bool {
 		s.Uint16 = nil
 	} else {
-		*s.Uint16 = []uint16{}
+		s.Uint16 = new([]uint16)
 		_n, err = serializer.Read_int(r, _b)
 		if err != nil {
 			return
@@ -1131,7 +1132,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _bool {
 		s.Uint32 = nil
 	} else {
-		*s.Uint32 = []uint32{}
+		s.Uint32 = new([]uint32)
 		_n, err = serializer.Read_int(r, _b)
 		if err != nil {
 			return
@@ -1160,7 +1161,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _bool {
 		s.Uint64 = nil
 	} else {
-		*s.Uint64 = []uint64{}
+		s.Uint64 = new([]uint64)
 		_n, err = serializer.Read_int(r, _b)
 		if err != nil {
 			return
@@ -1189,7 +1190,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _bool {
 		s.Complex64 = nil
 	} else {
-		*s.Complex64 = []complex64{}
+		s.Complex64 = new([]complex64)
 		_n, err = serializer.Read_int(r, _b)
 		if err != nil {
 			return
@@ -1218,7 +1219,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _bool {
 		s.Complex128 = nil
 	} else {
-		*s.Complex128 = []complex128{}
+		s.Complex128 = new([]complex128)
 		_n, err = serializer.Read_int(r, _b)
 		if err != nil {
 			return
@@ -1247,7 +1248,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _bool {
 		s.String = nil
 	} else {
-		*s.String = []string{}
+		s.String = new([]string)
 		_n, err = serializer.Read_int(r, _b)
 		if err != nil {
 			return
@@ -1276,7 +1277,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _bool {
 		s.Maps = nil
 	} else {
-		*s.Maps = []map[string][]int{}
+		s.Maps = new([]map[string][]int)
 		_n, err = serializer.Read_int(r, _b)
 		if err != nil {
 			return

@@ -133,6 +133,7 @@ const (
 	isByteArray
 	isStruct
 	isMap
+	isMapStruct
 	isPointer
 )
 
@@ -178,7 +179,7 @@ func walkDataType(p []string, ident string, data interface{}) ([]genRecord, []in
 		if k := subrecords[0].Kind; len(subrecords) == 1 && k == "uint8" {
 			// Special case: [...]byte
 			records = []genRecord{
-				{RKind: kind, Is: isByteArray, Ident: ident, Kind: "bytea", Name: "bytea"},
+				{RKind: kind, Is: isByteArray, Ident: ident, Kind: typ.String(), Name: typ.String()},
 			}
 		} else {
 			records = []genRecord{
@@ -196,6 +197,9 @@ func walkDataType(p []string, ident string, data interface{}) ([]genRecord, []in
 		keyrecords, keydeps, err := walkDataType(append(p, typ.String()), ident, key.Interface())
 		if err != nil {
 			return nil, nil, err
+		}
+		if subrecords[0].Is == isStruct {
+			subrecords[0].Is = isMapStruct
 		}
 		records = []genRecord{
 			{RKind: kind, Is: isMap, Ident: ident, Kind: typ.String(), Include: subrecords, Key: keyrecords}}
@@ -257,6 +261,7 @@ type genConfig struct {
 	ByteArray string
 	Struct    string
 	Map       string
+	MapStruct string
 	Pointer   string
 }
 
@@ -302,16 +307,11 @@ func genCheck(records []genRecord, s []string) []string {
 	// Cache layout strings.
 	m := map[reflect.Kind]string{
 		reflect.Slice: string('A' + reflect.Slice),
-		reflect.Array: string('A' + reflect.Array),
 		reflect.Uint8: string('A' + reflect.Uint8),
 	}
 	for _, rec := range records {
-		switch rec.Kind {
-		case "bytes":
+		if rec.Kind == "bytes" {
 			s = append(s, m[reflect.Slice], m[reflect.Uint8])
-			continue
-		case "bytea":
-			s = append(s, m[reflect.Array], m[reflect.Uint8])
 			continue
 		}
 		if _, ok := m[rec.RKind]; !ok {
@@ -319,7 +319,11 @@ func genCheck(records []genRecord, s []string) []string {
 		}
 		s = append(s, m[rec.RKind])
 		switch rec.Is {
-		case isSlice, isArray, isByteArray, isPointer:
+		case isSlice, isPointer:
+			s = genCheck(rec.Include, s)
+		case isArray, isByteArray:
+			size := rec.Kind[1:strings.Index(rec.Kind, "]")]
+			s = append(s, size)
 			s = genCheck(rec.Include, s)
 		case isMap:
 			s = genCheck(rec.Key, s)
@@ -388,15 +392,18 @@ func genBody(level int, w io.Writer, records []genRecord, tmpls genConfig, data 
 	}
 	doalloc := func(rec genRecord) error {
 		var alloc string
-		switch rec.Is {
-		case isPointer:
+		switch {
+		case rec.Is == isMap:
+			alloc = `
+%tab%%idlevel% = make(%kind%)`
+		case rec.Kind == "bytes":
+			alloc = `
+%tab%%idlevel% = new([]byte)`
+		default:
 			alloc = `
 %tab%%idlevel% = new(%kind%)`
-		case isSlice, isArray, isMap:
-			alloc = `
-%tab%%idlevel% = %kind%{}`
 		}
-		include.Reset()
+		var include strings.Builder
 		data["tab"] = inctab
 		if err := templateExec(&include, alloc, data); err != nil {
 			return err
@@ -421,6 +428,8 @@ func genBody(level int, w io.Writer, records []genRecord, tmpls genConfig, data 
 			s = tmpls.Array
 		case isByteArray:
 			s = tmpls.ByteArray
+		case isMapStruct:
+			s = tmpls.MapStruct
 		case isStruct:
 			s = tmpls.Struct
 		case isMap:
@@ -436,10 +445,10 @@ func genBody(level int, w io.Writer, records []genRecord, tmpls genConfig, data 
 			if err := doinc("include", rec.Include, pconv); err != nil {
 				return err
 			}
-			s = tmpls.Pointer
 			if err := doalloc(rec.Include[0]); err != nil {
 				return err
 			}
+			s = tmpls.Pointer
 		default:
 			s = tmpls.Call
 		}
@@ -483,7 +492,7 @@ func pointerConv(conv convFunc) convFunc {
 	return func(rec genRecord) (a, b, c string) {
 		i, v, c := conv(rec)
 		_s := "*" + v
-		return "*" + i, _s, strings.ReplaceAll(c, v, _s)
+		return i, _s, strings.ReplaceAll(c, v, _s)
 	}
 }
 
@@ -502,28 +511,31 @@ func (%rcv% *%type%) MarshalBinaryTo(w io.Writer) (err error) {
 `
 		slice = `
 %tab%{
-%tab%	_s := %idlevel%
+%tab%	_s := %value%
 %tab%	_n = len(_s)
 %tab%	err = %pkg%.Write_int(w, _b, _n); if err != nil { return }
 %tab%	for _k := 0; _k < _n; _k++ {%include%	%tab%}
 %tab%}`
 		array = `
 %tab%{
-%tab%	_s := &%idlevel%
+%tab%	_s := &%value%
 %tab%	for _k := 0; _k < len(_s); _k++ {%include%	%tab%}
 %tab%}`
 		bytearray = `
 %tab%err = %pkg%.Write_bytea(w, (%conv%)[:]); if err != nil { return }
 `
 		structt = `
+%tab%err = %idlevel%.MarshalBinaryTo(w); if err != nil { return }
+`
+		mapstruct = `
 %tab%{
-%tab%_s := %idlevel%
-%tab%err = _s.MarshalBinaryTo(w); if err != nil { return }
+%tab%	_struct := %idlevel%
+%tab%	err = _struct.MarshalBinaryTo(w); if err != nil { return }
 %tab%}
 `
 		mapp = `
 %tab%{
-%tab%	_s := %idlevel%
+%tab%	_s := %value%
 %tab%	err = %pkg%.Write_int(w, _b, len(_s)); if err != nil { return }
 %tab%	for _k := range _s {%includekey%%include%	%tab%}
 %tab%}`
@@ -564,6 +576,7 @@ func (%rcv% *%type%) MarshalBinaryTo(w io.Writer) (err error) {
 			ByteArray: bytearray,
 			Struct:    structt,
 			Map:       mapp,
+			MapStruct: mapstruct,
 			Pointer:   pointer,
 		},
 		m,
@@ -589,15 +602,15 @@ func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {
 `
 		slice = `
 %tab%_n, err = %pkg%.Read_int(r, _b); if err != nil { return }
-%tab%if c := cap(%idlevel%); _n > c || c - _n > c/8 { %idlevel% = make(%kind%, _n) } else { %idlevel% = (%idlevel%)[:_n] }
+%tab%if c := cap(%value%); _n > c || c - _n > c/8 { %value% = make(%kind%, _n) } else { %value% = (%value%)[:_n] }
 %tab%if _n > 0 {
-%tab%	_s := %idlevel%
+%tab%	_s := %value%
 %tab%	for _k := 0; _k < _n; _k++ {%include%	%tab%}
 %tab%}
 `
 		array = `
 %tab%{
-%tab%	_s := &%idlevel%
+%tab%	_s := &%value%
 %tab%	for _k := 0; _k < len(_s); _k++ {%include%	%tab%}
 %tab%}
 `
@@ -605,9 +618,13 @@ func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {
 %tab%err = %pkg%.Read_bytea(r, (%value%)[:]); if err != nil { return }
 `
 		structt = `
+%tab%err = %idlevel%.UnmarshalBinaryFrom(r); if err != nil { return }
+`
+		mapstruct = `
 %tab%{
-%tab%_s := %idlevel%
-%tab%err = _s.UnmarshalBinaryFrom(r); if err != nil { return }
+%tab%	_struct := %idlevel%
+%tab%	err = _struct.UnmarshalBinaryFrom(r); if err != nil { return }
+%tab%	%idlevel% = _struct
 %tab%}
 `
 		mapp = `
@@ -656,6 +673,7 @@ func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {
 			Array:     array,
 			ByteArray: bytearray,
 			Struct:    structt,
+			MapStruct: mapstruct,
 			Map:       mapp,
 			Pointer:   pointer,
 		},

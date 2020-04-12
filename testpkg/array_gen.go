@@ -7,7 +7,7 @@ import (
 	"github.com/pierrec/serializer"
 )
 
-const _ArrayLayout = "RCRDRERFRGRHRIRJRKRLRPRQRY"
+const _ArrayLayout = "R4CR4DR4ER4FR4GR4HR4R4JR4KR4LR4PR4QR4Y"
 
 func (a *Array) MarshalBinaryTo(w io.Writer) (err error) {
 	var _buf [16]byte
@@ -295,7 +295,7 @@ func (a *Array) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	return
 }
 
-const _ArrayPtrLayout = "WRCWRDWREWRFWRGWRHWRIWRJWRKWRLWRPWRQWRY"
+const _ArrayPtrLayout = "WR4CWR4DWR4EWR4FWR4GWR4HWR4WR4JWR4KWR4LWR4PWR4QWR4Y"
 
 func (a *ArrayPtr) MarshalBinaryTo(w io.Writer) (err error) {
 	var _buf [16]byte
@@ -541,7 +541,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _bool {
 		a.Int = nil
 	} else {
-		*a.Int = [4]int{}
+		a.Int = new([4]int)
 		{
 			_s := &*a.Int
 			for _k := 0; _k < len(_s); _k++ {
@@ -561,7 +561,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _bool {
 		a.Int8 = nil
 	} else {
-		*a.Int8 = [4]int8{}
+		a.Int8 = new([4]int8)
 		{
 			_s := &*a.Int8
 			for _k := 0; _k < len(_s); _k++ {
@@ -581,7 +581,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _bool {
 		a.Int16 = nil
 	} else {
-		*a.Int16 = [4]int16{}
+		a.Int16 = new([4]int16)
 		{
 			_s := &*a.Int16
 			for _k := 0; _k < len(_s); _k++ {
@@ -601,7 +601,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _bool {
 		a.Int32 = nil
 	} else {
-		*a.Int32 = [4]int32{}
+		a.Int32 = new([4]int32)
 		{
 			_s := &*a.Int32
 			for _k := 0; _k < len(_s); _k++ {
@@ -621,7 +621,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _bool {
 		a.Int64 = nil
 	} else {
-		*a.Int64 = [4]int64{}
+		a.Int64 = new([4]int64)
 		{
 			_s := &*a.Int64
 			for _k := 0; _k < len(_s); _k++ {
@@ -641,7 +641,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _bool {
 		a.Uint = nil
 	} else {
-		*a.Uint = [4]uint{}
+		a.Uint = new([4]uint)
 		{
 			_s := &*a.Uint
 			for _k := 0; _k < len(_s); _k++ {
@@ -661,6 +661,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _bool {
 		a.Uint8 = nil
 	} else {
+		a.Uint8 = new([4]uint8)
 		err = serializer.Read_bytea(r, (*a.Uint8)[:])
 		if err != nil {
 			return
@@ -674,7 +675,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _bool {
 		a.Uint16 = nil
 	} else {
-		*a.Uint16 = [4]uint16{}
+		a.Uint16 = new([4]uint16)
 		{
 			_s := &*a.Uint16
 			for _k := 0; _k < len(_s); _k++ {
@@ -694,7 +695,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _bool {
 		a.Uint32 = nil
 	} else {
-		*a.Uint32 = [4]uint32{}
+		a.Uint32 = new([4]uint32)
 		{
 			_s := &*a.Uint32
 			for _k := 0; _k < len(_s); _k++ {
@@ -714,7 +715,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _bool {
 		a.Uint64 = nil
 	} else {
-		*a.Uint64 = [4]uint64{}
+		a.Uint64 = new([4]uint64)
 		{
 			_s := &*a.Uint64
 			for _k := 0; _k < len(_s); _k++ {
@@ -734,7 +735,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _bool {
 		a.Complex64 = nil
 	} else {
-		*a.Complex64 = [4]complex64{}
+		a.Complex64 = new([4]complex64)
 		{
 			_s := &*a.Complex64
 			for _k := 0; _k < len(_s); _k++ {
@@ -754,7 +755,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _bool {
 		a.Complex128 = nil
 	} else {
-		*a.Complex128 = [4]complex128{}
+		a.Complex128 = new([4]complex128)
 		{
 			_s := &*a.Complex128
 			for _k := 0; _k < len(_s); _k++ {
@@ -774,7 +775,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _bool {
 		a.String = nil
 	} else {
-		*a.String = [4]string{}
+		a.String = new([4]string)
 		{
 			_s := &*a.String
 			for _k := 0; _k < len(_s); _k++ {

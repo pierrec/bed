@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pierrec/serializer"
 )
 
@@ -64,8 +65,8 @@ func TestGen(t *testing.T) {
 			StringInts: map[string][]int{"a": _s(1, 11), "b": _s(2, 22)},
 			IntPtrInt:  map[*int]int{&one: 11, &two: 22},
 		}
-		cmpUintPointers = cmp.Comparer(func(x, y *int) bool { return *x == *y })
-		cmpIntPointers  = cmp.Comparer(func(x, y *uint) bool { return *x == *y })
+		cmpUintPointers = cmpopts.SortMaps(func(x, y *uint) bool { return *x < *y })
+		cmpIntPointers  = cmpopts.SortMaps(func(x, y *int) bool { return *x < *y })
 	)
 	for _, tc := range []interface{}{
 		basic, slice, array,
