@@ -14,7 +14,10 @@ type _error string
 
 func (e _error) Error() string { return string(e) }
 
-const ErrInvalidData _error = "invalid data layout"
+const (
+	ErrMissingPackageName _error = "missing package name"
+	ErrInvalidData        _error = "invalid data layout"
+)
 
 var (
 	localpkgPath = reflect.TypeOf(ErrInvalidData).PkgPath()
@@ -49,9 +52,13 @@ import (
 )
 
 `
+	if config.PkgName == "" {
+		return ErrMissingPackageName
+	}
 	tdata := map[string]string{
 		"pkgname": config.PkgName,
 		"pkgpath": localpkgPath,
+		"pkg":     localpkgName,
 	}
 	if err := templateExec(out, imports, tdata); err != nil {
 		return err
@@ -78,14 +85,24 @@ import (
 				data = append(data, dep)
 			}
 		}
+
 		stripLocalPkgName(records, config.PkgName+".")
-		err = genMarshalBinTo(out, records, receiver, item)
-		if err != nil {
-			return err
-		}
-		err = genUnmarshalBinFrom(out, records, receiver, item)
-		if err != nil {
-			return err
+		tdata["type"] = reflect.TypeOf(item).Name()
+		tdata["rcv"] = receiver
+
+		for _, c := range []genConfig{marshalBinaryTo, unmarshalBinaryFrom} {
+			err = c.genHeader(out, records, tdata)
+			if err != nil {
+				return err
+			}
+			err = c.genBody(0, out, records, tdata, c.Conv)
+			if err != nil {
+				return err
+			}
+			err = c.genTail(out, tdata)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -247,6 +264,9 @@ func walkDataType(p []string, ident string, data interface{}) ([]genRecord, []in
 }
 
 type genConfig struct {
+	WithDecl  bool
+	Head      string
+	Tail      string
 	Call      string
 	Slice     string
 	Array     string
@@ -255,17 +275,156 @@ type genConfig struct {
 	Map       string
 	MapStruct string
 	Pointer   string
+
+	Conv convFunc
 }
 
+var (
+	marshalBinaryTo = genConfig{
+		WithDecl: false,
+		Head: `
+const _%type%Layout = "%layout%"
+
+func (%rcv% *%type%) MarshalBinaryTo(w io.Writer) (err error) {
+	var _buf [16]byte
+	_b := _buf[:]
+	err = %pkg%.Write_layout(w, _b, _%type%Layout); if err != nil { return }
+`,
+		Call: `
+%tab%err = %pkg%.Write_%kind%(w, _b, %conv%); if err != nil { return }
+`,
+		Slice: `
+%tab%{
+%tab%	_s := %value%
+%tab%	_n = len(_s)
+%tab%	err = %pkg%.Write_int(w, _b, _n); if err != nil { return }
+%tab%	for _k := 0; _k < _n; _k++ {%include%	%tab%}
+%tab%}`,
+		Array: `
+%tab%{
+%tab%	_s := &%value%
+%tab%	for _k := 0; _k < len(_s); _k++ {%include%	%tab%}
+%tab%}`,
+		ByteArray: `
+%tab%err = %pkg%.Write_bytea(w, (%conv%)[:]); if err != nil { return }
+`,
+		Struct: `
+%tab%err = %idlevel%.MarshalBinaryTo(w); if err != nil { return }
+`,
+		MapStruct: `
+%tab%{
+%tab%	_struct := %idlevel%
+%tab%	err = _struct.MarshalBinaryTo(w); if err != nil { return }
+%tab%}
+`,
+		Map: `
+%tab%{
+%tab%	_s := %value%
+%tab%	err = %pkg%.Write_int(w, _b, len(_s)); if err != nil { return }
+%tab%	for _k := range _s {%includekey%%include%	%tab%}
+%tab%}`,
+		Pointer: `
+%tab%err = %pkg%.Write_bool(w, _b, %idlevel% == nil); if err != nil { return }
+%tab%if %idlevel% != nil {%include%	%tab%}
+`,
+		Tail: `
+	return
+}
+`,
+		Conv: func(rec genRecord) (a, b, c string) {
+			id := rec.Ident
+			val := rec.Ident
+			kind := rec.Kind
+			if rec.Is == isPointer {
+				val = "*" + val
+			}
+			if rec.Name == kind {
+				return id, val, val
+			}
+			return id, val, fmt.Sprintf("%s(%s)", kind, val)
+		},
+	}
+	unmarshalBinaryFrom = genConfig{
+		WithDecl: true,
+		Head: `
+func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {
+	var _buf [16]byte
+	_b := _buf[:]
+	err = %pkg%.Read_layout(r, _b, _%type%Layout); if err != nil { return }
+`,
+		Call: `
+%tab%_%kind%, err = %pkg%.Read_%kind%(r, _b); if err != nil { return }
+%tab%%value% = %conv%
+`,
+		Slice: `
+%tab%_n, err = %pkg%.Read_int(r, _b); if err != nil { return }
+%tab%if _c := cap(%value%); _n > _c || _c - _n > _c/8 { %value% = make(%kind%, _n) } else { %value% = (%value%)[:_n] }
+%tab%if _n > 0 {
+%tab%	_s := %value%
+%tab%	for _k := 0; _k < _n; _k++ {%include%	%tab%}
+%tab%}
+`,
+		Array: `
+%tab%{
+%tab%	_s := &%value%
+%tab%	for _k := 0; _k < len(_s); _k++ {%include%	%tab%}
+%tab%}
+`,
+		ByteArray: `
+%tab%err = %pkg%.Read_bytea(r, (%value%)[:]); if err != nil { return }
+`,
+		Struct: `
+%tab%err = %idlevel%.UnmarshalBinaryFrom(r); if err != nil { return }
+`,
+		MapStruct: `
+%tab%{
+%tab%	_struct := %idlevel%
+%tab%	err = _struct.UnmarshalBinaryFrom(r); if err != nil { return }
+%tab%	%idlevel% = _struct
+%tab%}
+`,
+		Map: `
+%tab%_n, err = %pkg%.Read_int(r, _b); if err != nil { return }
+%tab%if _n == 0 {  %idlevel% = nil } else {
+%tab%	%idlevel% = make(%kind%, _n)
+%tab%	_s := %idlevel%
+%tab%	var _k %kindkey%
+%tab%	for _j := 0; _j < _n; _j++ {%includekey%%include%	%tab%}
+%tab%}
+`,
+		Pointer: `
+%tab%_bool, err = %pkg%.Read_bool(r, _b); if err != nil { return }
+%tab%if _bool { %idlevel% = nil } else {%alloc%%include%%tab%}
+`,
+		Tail: `
+	return
+}
+`,
+		Conv: func(rec genRecord) (a, b, c string) {
+			id := rec.Ident
+			val := rec.Ident
+			kind := rec.Kind
+			conv := "_" + kind
+			if rec.Is == isPointer {
+				val = "*" + val
+			}
+			if rec.Name == kind {
+				return id, val, conv
+			}
+			return id, val, fmt.Sprintf("%s(%s)", rec.Name, conv)
+		},
+	}
+)
+
 // genHeader writes the method header with pre declared variables if required.
-func genHeader(w io.Writer, records []genRecord, withDecl bool, head string, data map[string]string) error {
+func (c genConfig) genHeader(w io.Writer, records []genRecord, data map[string]string) error {
 	const decl = `	var %var% %kind%
 `
 	vars := make(map[string]string)
-	genHeaderNext(records, withDecl, vars)
+	genHeaderNext(records, c.WithDecl, vars)
 
 	data["layout"] = strings.Join(genCheck(records, nil), "")
-	if err := templateExec(w, head, data); err != nil {
+	if err := templateExec(w, c.Head, data); err != nil {
 		return err
 	}
 	delete(data, "layout")
@@ -357,7 +516,7 @@ func genHeaderNext(records []genRecord, withDecl bool, vars map[string]string) {
 	}
 }
 
-func genBody(level int, w io.Writer, records []genRecord, tmpls genConfig, data map[string]string, conv convFunc) error {
+func (c *genConfig) genBody(level int, w io.Writer, records []genRecord, data map[string]string, conv convFunc) error {
 	defer func(t string) { data["tab"] = t }(data["tab"])
 	data["tab"] += "\t"
 	tab := data["tab"]
@@ -371,7 +530,7 @@ func genBody(level int, w io.Writer, records []genRecord, tmpls genConfig, data 
 	doinc := func(incname string, records []genRecord, conv convFunc) error {
 		include.Reset()
 		data["tab"] = inctab
-		if err := genBody(level+1, &include, records, tmpls, data, conv); err != nil {
+		if err := c.genBody(level+1, &include, records, data, conv); err != nil {
 			return err
 		}
 		data["tab"] = tab
@@ -404,18 +563,18 @@ func genBody(level int, w io.Writer, records []genRecord, tmpls genConfig, data 
 			if err := doinc("include", rec.Include, wconv); err != nil {
 				return err
 			}
-			s = tmpls.Slice
+			s = c.Slice
 		case isArray:
 			if err := doinc("include", rec.Include, wconv); err != nil {
 				return err
 			}
-			s = tmpls.Array
+			s = c.Array
 		case isByteArray:
-			s = tmpls.ByteArray
+			s = c.ByteArray
 		case isMapStruct:
-			s = tmpls.MapStruct
+			s = c.MapStruct
 		case isStruct:
-			s = tmpls.Struct
+			s = c.Struct
 		case isMap:
 			if err := doinc("includekey", rec.Key, kconv); err != nil {
 				return err
@@ -424,7 +583,7 @@ func genBody(level int, w io.Writer, records []genRecord, tmpls genConfig, data 
 				return err
 			}
 			data["kindkey"] = rec.Key[0].Kind
-			s = tmpls.Map
+			s = c.Map
 		case isPointer:
 			if err := doinc("include", rec.Include, pconv); err != nil {
 				return err
@@ -432,9 +591,9 @@ func genBody(level int, w io.Writer, records []genRecord, tmpls genConfig, data 
 			if err := doalloc(rec.Include[0]); err != nil {
 				return err
 			}
-			s = tmpls.Pointer
+			s = c.Pointer
 		default:
-			s = tmpls.Call
+			s = c.Call
 		}
 		data["id"] = rec.Ident
 		data["kind"] = rec.Kind
@@ -446,6 +605,10 @@ func genBody(level int, w io.Writer, records []genRecord, tmpls genConfig, data 
 		data["alloc"] = ""
 	}
 	return nil
+}
+
+func (c *genConfig) genTail(w io.Writer, data map[string]string) error {
+	return templateExec(w, c.Tail, data)
 }
 
 func sliceConv(conv convFunc) convFunc {
@@ -478,192 +641,4 @@ func pointerConv(conv convFunc) convFunc {
 		_s := "*" + v
 		return i, _s, strings.ReplaceAll(c, v, _s)
 	}
-}
-
-func genMarshalBinTo(w io.Writer, records []genRecord, receiver string, data interface{}) error {
-	const (
-		head = `
-const _%type%Layout = "%layout%"
-
-func (%rcv% *%type%) MarshalBinaryTo(w io.Writer) (err error) {
-	var _buf [16]byte
-	_b := _buf[:]
-	err = %pkg%.Write_layout(w, _b, _%type%Layout); if err != nil { return }
-`
-		call = `
-%tab%err = %pkg%.Write_%kind%(w, _b, %conv%); if err != nil { return }
-`
-		slice = `
-%tab%{
-%tab%	_s := %value%
-%tab%	_n = len(_s)
-%tab%	err = %pkg%.Write_int(w, _b, _n); if err != nil { return }
-%tab%	for _k := 0; _k < _n; _k++ {%include%	%tab%}
-%tab%}`
-		array = `
-%tab%{
-%tab%	_s := &%value%
-%tab%	for _k := 0; _k < len(_s); _k++ {%include%	%tab%}
-%tab%}`
-		bytearray = `
-%tab%err = %pkg%.Write_bytea(w, (%conv%)[:]); if err != nil { return }
-`
-		structt = `
-%tab%err = %idlevel%.MarshalBinaryTo(w); if err != nil { return }
-`
-		mapstruct = `
-%tab%{
-%tab%	_struct := %idlevel%
-%tab%	err = _struct.MarshalBinaryTo(w); if err != nil { return }
-%tab%}
-`
-		mapp = `
-%tab%{
-%tab%	_s := %value%
-%tab%	err = %pkg%.Write_int(w, _b, len(_s)); if err != nil { return }
-%tab%	for _k := range _s {%includekey%%include%	%tab%}
-%tab%}`
-		pointer = `
-%tab%err = %pkg%.Write_bool(w, _b, %idlevel% == nil); if err != nil { return }
-%tab%if %idlevel% != nil {%include%	%tab%}
-`
-		tail = `
-	return
-}
-`
-	)
-	m := map[string]string{
-		"pkg":  localpkgName,
-		"rcv":  receiver,
-		"type": reflect.TypeOf(data).Name(),
-	}
-	if err := genHeader(w, records, false, head, m); err != nil {
-		return err
-	}
-	conv := func(rec genRecord) (a, b, c string) {
-		id := rec.Ident
-		val := rec.Ident
-		kind := rec.Kind
-		if rec.Is == isPointer {
-			val = "*" + val
-		}
-		if rec.Name == kind {
-			return id, val, val
-		}
-		return id, val, fmt.Sprintf("%s(%s)", kind, val)
-	}
-	err := genBody(0, w, records,
-		genConfig{
-			Call:      call,
-			Slice:     slice,
-			Array:     array,
-			ByteArray: bytearray,
-			Struct:    structt,
-			Map:       mapp,
-			MapStruct: mapstruct,
-			Pointer:   pointer,
-		},
-		m,
-		conv)
-	if err == nil {
-		_, err = w.Write([]byte(tail))
-	}
-	return err
-}
-
-func genUnmarshalBinFrom(w io.Writer, records []genRecord, receiver string, data interface{}) error {
-	const (
-		head = `
-func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	var _buf [16]byte
-	_b := _buf[:]
-	err = %pkg%.Read_layout(r, _b, _%type%Layout); if err != nil { return }
-`
-		call = `
-%tab%_%kind%, err = %pkg%.Read_%kind%(r, _b); if err != nil { return }
-%tab%%value% = %conv%
-`
-		slice = `
-%tab%_n, err = %pkg%.Read_int(r, _b); if err != nil { return }
-%tab%if _c := cap(%value%); _n > _c || _c - _n > _c/8 { %value% = make(%kind%, _n) } else { %value% = (%value%)[:_n] }
-%tab%if _n > 0 {
-%tab%	_s := %value%
-%tab%	for _k := 0; _k < _n; _k++ {%include%	%tab%}
-%tab%}
-`
-		array = `
-%tab%{
-%tab%	_s := &%value%
-%tab%	for _k := 0; _k < len(_s); _k++ {%include%	%tab%}
-%tab%}
-`
-		bytearray = `
-%tab%err = %pkg%.Read_bytea(r, (%value%)[:]); if err != nil { return }
-`
-		structt = `
-%tab%err = %idlevel%.UnmarshalBinaryFrom(r); if err != nil { return }
-`
-		mapstruct = `
-%tab%{
-%tab%	_struct := %idlevel%
-%tab%	err = _struct.UnmarshalBinaryFrom(r); if err != nil { return }
-%tab%	%idlevel% = _struct
-%tab%}
-`
-		mapp = `
-%tab%_n, err = %pkg%.Read_int(r, _b); if err != nil { return }
-%tab%if _n == 0 {  %idlevel% = nil } else {
-%tab%	%idlevel% = make(%kind%, _n)
-%tab%	_s := %idlevel%
-%tab%	var _k %kindkey%
-%tab%	for _j := 0; _j < _n; _j++ {%includekey%%include%	%tab%}
-%tab%}
-`
-		pointer = `
-%tab%_bool, err = %pkg%.Read_bool(r, _b); if err != nil { return }
-%tab%if _bool { %idlevel% = nil } else {%alloc%%include%%tab%}
-`
-		tail = `
-	return
-}
-`
-	)
-	m := map[string]string{
-		"pkg":  localpkgName,
-		"rcv":  receiver,
-		"type": reflect.TypeOf(data).Name(),
-	}
-	if err := genHeader(w, records, true, head, m); err != nil {
-		return err
-	}
-	conv := func(rec genRecord) (a, b, c string) {
-		id := rec.Ident
-		val := rec.Ident
-		kind := rec.Kind
-		conv := "_" + kind
-		if rec.Is == isPointer {
-			val = "*" + val
-		}
-		if rec.Name == kind {
-			return id, val, conv
-		}
-		return id, val, fmt.Sprintf("%s(%s)", rec.Name, conv)
-	}
-	err := genBody(0, w, records,
-		genConfig{
-			Call:      call,
-			Slice:     slice,
-			Array:     array,
-			ByteArray: bytearray,
-			Struct:    structt,
-			MapStruct: mapstruct,
-			Map:       mapp,
-			Pointer:   pointer,
-		},
-		m,
-		conv)
-	if err == nil {
-		_, err = fmt.Fprintf(w, tail)
-	}
-	return err
 }
