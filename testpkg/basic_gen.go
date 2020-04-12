@@ -7,11 +7,12 @@ import (
 	"github.com/pierrec/serializer"
 )
 
+const _BasicLayout = "BCDEFGHIJKLPQY"
+
 func (b *Basic) MarshalBinaryTo(w io.Writer) (err error) {
-	const _check = "BCDEFGHIJKLPQY"
 	var _buf [16]byte
 	_b := _buf[:]
-	err = serializer.Write_string(w, _b, _check)
+	err = serializer.Write_string(w, _b, _BasicLayout)
 	if err != nil {
 		return
 	}
@@ -90,12 +91,11 @@ func (b *Basic) MarshalBinaryTo(w io.Writer) (err error) {
 }
 
 func (b *Basic) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	const _check = "BCDEFGHIJKLPQY"
 	var _buf [16]byte
 	_b := _buf[:]
 	if s, err := serializer.Read_string(r, _b); err != nil {
 		return err
-	} else if !strings.HasPrefix(s, _check) {
+	} else if !strings.HasPrefix(s, _BasicLayout) {
 		return serializer.ErrInvalidData
 	}
 
@@ -201,11 +201,12 @@ func (b *Basic) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	return
 }
 
+const _BasicPtrLayout = "WBWCWDWEWFWGWHWIWJWKWLWPWQWY"
+
 func (b *BasicPtr) MarshalBinaryTo(w io.Writer) (err error) {
-	const _check = "WBWCWDWEWFWGWHWIWJWKWLWPWQWY"
 	var _buf [16]byte
 	_b := _buf[:]
-	err = serializer.Write_string(w, _b, _check)
+	err = serializer.Write_string(w, _b, _BasicPtrLayout)
 	if err != nil {
 		return
 	}
@@ -368,12 +369,11 @@ func (b *BasicPtr) MarshalBinaryTo(w io.Writer) (err error) {
 }
 
 func (b *BasicPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	const _check = "WBWCWDWEWFWGWHWIWJWKWLWPWQWY"
 	var _buf [16]byte
 	_b := _buf[:]
 	if s, err := serializer.Read_string(r, _b); err != nil {
 		return err
-	} else if !strings.HasPrefix(s, _check) {
+	} else if !strings.HasPrefix(s, _BasicPtrLayout) {
 		return serializer.ErrInvalidData
 	}
 

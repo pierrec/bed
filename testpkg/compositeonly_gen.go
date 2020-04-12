@@ -7,11 +7,12 @@ import (
 	"github.com/pierrec/serializer"
 )
 
+const _CompositeOnlyLayout = "ZZZZ"
+
 func (c *CompositeOnly) MarshalBinaryTo(w io.Writer) (err error) {
-	const _check = "ZZZZ"
 	var _buf [16]byte
 	_b := _buf[:]
-	err = serializer.Write_string(w, _b, _check)
+	err = serializer.Write_string(w, _b, _CompositeOnlyLayout)
 	if err != nil {
 		return
 	}
@@ -40,12 +41,11 @@ func (c *CompositeOnly) MarshalBinaryTo(w io.Writer) (err error) {
 }
 
 func (c *CompositeOnly) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	const _check = "ZZZZ"
 	var _buf [16]byte
 	_b := _buf[:]
 	if s, err := serializer.Read_string(r, _b); err != nil {
 		return err
-	} else if !strings.HasPrefix(s, _check) {
+	} else if !strings.HasPrefix(s, _CompositeOnlyLayout) {
 		return serializer.ErrInvalidData
 	}
 

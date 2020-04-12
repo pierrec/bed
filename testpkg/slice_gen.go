@@ -7,11 +7,12 @@ import (
 	"github.com/pierrec/serializer"
 )
 
+const _SliceLayout = "XCXDXEXFXGXHXIXJXKXLXPXQXYXVYXC"
+
 func (s *Slice) MarshalBinaryTo(w io.Writer) (err error) {
-	const _check = "XCXDXEXFXGXHXIXJXKXLXPXQXYXVYXC"
 	var _buf [16]byte
 	_b := _buf[:]
-	err = serializer.Write_string(w, _b, _check)
+	err = serializer.Write_string(w, _b, _SliceLayout)
 	if err != nil {
 		return
 	}
@@ -233,12 +234,11 @@ func (s *Slice) MarshalBinaryTo(w io.Writer) (err error) {
 }
 
 func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	const _check = "XCXDXEXFXGXHXIXJXKXLXPXQXYXVYXC"
 	var _buf [16]byte
 	_b := _buf[:]
 	if s, err := serializer.Read_string(r, _b); err != nil {
 		return err
-	} else if !strings.HasPrefix(s, _check) {
+	} else if !strings.HasPrefix(s, _SliceLayout) {
 		return serializer.ErrInvalidData
 	}
 
@@ -559,11 +559,12 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	return
 }
 
+const _SlicePtrLayout = "WXCWXDWXEWXFWXGWXHWXIWXJWXKWXLWXPWXQWXYWXVYXC"
+
 func (s *SlicePtr) MarshalBinaryTo(w io.Writer) (err error) {
-	const _check = "WXCWXDWXEWXFWXGWXHWXIWXJWXKWXLWXPWXQWXYWXVYXC"
 	var _buf [16]byte
 	_b := _buf[:]
-	err = serializer.Write_string(w, _b, _check)
+	err = serializer.Write_string(w, _b, _SlicePtrLayout)
 	if err != nil {
 		return
 	}
@@ -882,12 +883,11 @@ func (s *SlicePtr) MarshalBinaryTo(w io.Writer) (err error) {
 }
 
 func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	const _check = "WXCWXDWXEWXFWXGWXHWXIWXJWXKWXLWXPWXQWXYWXVYXC"
 	var _buf [16]byte
 	_b := _buf[:]
 	if s, err := serializer.Read_string(r, _b); err != nil {
 		return err
-	} else if !strings.HasPrefix(s, _check) {
+	} else if !strings.HasPrefix(s, _SlicePtrLayout) {
 		return serializer.ErrInvalidData
 	}
 

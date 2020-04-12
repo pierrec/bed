@@ -7,11 +7,12 @@ import (
 	"github.com/pierrec/serializer"
 )
 
+const _ArrayLayout = "RCRDRERFRGRHRIRJRKRLRPRQRY"
+
 func (a *Array) MarshalBinaryTo(w io.Writer) (err error) {
-	const _check = "RCRDRERFRGRHRIRJRKRLRPRQRY"
 	var _buf [16]byte
 	_b := _buf[:]
-	err = serializer.Write_string(w, _b, _check)
+	err = serializer.Write_string(w, _b, _ArrayLayout)
 	if err != nil {
 		return
 	}
@@ -133,12 +134,11 @@ func (a *Array) MarshalBinaryTo(w io.Writer) (err error) {
 }
 
 func (a *Array) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	const _check = "RCRDRERFRGRHRIRJRKRLRPRQRY"
 	var _buf [16]byte
 	_b := _buf[:]
 	if s, err := serializer.Read_string(r, _b); err != nil {
 		return err
-	} else if !strings.HasPrefix(s, _check) {
+	} else if !strings.HasPrefix(s, _ArrayLayout) {
 		return serializer.ErrInvalidData
 	}
 
@@ -295,11 +295,12 @@ func (a *Array) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	return
 }
 
+const _ArrayPtrLayout = "WRCWRDWREWRFWRGWRHWRIWRJWRKWRLWRPWRQWRY"
+
 func (a *ArrayPtr) MarshalBinaryTo(w io.Writer) (err error) {
-	const _check = "WRCWRDWREWRFWRGWRHWRIWRJWRKWRLWRPWRQWRY"
 	var _buf [16]byte
 	_b := _buf[:]
-	err = serializer.Write_string(w, _b, _check)
+	err = serializer.Write_string(w, _b, _ArrayPtrLayout)
 	if err != nil {
 		return
 	}
@@ -511,12 +512,11 @@ func (a *ArrayPtr) MarshalBinaryTo(w io.Writer) (err error) {
 }
 
 func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	const _check = "WRCWRDWREWRFWRGWRHWRIWRJWRKWRLWRPWRQWRY"
 	var _buf [16]byte
 	_b := _buf[:]
 	if s, err := serializer.Read_string(r, _b); err != nil {
 		return err
-	} else if !strings.HasPrefix(s, _check) {
+	} else if !strings.HasPrefix(s, _ArrayPtrLayout) {
 		return serializer.ErrInvalidData
 	}
 

@@ -257,11 +257,11 @@ func genHeader(w io.Writer, records []genRecord, withDecl bool, head string, dat
 	vars := make(map[string]string)
 	genHeaderNext(records, withDecl, vars)
 
-	data["check"] = strings.Join(genCheck(records, nil), "")
+	data["layout"] = strings.Join(genCheck(records, nil), "")
 	if err := templateExec(w, head, data); err != nil {
 		return err
 	}
-	delete(data, "check")
+	delete(data, "layout")
 	if len(vars) > 0 {
 		// Separate variable declarations from the rest of the function body.
 		if _, err := w.Write([]byte{'\n'}); err != nil {
@@ -480,11 +480,12 @@ func pointerConv(conv convFunc) convFunc {
 func genMarshalBinTo(w io.Writer, records []genRecord, receiver string, data interface{}) error {
 	const (
 		head = `
+const _%type%Layout = "%layout%"
+
 func (%rcv% *%type%) MarshalBinaryTo(w io.Writer) (err error) {
-	const _check = "%check%"
 	var _buf [16]byte
 	_b := _buf[:]
-	err = %pkg%.Write_string(w, _b, _check); if err != nil { return }
+	err = %pkg%.Write_string(w, _b, _%type%Layout); if err != nil { return }
 `
 		call = `
 %tab%err = %pkg%.Write_%kind%(w, _b, %conv%); if err != nil { return }
@@ -564,11 +565,10 @@ func genUnmarshalBinFrom(w io.Writer, records []genRecord, receiver string, data
 	const (
 		head = `
 func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	const _check = "%check%"
 	var _buf [16]byte
 	_b := _buf[:]
 	if s, err := %pkg%.Read_string(r, _b); err != nil { return err
-	} else if !strings.HasPrefix(s, _check) { return %pkg%.ErrInvalidData }
+	} else if !strings.HasPrefix(s, _%type%Layout) { return %pkg%.ErrInvalidData }
 `
 		call = `
 %tab%_%kind%, err = %pkg%.Read_%kind%(r, _b); if err != nil { return }
