@@ -7,7 +7,7 @@ import (
 	"github.com/pierrec/serializer"
 )
 
-func (self *Map) MarshalBinaryTo(w io.Writer) (err error) {
+func (m *Map) MarshalBinaryTo(w io.Writer) (err error) {
 	const _check = "VCCVYCVYXCVWHHVWCCVCWCVWCWC"
 	var _buf [16]byte
 	_b := _buf[:]
@@ -19,7 +19,7 @@ func (self *Map) MarshalBinaryTo(w io.Writer) (err error) {
 	var _n int
 
 	{
-		_s := self.Empty
+		_s := m.Empty
 		err = serializer.Write_int(w, _b, len(_s))
 		if err != nil {
 			return
@@ -37,7 +37,7 @@ func (self *Map) MarshalBinaryTo(w io.Writer) (err error) {
 		}
 	}
 	{
-		_s := self.StringInt
+		_s := m.StringInt
 		err = serializer.Write_int(w, _b, len(_s))
 		if err != nil {
 			return
@@ -55,7 +55,7 @@ func (self *Map) MarshalBinaryTo(w io.Writer) (err error) {
 		}
 	}
 	{
-		_s := self.StringInts
+		_s := m.StringInts
 		err = serializer.Write_int(w, _b, len(_s))
 		if err != nil {
 			return
@@ -83,7 +83,7 @@ func (self *Map) MarshalBinaryTo(w io.Writer) (err error) {
 		}
 	}
 	{
-		_s := self.UintPtrUint
+		_s := m.UintPtrUint
 		err = serializer.Write_int(w, _b, len(_s))
 		if err != nil {
 			return
@@ -107,7 +107,7 @@ func (self *Map) MarshalBinaryTo(w io.Writer) (err error) {
 		}
 	}
 	{
-		_s := self.IntPtrInt
+		_s := m.IntPtrInt
 		err = serializer.Write_int(w, _b, len(_s))
 		if err != nil {
 			return
@@ -131,7 +131,7 @@ func (self *Map) MarshalBinaryTo(w io.Writer) (err error) {
 		}
 	}
 	{
-		_s := self.IntIntPtr
+		_s := m.IntIntPtr
 		err = serializer.Write_int(w, _b, len(_s))
 		if err != nil {
 			return
@@ -155,7 +155,7 @@ func (self *Map) MarshalBinaryTo(w io.Writer) (err error) {
 		}
 	}
 	{
-		_s := self.IntPtrIntPtr
+		_s := m.IntPtrIntPtr
 		err = serializer.Write_int(w, _b, len(_s))
 		if err != nil {
 			return
@@ -187,7 +187,7 @@ func (self *Map) MarshalBinaryTo(w io.Writer) (err error) {
 	return
 }
 
-func (self *Map) UnmarshalBinaryFrom(r io.Reader) (err error) {
+func (m *Map) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	const _check = "VCCVYCVYXCVWHHVWCCVCWCVWCWC"
 	var _buf [16]byte
 	_b := _buf[:]
@@ -208,10 +208,10 @@ func (self *Map) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		return
 	}
 	if _n == 0 {
-		self.Empty = nil
+		m.Empty = nil
 	} else {
-		self.Empty = make(map[int]int, _n)
-		_s := self.Empty
+		m.Empty = make(map[int]int, _n)
+		_s := m.Empty
 		var _k int
 		for _j := 0; _j < _n; _j++ {
 			_int, err = serializer.Read_int(r, _b)
@@ -233,10 +233,10 @@ func (self *Map) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		return
 	}
 	if _n == 0 {
-		self.StringInt = nil
+		m.StringInt = nil
 	} else {
-		self.StringInt = make(map[string]int, _n)
-		_s := self.StringInt
+		m.StringInt = make(map[string]int, _n)
+		_s := m.StringInt
 		var _k string
 		for _j := 0; _j < _n; _j++ {
 			_string, err = serializer.Read_string(r, _b)
@@ -258,10 +258,10 @@ func (self *Map) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		return
 	}
 	if _n == 0 {
-		self.StringInts = nil
+		m.StringInts = nil
 	} else {
-		self.StringInts = make(map[string][]int, _n)
-		_s := self.StringInts
+		m.StringInts = make(map[string][]int, _n)
+		_s := m.StringInts
 		var _k string
 		for _j := 0; _j < _n; _j++ {
 			_string, err = serializer.Read_string(r, _b)
@@ -297,10 +297,10 @@ func (self *Map) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		return
 	}
 	if _n == 0 {
-		self.UintPtrUint = nil
+		m.UintPtrUint = nil
 	} else {
-		self.UintPtrUint = make(map[*uint]uint, _n)
-		_s := self.UintPtrUint
+		m.UintPtrUint = make(map[*uint]uint, _n)
+		_s := m.UintPtrUint
 		var _k *uint
 		for _j := 0; _j < _n; _j++ {
 			_bool, err = serializer.Read_bool(r, _b)
@@ -330,10 +330,10 @@ func (self *Map) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		return
 	}
 	if _n == 0 {
-		self.IntPtrInt = nil
+		m.IntPtrInt = nil
 	} else {
-		self.IntPtrInt = make(map[*int]int, _n)
-		_s := self.IntPtrInt
+		m.IntPtrInt = make(map[*int]int, _n)
+		_s := m.IntPtrInt
 		var _k *int
 		for _j := 0; _j < _n; _j++ {
 			_bool, err = serializer.Read_bool(r, _b)
@@ -363,10 +363,10 @@ func (self *Map) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		return
 	}
 	if _n == 0 {
-		self.IntIntPtr = nil
+		m.IntIntPtr = nil
 	} else {
-		self.IntIntPtr = make(map[int]*int, _n)
-		_s := self.IntIntPtr
+		m.IntIntPtr = make(map[int]*int, _n)
+		_s := m.IntIntPtr
 		var _k int
 		for _j := 0; _j < _n; _j++ {
 			_int, err = serializer.Read_int(r, _b)
@@ -396,10 +396,10 @@ func (self *Map) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		return
 	}
 	if _n == 0 {
-		self.IntPtrIntPtr = nil
+		m.IntPtrIntPtr = nil
 	} else {
-		self.IntPtrIntPtr = make(map[*int]*int, _n)
-		_s := self.IntPtrIntPtr
+		m.IntPtrIntPtr = make(map[*int]*int, _n)
+		_s := m.IntPtrIntPtr
 		var _k *int
 		for _j := 0; _j < _n; _j++ {
 			_bool, err = serializer.Read_bool(r, _b)

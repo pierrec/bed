@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"sort"
 	"strings"
+	"unicode"
 )
 
 type _error string
@@ -29,6 +30,8 @@ type Interface interface {
 var _Interface = reflect.TypeOf([]Interface(nil)).Elem()
 
 // Config defines the elements used to generate the code.
+//
+// If the Receiver is not set, it uses the lowered first letter of the type name.
 type Config struct {
 	PkgName  string
 	Receiver string
@@ -55,9 +58,18 @@ import (
 		return err
 	}
 
-	receiver := config.Receiver
 	for i := 0; i < len(data); i++ {
 		item := data[i]
+		receiver := config.Receiver
+		if receiver == "" {
+			tname := reflect.TypeOf(item).Name()
+			for i, c := range tname {
+				if c != '_' && !unicode.IsDigit(c) {
+					receiver = strings.ToLower(tname[i : i+1])
+					break
+				}
+			}
+		}
 		records, deps, err := walkDataType(nil, receiver, item)
 		if err != nil {
 			return err

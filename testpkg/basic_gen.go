@@ -7,7 +7,7 @@ import (
 	"github.com/pierrec/serializer"
 )
 
-func (self *Basic) MarshalBinaryTo(w io.Writer) (err error) {
+func (b *Basic) MarshalBinaryTo(w io.Writer) (err error) {
 	const _check = "BCDEFGHIJKLPQY"
 	var _buf [16]byte
 	_b := _buf[:]
@@ -16,72 +16,72 @@ func (self *Basic) MarshalBinaryTo(w io.Writer) (err error) {
 		return
 	}
 
-	err = serializer.Write_bool(w, _b, self.Bool)
+	err = serializer.Write_bool(w, _b, b.Bool)
 	if err != nil {
 		return
 	}
 
-	err = serializer.Write_int(w, _b, self.Int)
+	err = serializer.Write_int(w, _b, b.Int)
 	if err != nil {
 		return
 	}
 
-	err = serializer.Write_int8(w, _b, self.Int8)
+	err = serializer.Write_int8(w, _b, b.Int8)
 	if err != nil {
 		return
 	}
 
-	err = serializer.Write_int16(w, _b, self.Int16)
+	err = serializer.Write_int16(w, _b, b.Int16)
 	if err != nil {
 		return
 	}
 
-	err = serializer.Write_int32(w, _b, self.Int32)
+	err = serializer.Write_int32(w, _b, b.Int32)
 	if err != nil {
 		return
 	}
 
-	err = serializer.Write_int64(w, _b, self.Int64)
+	err = serializer.Write_int64(w, _b, b.Int64)
 	if err != nil {
 		return
 	}
 
-	err = serializer.Write_uint(w, _b, self.Uint)
+	err = serializer.Write_uint(w, _b, b.Uint)
 	if err != nil {
 		return
 	}
 
-	err = serializer.Write_uint8(w, _b, self.Uint8)
+	err = serializer.Write_uint8(w, _b, b.Uint8)
 	if err != nil {
 		return
 	}
 
-	err = serializer.Write_uint16(w, _b, self.Uint16)
+	err = serializer.Write_uint16(w, _b, b.Uint16)
 	if err != nil {
 		return
 	}
 
-	err = serializer.Write_uint32(w, _b, self.Uint32)
+	err = serializer.Write_uint32(w, _b, b.Uint32)
 	if err != nil {
 		return
 	}
 
-	err = serializer.Write_uint64(w, _b, self.Uint64)
+	err = serializer.Write_uint64(w, _b, b.Uint64)
 	if err != nil {
 		return
 	}
 
-	err = serializer.Write_complex64(w, _b, self.Complex64)
+	err = serializer.Write_complex64(w, _b, b.Complex64)
 	if err != nil {
 		return
 	}
 
-	err = serializer.Write_complex128(w, _b, self.Complex128)
+	err = serializer.Write_complex128(w, _b, b.Complex128)
 	if err != nil {
 		return
 	}
 
-	err = serializer.Write_string(w, _b, self.String)
+	err = serializer.Write_string(w, _b, b.String)
 	if err != nil {
 		return
 	}
@@ -89,7 +89,7 @@ func (self *Basic) MarshalBinaryTo(w io.Writer) (err error) {
 	return
 }
 
-func (self *Basic) UnmarshalBinaryFrom(r io.Reader) (err error) {
+func (b *Basic) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	const _check = "BCDEFGHIJKLPQY"
 	var _buf [16]byte
 	_b := _buf[:]
@@ -118,90 +118,90 @@ func (self *Basic) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if err != nil {
 		return
 	}
-	self.Bool = _bool
+	b.Bool = _bool
 
 	_int, err = serializer.Read_int(r, _b)
 	if err != nil {
 		return
 	}
-	self.Int = _int
+	b.Int = _int
 
 	_int8, err = serializer.Read_int8(r, _b)
 	if err != nil {
 		return
 	}
-	self.Int8 = _int8
+	b.Int8 = _int8
 
 	_int16, err = serializer.Read_int16(r, _b)
 	if err != nil {
 		return
 	}
-	self.Int16 = _int16
+	b.Int16 = _int16
 
 	_int32, err = serializer.Read_int32(r, _b)
 	if err != nil {
 		return
 	}
-	self.Int32 = _int32
+	b.Int32 = _int32
 
 	_int64, err = serializer.Read_int64(r, _b)
 	if err != nil {
 		return
 	}
-	self.Int64 = _int64
+	b.Int64 = _int64
 
 	_uint, err = serializer.Read_uint(r, _b)
 	if err != nil {
 		return
 	}
-	self.Uint = _uint
+	b.Uint = _uint
 
 	_uint8, err = serializer.Read_uint8(r, _b)
 	if err != nil {
 		return
 	}
-	self.Uint8 = _uint8
+	b.Uint8 = _uint8
 
 	_uint16, err = serializer.Read_uint16(r, _b)
 	if err != nil {
 		return
 	}
-	self.Uint16 = _uint16
+	b.Uint16 = _uint16
 
 	_uint32, err = serializer.Read_uint32(r, _b)
 	if err != nil {
 		return
 	}
-	self.Uint32 = _uint32
+	b.Uint32 = _uint32
 
 	_uint64, err = serializer.Read_uint64(r, _b)
 	if err != nil {
 		return
 	}
-	self.Uint64 = _uint64
+	b.Uint64 = _uint64
 
 	_complex64, err = serializer.Read_complex64(r, _b)
 	if err != nil {
 		return
 	}
-	self.Complex64 = _complex64
+	b.Complex64 = _complex64
 
 	_complex128, err = serializer.Read_complex128(r, _b)
 	if err != nil {
 		return
 	}
-	self.Complex128 = _complex128
+	b.Complex128 = _complex128
 
 	_string, err = serializer.Read_string(r, _b)
 	if err != nil {
 		return
 	}
-	self.String = _string
+	b.String = _string
 
 	return
 }
 
-func (self *BasicPtr) MarshalBinaryTo(w io.Writer) (err error) {
+func (b *BasicPtr) MarshalBinaryTo(w io.Writer) (err error) {
 	const _check = "WBWCWDWEWFWGWHWIWJWKWLWPWQWY"
 	var _buf [16]byte
 	_b := _buf[:]
@@ -210,155 +210,155 @@ func (self *BasicPtr) MarshalBinaryTo(w io.Writer) (err error) {
 		return
 	}
 
-	err = serializer.Write_bool(w, _b, self.Bool == nil)
+	err = serializer.Write_bool(w, _b, b.Bool == nil)
 	if err != nil {
 		return
 	}
-	if self.Bool != nil {
-		err = serializer.Write_bool(w, _b, *self.Bool)
+	if b.Bool != nil {
+		err = serializer.Write_bool(w, _b, *b.Bool)
 		if err != nil {
 			return
 		}
 	}
 
-	err = serializer.Write_bool(w, _b, self.Int == nil)
+	err = serializer.Write_bool(w, _b, b.Int == nil)
 	if err != nil {
 		return
 	}
-	if self.Int != nil {
-		err = serializer.Write_int(w, _b, *self.Int)
+	if b.Int != nil {
+		err = serializer.Write_int(w, _b, *b.Int)
 		if err != nil {
 			return
 		}
 	}
 
-	err = serializer.Write_bool(w, _b, self.Int8 == nil)
+	err = serializer.Write_bool(w, _b, b.Int8 == nil)
 	if err != nil {
 		return
 	}
-	if self.Int8 != nil {
-		err = serializer.Write_int8(w, _b, *self.Int8)
+	if b.Int8 != nil {
+		err = serializer.Write_int8(w, _b, *b.Int8)
 		if err != nil {
 			return
 		}
 	}
 
-	err = serializer.Write_bool(w, _b, self.Int16 == nil)
+	err = serializer.Write_bool(w, _b, b.Int16 == nil)
 	if err != nil {
 		return
 	}
-	if self.Int16 != nil {
-		err = serializer.Write_int16(w, _b, *self.Int16)
+	if b.Int16 != nil {
+		err = serializer.Write_int16(w, _b, *b.Int16)
 		if err != nil {
 			return
 		}
 	}
 
-	err = serializer.Write_bool(w, _b, self.Int32 == nil)
+	err = serializer.Write_bool(w, _b, b.Int32 == nil)
 	if err != nil {
 		return
 	}
-	if self.Int32 != nil {
-		err = serializer.Write_int32(w, _b, *self.Int32)
+	if b.Int32 != nil {
+		err = serializer.Write_int32(w, _b, *b.Int32)
 		if err != nil {
 			return
 		}
 	}
 
-	err = serializer.Write_bool(w, _b, self.Int64 == nil)
+	err = serializer.Write_bool(w, _b, b.Int64 == nil)
 	if err != nil {
 		return
 	}
-	if self.Int64 != nil {
-		err = serializer.Write_int64(w, _b, *self.Int64)
+	if b.Int64 != nil {
+		err = serializer.Write_int64(w, _b, *b.Int64)
 		if err != nil {
 			return
 		}
 	}
 
-	err = serializer.Write_bool(w, _b, self.Uint == nil)
+	err = serializer.Write_bool(w, _b, b.Uint == nil)
 	if err != nil {
 		return
 	}
-	if self.Uint != nil {
-		err = serializer.Write_uint(w, _b, *self.Uint)
+	if b.Uint != nil {
+		err = serializer.Write_uint(w, _b, *b.Uint)
 		if err != nil {
 			return
 		}
 	}
 
-	err = serializer.Write_bool(w, _b, self.Uint8 == nil)
+	err = serializer.Write_bool(w, _b, b.Uint8 == nil)
 	if err != nil {
 		return
 	}
-	if self.Uint8 != nil {
-		err = serializer.Write_uint8(w, _b, *self.Uint8)
+	if b.Uint8 != nil {
+		err = serializer.Write_uint8(w, _b, *b.Uint8)
 		if err != nil {
 			return
 		}
 	}
 
-	err = serializer.Write_bool(w, _b, self.Uint16 == nil)
+	err = serializer.Write_bool(w, _b, b.Uint16 == nil)
 	if err != nil {
 		return
 	}
-	if self.Uint16 != nil {
-		err = serializer.Write_uint16(w, _b, *self.Uint16)
+	if b.Uint16 != nil {
+		err = serializer.Write_uint16(w, _b, *b.Uint16)
 		if err != nil {
 			return
 		}
 	}
 
-	err = serializer.Write_bool(w, _b, self.Uint32 == nil)
+	err = serializer.Write_bool(w, _b, b.Uint32 == nil)
 	if err != nil {
 		return
 	}
-	if self.Uint32 != nil {
-		err = serializer.Write_uint32(w, _b, *self.Uint32)
+	if b.Uint32 != nil {
+		err = serializer.Write_uint32(w, _b, *b.Uint32)
 		if err != nil {
 			return
 		}
 	}
 
-	err = serializer.Write_bool(w, _b, self.Uint64 == nil)
+	err = serializer.Write_bool(w, _b, b.Uint64 == nil)
 	if err != nil {
 		return
 	}
-	if self.Uint64 != nil {
-		err = serializer.Write_uint64(w, _b, *self.Uint64)
+	if b.Uint64 != nil {
+		err = serializer.Write_uint64(w, _b, *b.Uint64)
 		if err != nil {
 			return
 		}
 	}
 
-	err = serializer.Write_bool(w, _b, self.Complex64 == nil)
+	err = serializer.Write_bool(w, _b, b.Complex64 == nil)
 	if err != nil {
 		return
 	}
-	if self.Complex64 != nil {
-		err = serializer.Write_complex64(w, _b, *self.Complex64)
+	if b.Complex64 != nil {
+		err = serializer.Write_complex64(w, _b, *b.Complex64)
 		if err != nil {
 			return
 		}
 	}
 
-	err = serializer.Write_bool(w, _b, self.Complex128 == nil)
+	err = serializer.Write_bool(w, _b, b.Complex128 == nil)
 	if err != nil {
 		return
 	}
-	if self.Complex128 != nil {
-		err = serializer.Write_complex128(w, _b, *self.Complex128)
+	if b.Complex128 != nil {
+		err = serializer.Write_complex128(w, _b, *b.Complex128)
 		if err != nil {
 			return
 		}
 	}
 
-	err = serializer.Write_bool(w, _b, self.String == nil)
+	err = serializer.Write_bool(w, _b, b.String == nil)
 	if err != nil {
 		return
 	}
-	if self.String != nil {
-		err = serializer.Write_string(w, _b, *self.String)
+	if b.String != nil {
+		err = serializer.Write_string(w, _b, *b.String)
 		if err != nil {
 			return
 		}
@@ -367,7 +367,7 @@ func (self *BasicPtr) MarshalBinaryTo(w io.Writer) (err error) {
 	return
 }
 
-func (self *BasicPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
+func (b *BasicPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	const _check = "WBWCWDWEWFWGWHWIWJWKWLWPWQWY"
 	var _buf [16]byte
 	_b := _buf[:]
@@ -397,13 +397,13 @@ func (self *BasicPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		return
 	}
 	if _bool {
-		self.Bool = nil
+		b.Bool = nil
 	} else {
 		_bool, err = serializer.Read_bool(r, _b)
 		if err != nil {
 			return
 		}
-		*self.Bool = _bool
+		*b.Bool = _bool
 	}
 
 	_bool, err = serializer.Read_bool(r, _b)
@@ -411,13 +411,13 @@ func (self *BasicPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		return
 	}
 	if _bool {
-		self.Int = nil
+		b.Int = nil
 	} else {
 		_int, err = serializer.Read_int(r, _b)
 		if err != nil {
 			return
 		}
-		*self.Int = _int
+		*b.Int = _int
 	}
 
 	_bool, err = serializer.Read_bool(r, _b)
@@ -425,13 +425,13 @@ func (self *BasicPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		return
 	}
 	if _bool {
-		self.Int8 = nil
+		b.Int8 = nil
 	} else {
 		_int8, err = serializer.Read_int8(r, _b)
 		if err != nil {
 			return
 		}
-		*self.Int8 = _int8
+		*b.Int8 = _int8
 	}
 
 	_bool, err = serializer.Read_bool(r, _b)
@@ -439,13 +439,13 @@ func (self *BasicPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		return
 	}
 	if _bool {
-		self.Int16 = nil
+		b.Int16 = nil
 	} else {
 		_int16, err = serializer.Read_int16(r, _b)
 		if err != nil {
 			return
 		}
-		*self.Int16 = _int16
+		*b.Int16 = _int16
 	}
 
 	_bool, err = serializer.Read_bool(r, _b)
@@ -453,13 +453,13 @@ func (self *BasicPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		return
 	}
 	if _bool {
-		self.Int32 = nil
+		b.Int32 = nil
 	} else {
 		_int32, err = serializer.Read_int32(r, _b)
 		if err != nil {
 			return
 		}
-		*self.Int32 = _int32
+		*b.Int32 = _int32
 	}
 
 	_bool, err = serializer.Read_bool(r, _b)
@@ -467,13 +467,13 @@ func (self *BasicPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		return
 	}
 	if _bool {
-		self.Int64 = nil
+		b.Int64 = nil
 	} else {
 		_int64, err = serializer.Read_int64(r, _b)
 		if err != nil {
 			return
 		}
-		*self.Int64 = _int64
+		*b.Int64 = _int64
 	}
 
 	_bool, err = serializer.Read_bool(r, _b)
@@ -481,13 +481,13 @@ func (self *BasicPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		return
 	}
 	if _bool {
-		self.Uint = nil
+		b.Uint = nil
 	} else {
 		_uint, err = serializer.Read_uint(r, _b)
 		if err != nil {
 			return
 		}
-		*self.Uint = _uint
+		*b.Uint = _uint
 	}
 
 	_bool, err = serializer.Read_bool(r, _b)
@@ -495,13 +495,13 @@ func (self *BasicPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		return
 	}
 	if _bool {
-		self.Uint8 = nil
+		b.Uint8 = nil
 	} else {
 		_uint8, err = serializer.Read_uint8(r, _b)
 		if err != nil {
 			return
 		}
-		*self.Uint8 = _uint8
+		*b.Uint8 = _uint8
 	}
 
 	_bool, err = serializer.Read_bool(r, _b)
@@ -509,13 +509,13 @@ func (self *BasicPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		return
 	}
 	if _bool {
-		self.Uint16 = nil
+		b.Uint16 = nil
 	} else {
 		_uint16, err = serializer.Read_uint16(r, _b)
 		if err != nil {
 			return
 		}
-		*self.Uint16 = _uint16
+		*b.Uint16 = _uint16
 	}
 
 	_bool, err = serializer.Read_bool(r, _b)
@@ -523,13 +523,13 @@ func (self *BasicPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		return
 	}
 	if _bool {
-		self.Uint32 = nil
+		b.Uint32 = nil
 	} else {
 		_uint32, err = serializer.Read_uint32(r, _b)
 		if err != nil {
 			return
 		}
-		*self.Uint32 = _uint32
+		*b.Uint32 = _uint32
 	}
 
 	_bool, err = serializer.Read_bool(r, _b)
@@ -537,13 +537,13 @@ func (self *BasicPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		return
 	}
 	if _bool {
-		self.Uint64 = nil
+		b.Uint64 = nil
 	} else {
 		_uint64, err = serializer.Read_uint64(r, _b)
 		if err != nil {
 			return
 		}
-		*self.Uint64 = _uint64
+		*b.Uint64 = _uint64
 	}
 
 	_bool, err = serializer.Read_bool(r, _b)
@@ -551,13 +551,13 @@ func (self *BasicPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		return
 	}
 	if _bool {
-		self.Complex64 = nil
+		b.Complex64 = nil
 	} else {
 		_complex64, err = serializer.Read_complex64(r, _b)
 		if err != nil {
 			return
 		}
-		*self.Complex64 = _complex64
+		*b.Complex64 = _complex64
 	}
 
 	_bool, err = serializer.Read_bool(r, _b)
@@ -565,13 +565,13 @@ func (self *BasicPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		return
 	}
 	if _bool {
-		self.Complex128 = nil
+		b.Complex128 = nil
 	} else {
 		_complex128, err = serializer.Read_complex128(r, _b)
 		if err != nil {
 			return
 		}
-		*self.Complex128 = _complex128
+		*b.Complex128 = _complex128
 	}
 
 	_bool, err = serializer.Read_bool(r, _b)
@@ -579,13 +579,13 @@ func (self *BasicPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		return
 	}
 	if _bool {
-		self.String = nil
+		b.String = nil
 	} else {
 		_string, err = serializer.Read_string(r, _b)
 		if err != nil {
 			return
 		}
-		*self.String = _string
+		*b.String = _string
 	}
 
 	return

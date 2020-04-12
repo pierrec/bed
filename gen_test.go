@@ -12,7 +12,7 @@ import (
 
 func TestGen(t *testing.T) {
 	_s := func(v ...interface{}) []interface{} { return v }
-	config := serializer.Config{PkgName: "testpkg", Receiver: "self"}
+	config := serializer.Config{PkgName: "testpkg", Receiver: ""}
 	type tcase struct {
 		out  string
 		data []interface{}

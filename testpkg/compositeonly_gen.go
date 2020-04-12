@@ -7,7 +7,7 @@ import (
 	"github.com/pierrec/serializer"
 )
 
-func (self *CompositeOnly) MarshalBinaryTo(w io.Writer) (err error) {
+func (c *CompositeOnly) MarshalBinaryTo(w io.Writer) (err error) {
 	const _check = "ZZZZ"
 	var _buf [16]byte
 	_b := _buf[:]
@@ -16,22 +16,22 @@ func (self *CompositeOnly) MarshalBinaryTo(w io.Writer) (err error) {
 		return
 	}
 
-	err = self.Basic.MarshalBinaryTo(w)
+	err = c.Basic.MarshalBinaryTo(w)
 	if err != nil {
 		return
 	}
 
-	err = self.Slice.MarshalBinaryTo(w)
+	err = c.Slice.MarshalBinaryTo(w)
 	if err != nil {
 		return
 	}
 
-	err = self.Array.MarshalBinaryTo(w)
+	err = c.Array.MarshalBinaryTo(w)
 	if err != nil {
 		return
 	}
 
-	err = self.Map.MarshalBinaryTo(w)
+	err = c.Map.MarshalBinaryTo(w)
 	if err != nil {
 		return
 	}
@@ -39,7 +39,7 @@ func (self *CompositeOnly) MarshalBinaryTo(w io.Writer) (err error) {
 	return
 }
 
-func (self *CompositeOnly) UnmarshalBinaryFrom(r io.Reader) (err error) {
+func (c *CompositeOnly) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	const _check = "ZZZZ"
 	var _buf [16]byte
 	_b := _buf[:]
@@ -49,22 +49,22 @@ func (self *CompositeOnly) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		return serializer.ErrInvalidData
 	}
 
-	err = self.Basic.UnmarshalBinaryFrom(r)
+	err = c.Basic.UnmarshalBinaryFrom(r)
 	if err != nil {
 		return
 	}
 
-	err = self.Slice.UnmarshalBinaryFrom(r)
+	err = c.Slice.UnmarshalBinaryFrom(r)
 	if err != nil {
 		return
 	}
 
-	err = self.Array.UnmarshalBinaryFrom(r)
+	err = c.Array.UnmarshalBinaryFrom(r)
 	if err != nil {
 		return
 	}
 
-	err = self.Map.UnmarshalBinaryFrom(r)
+	err = c.Map.UnmarshalBinaryFrom(r)
 	if err != nil {
 		return
 	}
