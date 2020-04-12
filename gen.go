@@ -157,15 +157,8 @@ func walkDataType(p []string, ident string, data interface{}) ([]genRecord, []in
 		if err != nil {
 			return nil, nil, err
 		}
-		if len(subrecords) == 1 && subrecords[0].Kind == "uint8" {
-			// Special case: []byte
-			records = []genRecord{
-				{RKind: kind, Ident: ident, Kind: "bytes", Name: "bytes"},
-			}
-		} else {
-			records = []genRecord{
-				{RKind: kind, Is: isSlice, Ident: ident, Kind: typ.String(), Include: subrecords},
-			}
+		records = []genRecord{
+			{RKind: kind, Is: isSlice, Ident: ident, Kind: typ.String(), Include: subrecords},
 		}
 		deps = append(deps, subdeps...)
 	case reflect.Array:
@@ -309,10 +302,6 @@ func genCheck(records []genRecord, s []string) []string {
 		reflect.Uint8: string('A' + reflect.Uint8),
 	}
 	for _, rec := range records {
-		if rec.Kind == "bytes" {
-			s = append(s, m[reflect.Slice], m[reflect.Uint8])
-			continue
-		}
 		if _, ok := m[rec.RKind]; !ok {
 			m[rec.RKind] = string('A' + rec.RKind)
 		}
@@ -362,8 +351,8 @@ func genHeaderNext(records []genRecord, withDecl bool, vars map[string]string) {
 			"complex64", "complex128",
 			"string":
 			reg("_"+kind, kind)
-		case "bytes":
-			reg("_bytes", "[]byte")
+		case "[]byte":
+			reg("_bytes", kind)
 		}
 	}
 }
@@ -391,14 +380,10 @@ func genBody(level int, w io.Writer, records []genRecord, tmpls genConfig, data 
 	}
 	doalloc := func(rec genRecord) error {
 		var alloc string
-		switch {
-		case rec.Is == isMap:
+		if rec.Is == isMap {
 			alloc = `
 %tab%%idlevel% = make(%kind%)`
-		case rec.Kind == "bytes":
-			alloc = `
-%tab%%idlevel% = new([]byte)`
-		default:
+		} else {
 			alloc = `
 %tab%%idlevel% = new(%kind%)`
 		}
@@ -600,7 +585,7 @@ func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {
 `
 		slice = `
 %tab%_n, err = %pkg%.Read_int(r, _b); if err != nil { return }
-%tab%if c := cap(%value%); _n > c || c - _n > c/8 { %value% = make(%kind%, _n) } else { %value% = (%value%)[:_n] }
+%tab%if _c := cap(%value%); _n > _c || _c - _n > _c/8 { %value% = make(%kind%, _n) } else { %value% = (%value%)[:_n] }
 %tab%if _n > 0 {
 %tab%	_s := %value%
 %tab%	for _k := 0; _k < _n; _k++ {%include%	%tab%}

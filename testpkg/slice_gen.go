@@ -102,11 +102,20 @@ func (s *Slice) MarshalBinaryTo(w io.Writer) (err error) {
 			}
 		}
 	}
-	err = serializer.Write_bytes(w, _b, s.Uint8)
-	if err != nil {
-		return
+	{
+		_s := s.Uint8
+		_n = len(_s)
+		err = serializer.Write_int(w, _b, _n)
+		if err != nil {
+			return
+		}
+		for _k := 0; _k < _n; _k++ {
+			err = serializer.Write_uint8(w, _b, _s[_k])
+			if err != nil {
+				return
+			}
+		}
 	}
-
 	{
 		_s := s.Uint16
 		_n = len(_s)
@@ -240,7 +249,6 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		return
 	}
 
-	var _bytes []byte
 	var _complex128 complex128
 	var _complex64 complex64
 	var _int int
@@ -254,12 +262,13 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	var _uint16 uint16
 	var _uint32 uint32
 	var _uint64 uint64
+	var _uint8 uint8
 
 	_n, err = serializer.Read_int(r, _b)
 	if err != nil {
 		return
 	}
-	if c := cap(s.Int); _n > c || c-_n > c/8 {
+	if _c := cap(s.Int); _n > _c || _c-_n > _c/8 {
 		s.Int = make([]int, _n)
 	} else {
 		s.Int = (s.Int)[:_n]
@@ -279,7 +288,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if err != nil {
 		return
 	}
-	if c := cap(s.Int8); _n > c || c-_n > c/8 {
+	if _c := cap(s.Int8); _n > _c || _c-_n > _c/8 {
 		s.Int8 = make([]int8, _n)
 	} else {
 		s.Int8 = (s.Int8)[:_n]
@@ -299,7 +308,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if err != nil {
 		return
 	}
-	if c := cap(s.Int16); _n > c || c-_n > c/8 {
+	if _c := cap(s.Int16); _n > _c || _c-_n > _c/8 {
 		s.Int16 = make([]int16, _n)
 	} else {
 		s.Int16 = (s.Int16)[:_n]
@@ -319,7 +328,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if err != nil {
 		return
 	}
-	if c := cap(s.Int32); _n > c || c-_n > c/8 {
+	if _c := cap(s.Int32); _n > _c || _c-_n > _c/8 {
 		s.Int32 = make([]int32, _n)
 	} else {
 		s.Int32 = (s.Int32)[:_n]
@@ -339,7 +348,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if err != nil {
 		return
 	}
-	if c := cap(s.Int64); _n > c || c-_n > c/8 {
+	if _c := cap(s.Int64); _n > _c || _c-_n > _c/8 {
 		s.Int64 = make([]int64, _n)
 	} else {
 		s.Int64 = (s.Int64)[:_n]
@@ -359,7 +368,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if err != nil {
 		return
 	}
-	if c := cap(s.Uint); _n > c || c-_n > c/8 {
+	if _c := cap(s.Uint); _n > _c || _c-_n > _c/8 {
 		s.Uint = make([]uint, _n)
 	} else {
 		s.Uint = (s.Uint)[:_n]
@@ -375,17 +384,31 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_bytes, err = serializer.Read_bytes(r, _b)
+	_n, err = serializer.Read_int(r, _b)
 	if err != nil {
 		return
 	}
-	s.Uint8 = _bytes
+	if _c := cap(s.Uint8); _n > _c || _c-_n > _c/8 {
+		s.Uint8 = make([]uint8, _n)
+	} else {
+		s.Uint8 = (s.Uint8)[:_n]
+	}
+	if _n > 0 {
+		_s := s.Uint8
+		for _k := 0; _k < _n; _k++ {
+			_uint8, err = serializer.Read_uint8(r, _b)
+			if err != nil {
+				return
+			}
+			_s[_k] = _uint8
+		}
+	}
 
 	_n, err = serializer.Read_int(r, _b)
 	if err != nil {
 		return
 	}
-	if c := cap(s.Uint16); _n > c || c-_n > c/8 {
+	if _c := cap(s.Uint16); _n > _c || _c-_n > _c/8 {
 		s.Uint16 = make([]uint16, _n)
 	} else {
 		s.Uint16 = (s.Uint16)[:_n]
@@ -405,7 +428,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if err != nil {
 		return
 	}
-	if c := cap(s.Uint32); _n > c || c-_n > c/8 {
+	if _c := cap(s.Uint32); _n > _c || _c-_n > _c/8 {
 		s.Uint32 = make([]uint32, _n)
 	} else {
 		s.Uint32 = (s.Uint32)[:_n]
@@ -425,7 +448,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if err != nil {
 		return
 	}
-	if c := cap(s.Uint64); _n > c || c-_n > c/8 {
+	if _c := cap(s.Uint64); _n > _c || _c-_n > _c/8 {
 		s.Uint64 = make([]uint64, _n)
 	} else {
 		s.Uint64 = (s.Uint64)[:_n]
@@ -445,7 +468,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if err != nil {
 		return
 	}
-	if c := cap(s.Complex64); _n > c || c-_n > c/8 {
+	if _c := cap(s.Complex64); _n > _c || _c-_n > _c/8 {
 		s.Complex64 = make([]complex64, _n)
 	} else {
 		s.Complex64 = (s.Complex64)[:_n]
@@ -465,7 +488,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if err != nil {
 		return
 	}
-	if c := cap(s.Complex128); _n > c || c-_n > c/8 {
+	if _c := cap(s.Complex128); _n > _c || _c-_n > _c/8 {
 		s.Complex128 = make([]complex128, _n)
 	} else {
 		s.Complex128 = (s.Complex128)[:_n]
@@ -485,7 +508,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if err != nil {
 		return
 	}
-	if c := cap(s.String); _n > c || c-_n > c/8 {
+	if _c := cap(s.String); _n > _c || _c-_n > _c/8 {
 		s.String = make([]string, _n)
 	} else {
 		s.String = (s.String)[:_n]
@@ -505,7 +528,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if err != nil {
 		return
 	}
-	if c := cap(s.Maps); _n > c || c-_n > c/8 {
+	if _c := cap(s.Maps); _n > _c || _c-_n > _c/8 {
 		s.Maps = make([]map[string][]int, _n)
 	} else {
 		s.Maps = (s.Maps)[:_n]
@@ -534,7 +557,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 					if err != nil {
 						return
 					}
-					if c := cap(_s[_k]); _n > c || c-_n > c/8 {
+					if _c := cap(_s[_k]); _n > _c || _c-_n > _c/8 {
 						_s[_k] = make([]int, _n)
 					} else {
 						_s[_k] = (_s[_k])[:_n]
@@ -700,9 +723,19 @@ func (s *SlicePtr) MarshalBinaryTo(w io.Writer) (err error) {
 		return
 	}
 	if s.Uint8 != nil {
-		err = serializer.Write_bytes(w, _b, *s.Uint8)
-		if err != nil {
-			return
+		{
+			_s := *s.Uint8
+			_n = len(_s)
+			err = serializer.Write_int(w, _b, _n)
+			if err != nil {
+				return
+			}
+			for _k := 0; _k < _n; _k++ {
+				err = serializer.Write_uint8(w, _b, _s[_k])
+				if err != nil {
+					return
+				}
+			}
 		}
 	}
 
@@ -889,7 +922,6 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	}
 
 	var _bool bool
-	var _bytes []byte
 	var _complex128 complex128
 	var _complex64 complex64
 	var _int int
@@ -903,6 +935,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	var _uint16 uint16
 	var _uint32 uint32
 	var _uint64 uint64
+	var _uint8 uint8
 
 	_bool, err = serializer.Read_bool(r, _b)
 	if err != nil {
@@ -916,7 +949,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		if err != nil {
 			return
 		}
-		if c := cap(*s.Int); _n > c || c-_n > c/8 {
+		if _c := cap(*s.Int); _n > _c || _c-_n > _c/8 {
 			*s.Int = make([]int, _n)
 		} else {
 			*s.Int = (*s.Int)[:_n]
@@ -945,7 +978,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		if err != nil {
 			return
 		}
-		if c := cap(*s.Int8); _n > c || c-_n > c/8 {
+		if _c := cap(*s.Int8); _n > _c || _c-_n > _c/8 {
 			*s.Int8 = make([]int8, _n)
 		} else {
 			*s.Int8 = (*s.Int8)[:_n]
@@ -974,7 +1007,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		if err != nil {
 			return
 		}
-		if c := cap(*s.Int16); _n > c || c-_n > c/8 {
+		if _c := cap(*s.Int16); _n > _c || _c-_n > _c/8 {
 			*s.Int16 = make([]int16, _n)
 		} else {
 			*s.Int16 = (*s.Int16)[:_n]
@@ -1003,7 +1036,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		if err != nil {
 			return
 		}
-		if c := cap(*s.Int32); _n > c || c-_n > c/8 {
+		if _c := cap(*s.Int32); _n > _c || _c-_n > _c/8 {
 			*s.Int32 = make([]int32, _n)
 		} else {
 			*s.Int32 = (*s.Int32)[:_n]
@@ -1032,7 +1065,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		if err != nil {
 			return
 		}
-		if c := cap(*s.Int64); _n > c || c-_n > c/8 {
+		if _c := cap(*s.Int64); _n > _c || _c-_n > _c/8 {
 			*s.Int64 = make([]int64, _n)
 		} else {
 			*s.Int64 = (*s.Int64)[:_n]
@@ -1061,7 +1094,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		if err != nil {
 			return
 		}
-		if c := cap(*s.Uint); _n > c || c-_n > c/8 {
+		if _c := cap(*s.Uint); _n > _c || _c-_n > _c/8 {
 			*s.Uint = make([]uint, _n)
 		} else {
 			*s.Uint = (*s.Uint)[:_n]
@@ -1085,12 +1118,26 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _bool {
 		s.Uint8 = nil
 	} else {
-		s.Uint8 = new([]byte)
-		_bytes, err = serializer.Read_bytes(r, _b)
+		s.Uint8 = new([]uint8)
+		_n, err = serializer.Read_int(r, _b)
 		if err != nil {
 			return
 		}
-		*s.Uint8 = _bytes
+		if _c := cap(*s.Uint8); _n > _c || _c-_n > _c/8 {
+			*s.Uint8 = make([]uint8, _n)
+		} else {
+			*s.Uint8 = (*s.Uint8)[:_n]
+		}
+		if _n > 0 {
+			_s := *s.Uint8
+			for _k := 0; _k < _n; _k++ {
+				_uint8, err = serializer.Read_uint8(r, _b)
+				if err != nil {
+					return
+				}
+				_s[_k] = _uint8
+			}
+		}
 	}
 
 	_bool, err = serializer.Read_bool(r, _b)
@@ -1105,7 +1152,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		if err != nil {
 			return
 		}
-		if c := cap(*s.Uint16); _n > c || c-_n > c/8 {
+		if _c := cap(*s.Uint16); _n > _c || _c-_n > _c/8 {
 			*s.Uint16 = make([]uint16, _n)
 		} else {
 			*s.Uint16 = (*s.Uint16)[:_n]
@@ -1134,7 +1181,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		if err != nil {
 			return
 		}
-		if c := cap(*s.Uint32); _n > c || c-_n > c/8 {
+		if _c := cap(*s.Uint32); _n > _c || _c-_n > _c/8 {
 			*s.Uint32 = make([]uint32, _n)
 		} else {
 			*s.Uint32 = (*s.Uint32)[:_n]
@@ -1163,7 +1210,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		if err != nil {
 			return
 		}
-		if c := cap(*s.Uint64); _n > c || c-_n > c/8 {
+		if _c := cap(*s.Uint64); _n > _c || _c-_n > _c/8 {
 			*s.Uint64 = make([]uint64, _n)
 		} else {
 			*s.Uint64 = (*s.Uint64)[:_n]
@@ -1192,7 +1239,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		if err != nil {
 			return
 		}
-		if c := cap(*s.Complex64); _n > c || c-_n > c/8 {
+		if _c := cap(*s.Complex64); _n > _c || _c-_n > _c/8 {
 			*s.Complex64 = make([]complex64, _n)
 		} else {
 			*s.Complex64 = (*s.Complex64)[:_n]
@@ -1221,7 +1268,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		if err != nil {
 			return
 		}
-		if c := cap(*s.Complex128); _n > c || c-_n > c/8 {
+		if _c := cap(*s.Complex128); _n > _c || _c-_n > _c/8 {
 			*s.Complex128 = make([]complex128, _n)
 		} else {
 			*s.Complex128 = (*s.Complex128)[:_n]
@@ -1250,7 +1297,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		if err != nil {
 			return
 		}
-		if c := cap(*s.String); _n > c || c-_n > c/8 {
+		if _c := cap(*s.String); _n > _c || _c-_n > _c/8 {
 			*s.String = make([]string, _n)
 		} else {
 			*s.String = (*s.String)[:_n]
@@ -1279,7 +1326,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		if err != nil {
 			return
 		}
-		if c := cap(*s.Maps); _n > c || c-_n > c/8 {
+		if _c := cap(*s.Maps); _n > _c || _c-_n > _c/8 {
 			*s.Maps = make([]map[string][]int, _n)
 		} else {
 			*s.Maps = (*s.Maps)[:_n]
@@ -1308,7 +1355,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 						if err != nil {
 							return
 						}
-						if c := cap(_s[_k]); _n > c || c-_n > c/8 {
+						if _c := cap(_s[_k]); _n > _c || _c-_n > _c/8 {
 							_s[_k] = make([]int, _n)
 						} else {
 							_s[_k] = (_s[_k])[:_n]

@@ -317,7 +317,7 @@ func (m *Map) UnmarshalBinaryFrom(r io.Reader) (err error) {
 			if err != nil {
 				return
 			}
-			if c := cap(_s[_k]); _n > c || c-_n > c/8 {
+			if _c := cap(_s[_k]); _n > _c || _c-_n > _c/8 {
 				_s[_k] = make([]int, _n)
 			} else {
 				_s[_k] = (_s[_k])[:_n]

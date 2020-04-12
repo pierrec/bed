@@ -33,3 +33,7 @@ type BasicPtr struct {
 	Complex128 *complex128
 	String     *string
 }
+
+type BasicEmbed struct {
+	Basic
+}
