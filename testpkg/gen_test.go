@@ -12,8 +12,9 @@ import (
 
 func TestGen(t *testing.T) {
 	var (
-		_s    = func(v ...int) []int { return v }
-		basic = &Basic{
+		_s       = func(v ...int) []int { return v }
+		one, two = 1, 2
+		basic    = &Basic{
 			Int:        -100,
 			Int8:       -80,
 			Int16:      -1600,
@@ -61,7 +62,10 @@ func TestGen(t *testing.T) {
 		mapp = &Map{
 			StringInt:  map[string]int{"a": 1, "b": 2},
 			StringInts: map[string][]int{"a": _s(1, 11), "b": _s(2, 22)},
+			IntPtrInt:  map[*int]int{&one: 11, &two: 22},
 		}
+		cmpUintPointers = cmp.Comparer(func(x, y *int) bool { return *x == *y })
+		cmpIntPointers  = cmp.Comparer(func(x, y *uint) bool { return *x == *y })
 	)
 	for _, tc := range []interface{}{
 		basic, slice, array,
@@ -90,7 +94,7 @@ func TestGen(t *testing.T) {
 			if err := into.UnmarshalBinaryFrom(&buf); err != nil {
 				t.Fatal(err)
 			}
-			if got, want := into, from; !cmp.Equal(got, want) {
+			if got, want := into, from; !cmp.Equal(got, want, cmpIntPointers, cmpUintPointers) {
 				t.Fatalf("diff\n%v", cmp.Diff(got, want))
 			}
 		})

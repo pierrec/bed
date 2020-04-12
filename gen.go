@@ -79,6 +79,7 @@ import (
 				data = append(data, dep)
 			}
 		}
+		stripLocalPkgName(records, config.PkgName+".")
 		err = genMarshalBinTo(out, records, receiver, item)
 		if err != nil {
 			return err
@@ -99,6 +100,15 @@ func hasType(name string, data []interface{}) bool {
 		}
 	}
 	return false
+}
+
+// stripLocalPkgName removes the package name if it is equal to the one where the methods are created.
+func stripLocalPkgName(records []genRecord, name string) {
+	for i, rec := range records {
+		records[i].Kind = strings.ReplaceAll(rec.Kind, name, "")
+		stripLocalPkgName(rec.Include, name)
+		stripLocalPkgName(rec.Key, name)
+	}
 }
 
 // genRecord keeps track of the struct elements being serialized.
@@ -506,7 +516,10 @@ func (%rcv% *%type%) MarshalBinaryTo(w io.Writer) (err error) {
 %tab%err = %pkg%.Write_bytea(w, (%conv%)[:]); if err != nil { return }
 `
 		structt = `
-%tab%err = %id%.MarshalBinaryTo(w); if err != nil { return }
+%tab%{
+%tab%_s := %idlevel%
+%tab%err = _s.MarshalBinaryTo(w); if err != nil { return }
+%tab%}
 `
 		mapp = `
 %tab%{
@@ -592,7 +605,10 @@ func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {
 %tab%err = %pkg%.Read_bytea(r, (%value%)[:]); if err != nil { return }
 `
 		structt = `
-%tab%err = %id%.UnmarshalBinaryFrom(r); if err != nil { return }
+%tab%{
+%tab%_s := %idlevel%
+%tab%err = _s.UnmarshalBinaryFrom(r); if err != nil { return }
+%tab%}
 `
 		mapp = `
 %tab%_n, err = %pkg%.Read_int(r, _b); if err != nil { return }

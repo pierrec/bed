@@ -8,4 +8,5 @@ type Map struct {
 	IntPtrInt    map[*int]int
 	IntIntPtr    map[int]*int
 	IntPtrIntPtr map[*int]*int
+	IntStruct    map[int]Basic
 }

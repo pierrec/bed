@@ -7,7 +7,7 @@ import (
 	"github.com/pierrec/serializer"
 )
 
-const _MapLayout = "VCCVYCVYXCVWHHVWCCVCWCVWCWC"
+const _MapLayout = "VCCVYCVYXCVWHHVWCCVCWCVWCWCVCZ"
 
 func (m *Map) MarshalBinaryTo(w io.Writer) (err error) {
 	var _buf [16]byte
@@ -179,6 +179,27 @@ func (m *Map) MarshalBinaryTo(w io.Writer) (err error) {
 			}
 			if _s[_k] != nil {
 				err = serializer.Write_int(w, _b, *_s[_k])
+				if err != nil {
+					return
+				}
+			}
+		}
+	}
+	{
+		_s := m.IntStruct
+		err = serializer.Write_int(w, _b, len(_s))
+		if err != nil {
+			return
+		}
+		for _k := range _s {
+			err = serializer.Write_int(w, _b, _k)
+			if err != nil {
+				return
+			}
+
+			{
+				_s := _s[_k]
+				err = _s.MarshalBinaryTo(w)
 				if err != nil {
 					return
 				}
@@ -428,6 +449,33 @@ func (m *Map) UnmarshalBinaryFrom(r io.Reader) (err error) {
 					return
 				}
 				*_s[_k] = _int
+			}
+		}
+	}
+
+	_n, err = serializer.Read_int(r, _b)
+	if err != nil {
+		return
+	}
+	if _n == 0 {
+		m.IntStruct = nil
+	} else {
+		m.IntStruct = make(map[int]Basic, _n)
+		_s := m.IntStruct
+		var _k int
+		for _j := 0; _j < _n; _j++ {
+			_int, err = serializer.Read_int(r, _b)
+			if err != nil {
+				return
+			}
+			_k = _int
+
+			{
+				_s := _s[_k]
+				err = _s.UnmarshalBinaryFrom(r)
+				if err != nil {
+					return
+				}
 			}
 		}
 	}
