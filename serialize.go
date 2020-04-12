@@ -6,6 +6,10 @@ import (
 	"math"
 )
 
+func Write_layout(w io.Writer, buf []byte, layout string) error {
+	return Write_string(w, buf, layout)
+}
+
 func Write_bool(w io.Writer, buf []byte, v bool) error {
 	if v {
 		buf[0] = 1

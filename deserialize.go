@@ -4,7 +4,19 @@ import (
 	"encoding/binary"
 	"io"
 	"math"
+	"strings"
 )
+
+func Read_layout(r io.Reader, buf []byte, layout string) error {
+	s, err := Read_string(r, buf)
+	if err != nil {
+		return err
+	}
+	if !strings.HasPrefix(s, layout) {
+		return ErrInvalidData
+	}
+	return nil
+}
 
 func Read_bool(r io.Reader, buf []byte) (bool, error) {
 	if _, err := io.ReadFull(r, buf[:1]); err != nil {

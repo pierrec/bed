@@ -2,7 +2,6 @@ package testpkg
 
 import (
 	"io"
-	"strings"
 
 	"github.com/pierrec/serializer"
 )
@@ -12,7 +11,7 @@ const _ArrayLayout = "R4CR4DR4ER4FR4GR4HR4R4JR4KR4LR4PR4QR4Y"
 func (a *Array) MarshalBinaryTo(w io.Writer) (err error) {
 	var _buf [16]byte
 	_b := _buf[:]
-	err = serializer.Write_string(w, _b, _ArrayLayout)
+	err = serializer.Write_layout(w, _b, _ArrayLayout)
 	if err != nil {
 		return
 	}
@@ -136,10 +135,9 @@ func (a *Array) MarshalBinaryTo(w io.Writer) (err error) {
 func (a *Array) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	var _buf [16]byte
 	_b := _buf[:]
-	if s, err := serializer.Read_string(r, _b); err != nil {
-		return err
-	} else if !strings.HasPrefix(s, _ArrayLayout) {
-		return serializer.ErrInvalidData
+	err = serializer.Read_layout(r, _b, _ArrayLayout)
+	if err != nil {
+		return
 	}
 
 	var _complex128 complex128
@@ -300,7 +298,7 @@ const _ArrayPtrLayout = "WR4CWR4DWR4EWR4FWR4GWR4HWR4WR4JWR4KWR4LWR4PWR4QWR4Y"
 func (a *ArrayPtr) MarshalBinaryTo(w io.Writer) (err error) {
 	var _buf [16]byte
 	_b := _buf[:]
-	err = serializer.Write_string(w, _b, _ArrayPtrLayout)
+	err = serializer.Write_layout(w, _b, _ArrayPtrLayout)
 	if err != nil {
 		return
 	}
@@ -514,10 +512,9 @@ func (a *ArrayPtr) MarshalBinaryTo(w io.Writer) (err error) {
 func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	var _buf [16]byte
 	_b := _buf[:]
-	if s, err := serializer.Read_string(r, _b); err != nil {
-		return err
-	} else if !strings.HasPrefix(s, _ArrayPtrLayout) {
-		return serializer.ErrInvalidData
+	err = serializer.Read_layout(r, _b, _ArrayPtrLayout)
+	if err != nil {
+		return
 	}
 
 	var _bool bool

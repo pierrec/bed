@@ -44,7 +44,6 @@ func Gen(out io.Writer, config Config, data ...interface{}) error {
 
 import (
 	"io"
-	"strings"
 
 	"%pkgpath%"
 )
@@ -504,7 +503,7 @@ const _%type%Layout = "%layout%"
 func (%rcv% *%type%) MarshalBinaryTo(w io.Writer) (err error) {
 	var _buf [16]byte
 	_b := _buf[:]
-	err = %pkg%.Write_string(w, _b, _%type%Layout); if err != nil { return }
+	err = %pkg%.Write_layout(w, _b, _%type%Layout); if err != nil { return }
 `
 		call = `
 %tab%err = %pkg%.Write_%kind%(w, _b, %conv%); if err != nil { return }
@@ -593,8 +592,7 @@ func genUnmarshalBinFrom(w io.Writer, records []genRecord, receiver string, data
 func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	var _buf [16]byte
 	_b := _buf[:]
-	if s, err := %pkg%.Read_string(r, _b); err != nil { return err
-	} else if !strings.HasPrefix(s, _%type%Layout) { return %pkg%.ErrInvalidData }
+	err = %pkg%.Read_layout(r, _b, _%type%Layout); if err != nil { return }
 `
 		call = `
 %tab%_%kind%, err = %pkg%.Read_%kind%(r, _b); if err != nil { return }
