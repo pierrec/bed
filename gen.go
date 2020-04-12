@@ -211,7 +211,7 @@ func walkDataType(p []string, ident string, data interface{}) ([]genRecord, []in
 		n := typ.NumField()
 		for i := 0; i < n; i++ {
 			sf := typ.Field(i)
-			if sf.Anonymous {
+			if sf.Name == "" {
 				continue
 			}
 			ident := fmt.Sprintf("%s.%s", ident, sf.Name)

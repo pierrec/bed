@@ -602,12 +602,17 @@ func (b *BasicPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	return
 }
 
-const _BasicEmbedLayout = ""
+const _BasicEmbedLayout = "Z"
 
 func (b *BasicEmbed) MarshalBinaryTo(w io.Writer) (err error) {
 	var _buf [16]byte
 	_b := _buf[:]
 	err = serializer.Write_layout(w, _b, _BasicEmbedLayout)
+	if err != nil {
+		return
+	}
+
+	err = b.Basic.MarshalBinaryTo(w)
 	if err != nil {
 		return
 	}
@@ -619,6 +624,11 @@ func (b *BasicEmbed) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	var _buf [16]byte
 	_b := _buf[:]
 	err = serializer.Read_layout(r, _b, _BasicEmbedLayout)
+	if err != nil {
+		return
+	}
+
+	err = b.Basic.UnmarshalBinaryFrom(r)
 	if err != nil {
 		return
 	}
