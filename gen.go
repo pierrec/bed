@@ -308,6 +308,11 @@ func genCheck(records []genRecord, s []string) []string {
 }
 
 func genHeaderNext(records []genRecord, withDecl bool, vars map[string]string) {
+	reg := func(k, v string) {
+		if withDecl {
+			vars[k] = v
+		}
+	}
 	// Prepare all variables.
 	for _, rec := range records {
 		switch rec.Is {
@@ -315,12 +320,13 @@ func genHeaderNext(records []genRecord, withDecl bool, vars map[string]string) {
 			vars["_n"] = "int"
 			genHeaderNext(rec.Include, withDecl, vars)
 		case isMap:
-			if withDecl {
-				vars["_n"] = "int"
-			}
+			reg("_n", "int")
 			genHeaderNext(rec.Key, withDecl, vars)
 			genHeaderNext(rec.Include, withDecl, vars)
-		case isArray, isPointer:
+		case isArray:
+			genHeaderNext(rec.Include, withDecl, vars)
+		case isPointer:
+			reg("_bool", "bool")
 			genHeaderNext(rec.Include, withDecl, vars)
 		}
 		switch kind := rec.Kind; kind {
@@ -330,13 +336,9 @@ func genHeaderNext(records []genRecord, withDecl bool, vars map[string]string) {
 			"float32", "float64",
 			"complex64", "complex128",
 			"string":
-			if withDecl {
-				vars["_"+kind] = kind
-			}
+			reg("_"+kind, kind)
 		case "bytes":
-			if withDecl {
-				vars["_bytes"] = "[]byte"
-			}
+			reg("_bytes", "[]byte")
 		}
 	}
 }
@@ -582,9 +584,8 @@ func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {
 %tab%} else { %idlevel% = nil }
 `
 		pointer = `
-%tab%if isNil, _e := %pkg%.Read_bool(r, _b); _e != nil { return _e
-%tab%} else if isNil { %idlevel% = nil } else {%alloc%
-%include%%tab%}
+%tab%if _bool, err = %pkg%.Read_bool(r, _b); err != nil { return }
+%tab%if _bool { %idlevel% = nil } else {%alloc%%include%%tab%}
 `
 		tail = `
 	return

@@ -392,12 +392,12 @@ func (self *BasicPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	var _uint64 uint64
 	var _uint8 uint8
 
-	if isNil, _e := serializer.Read_bool(r, _b); _e != nil {
-		return _e
-	} else if isNil {
+	if _bool, err = serializer.Read_bool(r, _b); err != nil {
+		return
+	}
+	if _bool {
 		self.Bool = nil
 	} else {
-
 		_bool, err = serializer.Read_bool(r, _b)
 		if err != nil {
 			return
@@ -405,12 +405,12 @@ func (self *BasicPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		*self.Bool = _bool
 	}
 
-	if isNil, _e := serializer.Read_bool(r, _b); _e != nil {
-		return _e
-	} else if isNil {
+	if _bool, err = serializer.Read_bool(r, _b); err != nil {
+		return
+	}
+	if _bool {
 		self.Int = nil
 	} else {
-
 		_int, err = serializer.Read_int(r, _b)
 		if err != nil {
 			return
@@ -418,12 +418,12 @@ func (self *BasicPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		*self.Int = _int
 	}
 
-	if isNil, _e := serializer.Read_bool(r, _b); _e != nil {
-		return _e
-	} else if isNil {
+	if _bool, err = serializer.Read_bool(r, _b); err != nil {
+		return
+	}
+	if _bool {
 		self.Int8 = nil
 	} else {
-
 		_int8, err = serializer.Read_int8(r, _b)
 		if err != nil {
 			return
@@ -431,12 +431,12 @@ func (self *BasicPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		*self.Int8 = _int8
 	}
 
-	if isNil, _e := serializer.Read_bool(r, _b); _e != nil {
-		return _e
-	} else if isNil {
+	if _bool, err = serializer.Read_bool(r, _b); err != nil {
+		return
+	}
+	if _bool {
 		self.Int16 = nil
 	} else {
-
 		_int16, err = serializer.Read_int16(r, _b)
 		if err != nil {
 			return
@@ -444,12 +444,12 @@ func (self *BasicPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		*self.Int16 = _int16
 	}
 
-	if isNil, _e := serializer.Read_bool(r, _b); _e != nil {
-		return _e
-	} else if isNil {
+	if _bool, err = serializer.Read_bool(r, _b); err != nil {
+		return
+	}
+	if _bool {
 		self.Int32 = nil
 	} else {
-
 		_int32, err = serializer.Read_int32(r, _b)
 		if err != nil {
 			return
@@ -457,12 +457,12 @@ func (self *BasicPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		*self.Int32 = _int32
 	}
 
-	if isNil, _e := serializer.Read_bool(r, _b); _e != nil {
-		return _e
-	} else if isNil {
+	if _bool, err = serializer.Read_bool(r, _b); err != nil {
+		return
+	}
+	if _bool {
 		self.Int64 = nil
 	} else {
-
 		_int64, err = serializer.Read_int64(r, _b)
 		if err != nil {
 			return
@@ -470,12 +470,12 @@ func (self *BasicPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		*self.Int64 = _int64
 	}
 
-	if isNil, _e := serializer.Read_bool(r, _b); _e != nil {
-		return _e
-	} else if isNil {
+	if _bool, err = serializer.Read_bool(r, _b); err != nil {
+		return
+	}
+	if _bool {
 		self.Uint = nil
 	} else {
-
 		_uint, err = serializer.Read_uint(r, _b)
 		if err != nil {
 			return
@@ -483,12 +483,12 @@ func (self *BasicPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		*self.Uint = _uint
 	}
 
-	if isNil, _e := serializer.Read_bool(r, _b); _e != nil {
-		return _e
-	} else if isNil {
+	if _bool, err = serializer.Read_bool(r, _b); err != nil {
+		return
+	}
+	if _bool {
 		self.Uint8 = nil
 	} else {
-
 		_uint8, err = serializer.Read_uint8(r, _b)
 		if err != nil {
 			return
@@ -496,12 +496,12 @@ func (self *BasicPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		*self.Uint8 = _uint8
 	}
 
-	if isNil, _e := serializer.Read_bool(r, _b); _e != nil {
-		return _e
-	} else if isNil {
+	if _bool, err = serializer.Read_bool(r, _b); err != nil {
+		return
+	}
+	if _bool {
 		self.Uint16 = nil
 	} else {
-
 		_uint16, err = serializer.Read_uint16(r, _b)
 		if err != nil {
 			return
@@ -509,12 +509,12 @@ func (self *BasicPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		*self.Uint16 = _uint16
 	}
 
-	if isNil, _e := serializer.Read_bool(r, _b); _e != nil {
-		return _e
-	} else if isNil {
+	if _bool, err = serializer.Read_bool(r, _b); err != nil {
+		return
+	}
+	if _bool {
 		self.Uint32 = nil
 	} else {
-
 		_uint32, err = serializer.Read_uint32(r, _b)
 		if err != nil {
 			return
@@ -522,12 +522,12 @@ func (self *BasicPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		*self.Uint32 = _uint32
 	}
 
-	if isNil, _e := serializer.Read_bool(r, _b); _e != nil {
-		return _e
-	} else if isNil {
+	if _bool, err = serializer.Read_bool(r, _b); err != nil {
+		return
+	}
+	if _bool {
 		self.Uint64 = nil
 	} else {
-
 		_uint64, err = serializer.Read_uint64(r, _b)
 		if err != nil {
 			return
@@ -535,12 +535,12 @@ func (self *BasicPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		*self.Uint64 = _uint64
 	}
 
-	if isNil, _e := serializer.Read_bool(r, _b); _e != nil {
-		return _e
-	} else if isNil {
+	if _bool, err = serializer.Read_bool(r, _b); err != nil {
+		return
+	}
+	if _bool {
 		self.Complex64 = nil
 	} else {
-
 		_complex64, err = serializer.Read_complex64(r, _b)
 		if err != nil {
 			return
@@ -548,12 +548,12 @@ func (self *BasicPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		*self.Complex64 = _complex64
 	}
 
-	if isNil, _e := serializer.Read_bool(r, _b); _e != nil {
-		return _e
-	} else if isNil {
+	if _bool, err = serializer.Read_bool(r, _b); err != nil {
+		return
+	}
+	if _bool {
 		self.Complex128 = nil
 	} else {
-
 		_complex128, err = serializer.Read_complex128(r, _b)
 		if err != nil {
 			return
@@ -561,12 +561,12 @@ func (self *BasicPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		*self.Complex128 = _complex128
 	}
 
-	if isNil, _e := serializer.Read_bool(r, _b); _e != nil {
-		return _e
-	} else if isNil {
+	if _bool, err = serializer.Read_bool(r, _b); err != nil {
+		return
+	}
+	if _bool {
 		self.String = nil
 	} else {
-
 		_string, err = serializer.Read_string(r, _b)
 		if err != nil {
 			return
