@@ -6,6 +6,7 @@ import (
 	"math"
 	"math/bits"
 	"strings"
+	"time"
 )
 
 func Read_layout(r io.Reader, buf []byte, layout string) error {
@@ -169,4 +170,29 @@ func Read_bytes(r io.Reader, buf []byte) ([]byte, error) {
 func Read_bytea(r io.Reader, buf []byte) error {
 	_, err := io.ReadFull(r, buf)
 	return err
+}
+
+func Read_time(r io.Reader, buf []byte) (t time.Time, err error) {
+	_ = buf[:12]
+	if _, err = io.ReadFull(r, buf[:2]); err != nil {
+		return
+	}
+	year := binary.LittleEndian.Uint16(buf)
+	if year == 0 {
+		return
+	}
+	if _, err = io.ReadFull(r, buf[:10]); err != nil {
+		return
+	}
+
+	month, day := buf[0], buf[1]
+	hour, min, sec := buf[2], buf[3], buf[4]
+	offset := buf[5]
+
+	ns := binary.LittleEndian.Uint32(buf[6:])
+
+	loc := time.FixedZone("", int(offset)*(60*60))
+
+	t = time.Date(int(year), time.Month(month), int(day), int(hour), int(min), int(sec), int(ns), loc)
+	return
 }

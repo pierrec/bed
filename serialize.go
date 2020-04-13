@@ -5,6 +5,7 @@ import (
 	"io"
 	"math"
 	"math/bits"
+	"time"
 )
 
 func Write_layout(w io.Writer, buf []byte, layout string) error {
@@ -111,5 +112,39 @@ func Write_bytes(w io.Writer, buf []byte, v []byte) error {
 
 func Write_bytea(w io.Writer, v []byte) error {
 	_, err := w.Write(v)
+	return err
+}
+
+func Write_time(w io.Writer, buf []byte, t time.Time) error {
+	if t.IsZero() {
+		_, err := w.Write([]byte{0, 0})
+		return err
+	}
+	// item<size in bits>
+	// year<16> month<4> day<5> hour<5> minute<6> second<6> nanosecond<32> TZoffset<5>
+	// item<size in bytes>
+	// year<2> month<1> day<1> hour<1> minute<1> second<1> nanosecond<4> TZoffset<1>
+	buf = buf[:12]
+	b := buf
+	year, month, day := t.Date()
+	binary.LittleEndian.PutUint16(b, uint16(year))
+	b = b[2:]
+
+	hour, min, sec := t.Clock()
+	_, offset := t.Zone()
+	offset /= 60 * 60 // offset in hours
+	b[0] = uint8(month)
+	b[1] = uint8(day)
+	b[2] = uint8(hour)
+	b[3] = uint8(min)
+	b[4] = uint8(sec)
+	b[5] = uint8(offset)
+	b = b[6:]
+
+	ns := t.Nanosecond()
+	binary.LittleEndian.PutUint32(b, uint32(ns))
+	b = b[4:]
+
+	_, err := w.Write(buf)
 	return err
 }

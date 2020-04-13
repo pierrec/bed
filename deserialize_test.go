@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 )
@@ -394,6 +395,29 @@ func TestRead_bytes(t *testing.T) {
 			}
 			if got, want := string(v), tc; got != want {
 				t.Errorf("got %q; want %q", got, want)
+			}
+		})
+	}
+}
+
+func TestRead_time(t *testing.T) {
+	for _, tc := range []time.Time{{}, time.Now()} {
+		label := fmt.Sprintf("%v", tc)
+		t.Run(label, func(t *testing.T) {
+			var buf [16]byte
+			b := buf[:]
+			rw := new(bytes.Buffer)
+
+			err := Write_time(rw, b, tc)
+			if err != nil {
+				t.Error(err)
+			}
+			v, err := Read_time(rw, b)
+			if err != nil {
+				t.Error(err)
+			}
+			if got, want := v, tc; !got.Equal(want) {
+				t.Errorf("got %v; want %v", got, want)
 			}
 		})
 	}
