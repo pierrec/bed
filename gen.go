@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"sort"
 	"strings"
+	"time"
 	"unicode"
 )
 
@@ -32,7 +33,10 @@ type Interface interface {
 	UnmarshalBinaryFrom(io.Reader) error
 }
 
-var _Interface = reflect.TypeOf([]Interface(nil)).Elem()
+var (
+	_Interface = reflect.TypeOf([]Interface(nil)).Elem()
+	_Time      = reflect.TypeOf(time.Time{})
+)
 
 // Config defines the elements used to generate the code.
 //
@@ -124,6 +128,7 @@ func hasType(name string, data []interface{}) bool {
 func stripLocalPkgName(records []genRecord, name string) {
 	for i, rec := range records {
 		records[i].Kind = strings.ReplaceAll(rec.Kind, name, "")
+		records[i].Name = strings.ReplaceAll(rec.Name, name, "")
 		stripLocalPkgName(rec.Include, name)
 		stripLocalPkgName(rec.Key, name)
 	}
@@ -222,9 +227,22 @@ func walkDataType(p []string, ident string, data interface{}) ([]genRecord, []in
 		deps = append(deps, subdeps...)
 		deps = append(deps, keydeps...)
 	case reflect.Struct:
+		// Special structs.
+		if _Time.ConvertibleTo(typ) {
+			if typ.PkgPath() == "time" {
+				// Native time.Time.
+				records = []genRecord{
+					{RKind: kind, Ident: ident, Kind: "time", Name: "time"}}
+			} else {
+				records = []genRecord{
+					{RKind: kind, Ident: ident, Kind: "time", Name: typ.String()}}
+			}
+			break
+		}
+
 		isTopStruct := len(p) == 0
 		value := reflect.ValueOf(data)
-		if !isTopStruct && typ.Name() != "" {
+		if name := typ.Name(); !isTopStruct && name != "" {
 			// Named struct type: add to the the list of dependents to get the marshal methods
 			// if it does not already implement the methods.
 			records = []genRecord{
@@ -367,6 +385,9 @@ func (%rcv% *%type%) MarshalBinaryTo(w io.Writer) (err error) {
 			}
 			if rec.Name == kind {
 				return id, val, val
+			}
+			if kind == "time" {
+				return id, val, fmt.Sprintf("time.Time(%s)", val)
 			}
 			return id, val, fmt.Sprintf("%s(%s)", kind, val)
 		},
@@ -542,6 +563,8 @@ func genHeaderNext(records []genRecord, withDecl bool, vars map[string]string) {
 			reg("_"+kind, kind)
 		case "[]byte":
 			reg("_bytes", kind)
+		case "time":
+			reg("_time", "time.Time")
 		}
 	}
 }
