@@ -173,7 +173,7 @@ func Read_bytea(r io.Reader, buf []byte) error {
 }
 
 func Read_time(r io.Reader, buf []byte) (t time.Time, err error) {
-	_ = buf[:12]
+	_ = buf[:10]
 	if _, err = io.ReadFull(r, buf[:2]); err != nil {
 		return
 	}
@@ -181,18 +181,35 @@ func Read_time(r io.Reader, buf []byte) (t time.Time, err error) {
 	if year == 0 {
 		return
 	}
-	if _, err = io.ReadFull(r, buf[:10]); err != nil {
+	if _, err = io.ReadFull(r, buf[:4]); err != nil {
 		return
 	}
 
-	month, day := buf[0], buf[1]
-	hour, min, sec := buf[2], buf[3], buf[4]
-	offset := buf[5]
+	u := binary.LittleEndian.Uint32(buf)
 
-	ns := binary.LittleEndian.Uint32(buf[6:])
+	var ns int
+	if u&1 > 0 {
+		if _, err = io.ReadFull(r, buf[4:8]); err != nil {
+			return
+		}
+		ns = int(binary.LittleEndian.Uint32(buf[4:]))
+	}
+	u >>= 1
+	offset := u & (1<<5 - 1)
+	u >>= 5
+	sec := u & (1<<6 - 1)
+	u >>= 6
+	min := u & (1<<6 - 1)
+	u >>= 6
+	hour := u & (1<<5 - 1)
+	u >>= 5
+	day := u & (1<<5 - 1)
+	u >>= 5
+	month := u
 
 	loc := time.FixedZone("", int(offset)*(60*60))
 
-	t = time.Date(int(year), time.Month(month), int(day), int(hour), int(min), int(sec), int(ns), loc)
+	t = time.Date(int(year), time.Month(month), int(day), int(hour), int(min), int(sec), ns, loc)
+
 	return
 }

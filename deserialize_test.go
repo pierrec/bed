@@ -401,7 +401,7 @@ func TestRead_bytes(t *testing.T) {
 }
 
 func TestRead_time(t *testing.T) {
-	for _, tc := range []time.Time{{}, time.Now()} {
+	for _, tc := range []time.Time{{}, time.Now(), time.Now().Local(), time.Now().UTC()} {
 		label := fmt.Sprintf("%v", tc)
 		t.Run(label, func(t *testing.T) {
 			var buf [16]byte

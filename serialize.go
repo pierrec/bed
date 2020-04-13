@@ -121,30 +121,31 @@ func Write_time(w io.Writer, buf []byte, t time.Time) error {
 		return err
 	}
 	// item<size in bits>
-	// year<16> month<4> day<5> hour<5> minute<6> second<6> nanosecond<32> TZoffset<5>
-	// item<size in bytes>
-	// year<2> month<1> day<1> hour<1> minute<1> second<1> nanosecond<4> TZoffset<1>
-	buf = buf[:12]
-	b := buf
+	// year<16> month<4> day<5> hour<5> minute<6> second<6> TZoffset<5> hasNanosecond<1> nanosecond<32>
+	// = 48 or 80 bits
 	year, month, day := t.Date()
-	binary.LittleEndian.PutUint16(b, uint16(year))
-	b = b[2:]
+	binary.LittleEndian.PutUint16(buf, uint16(year))
 
 	hour, min, sec := t.Clock()
+	ns := t.Nanosecond()
 	_, offset := t.Zone()
 	offset /= 60 * 60 // offset in hours
-	b[0] = uint8(month)
-	b[1] = uint8(day)
-	b[2] = uint8(hour)
-	b[3] = uint8(min)
-	b[4] = uint8(sec)
-	b[5] = uint8(offset)
-	b = b[6:]
 
-	ns := t.Nanosecond()
-	binary.LittleEndian.PutUint32(b, uint32(ns))
-	b = b[4:]
-
+	u := uint32(month)
+	u = u<<5 | uint32(day)
+	u = u<<5 | uint32(hour)
+	u = u<<6 | uint32(min)
+	u = u<<6 | uint32(sec)
+	u = u<<5 | uint32(offset)
+	u <<= 1
+	if ns == 0 {
+		buf = buf[:6]
+	} else {
+		u |= 1
+		binary.LittleEndian.PutUint32(buf[2+4:], uint32(ns))
+		buf = buf[:10]
+	}
+	binary.LittleEndian.PutUint32(buf[2:], u)
 	_, err := w.Write(buf)
 	return err
 }
