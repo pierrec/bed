@@ -33,3 +33,14 @@ type SlicePtr struct {
 	String     *[]string
 	Maps       *[]map[string][]int
 }
+
+type SliceAnon struct {
+	Anon struct {
+		Int    int
+		String string
+	}
+	AnonSlice []struct {
+		Uint   uint
+		Uint32 uint32
+	}
+}

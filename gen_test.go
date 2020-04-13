@@ -18,8 +18,8 @@ func TestGen(t *testing.T) {
 		data []interface{}
 	}
 	for _, tc := range []tcase{
-		{"basic_gen.go", _s(testpkg.Basic{}, testpkg.BasicPtr{}, testpkg.BasicEmbed{})},
-		{"slice_gen.go", _s(testpkg.Slice{}, testpkg.SlicePtr{})},
+		{"basic_gen.go", _s(testpkg.Basic{}, testpkg.BasicPtr{}, testpkg.BasicEmbed{}, testpkg.BasicAnon{})},
+		{"slice_gen.go", _s(testpkg.Slice{}, testpkg.SlicePtr{}, testpkg.SliceAnon{})},
 		{"array_gen.go", _s(testpkg.Array{}, testpkg.ArrayPtr{})},
 		{"map_gen.go", _s(testpkg.Map{})},
 		{"compositeonly_gen.go", _s(testpkg.CompositeOnly{})},

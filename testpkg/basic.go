@@ -37,3 +37,10 @@ type BasicPtr struct {
 type BasicEmbed struct {
 	Basic
 }
+
+type BasicAnon struct {
+	Anon struct {
+		Int    int
+		String string
+	}
+}

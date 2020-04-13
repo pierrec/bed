@@ -635,3 +635,62 @@ func (b *BasicEmbed) UnmarshalBinaryFrom(r io.Reader) (err error) {
 
 	return
 }
+
+const _BasicAnonLayout = "ZCY"
+
+func (b *BasicAnon) MarshalBinaryTo(w io.Writer) (err error) {
+	var _buf [16]byte
+	_b := _buf[:]
+	err = serializer.Write_layout(w, _b, _BasicAnonLayout)
+	if err != nil {
+		return
+	}
+
+	{
+		_s := &b.Anon
+
+		err = serializer.Write_int(w, _b, _s.Int)
+		if err != nil {
+			return
+		}
+
+		err = serializer.Write_string(w, _b, _s.String)
+		if err != nil {
+			return
+		}
+
+	}
+
+	return
+}
+
+func (b *BasicAnon) UnmarshalBinaryFrom(r io.Reader) (err error) {
+	var _buf [16]byte
+	_b := _buf[:]
+	err = serializer.Read_layout(r, _b, _BasicAnonLayout)
+	if err != nil {
+		return
+	}
+
+	var _int int
+	var _string string
+
+	{
+		_s := &b.Anon
+
+		_int, err = serializer.Read_int(r, _b)
+		if err != nil {
+			return
+		}
+		_s.Int = _int
+
+		_string, err = serializer.Read_string(r, _b)
+		if err != nil {
+			return
+		}
+		_s.String = _string
+
+	}
+
+	return
+}

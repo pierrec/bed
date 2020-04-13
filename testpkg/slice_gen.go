@@ -1378,3 +1378,125 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 
 	return
 }
+
+const _SliceAnonLayout = "ZCYXZHK"
+
+func (s *SliceAnon) MarshalBinaryTo(w io.Writer) (err error) {
+	var _buf [16]byte
+	_b := _buf[:]
+	err = serializer.Write_layout(w, _b, _SliceAnonLayout)
+	if err != nil {
+		return
+	}
+
+	var _n int
+
+	{
+		_s := &s.Anon
+
+		err = serializer.Write_int(w, _b, _s.Int)
+		if err != nil {
+			return
+		}
+
+		err = serializer.Write_string(w, _b, _s.String)
+		if err != nil {
+			return
+		}
+
+	}
+
+	{
+		_s := s.AnonSlice
+		_n = len(_s)
+		err = serializer.Write_int(w, _b, _n)
+		if err != nil {
+			return
+		}
+		for _k := 0; _k < _n; _k++ {
+			{
+				_s := &_s[_k]
+
+				err = serializer.Write_uint(w, _b, _s.Uint)
+				if err != nil {
+					return
+				}
+
+				err = serializer.Write_uint32(w, _b, _s.Uint32)
+				if err != nil {
+					return
+				}
+
+			}
+		}
+	}
+	return
+}
+
+func (s *SliceAnon) UnmarshalBinaryFrom(r io.Reader) (err error) {
+	var _buf [16]byte
+	_b := _buf[:]
+	err = serializer.Read_layout(r, _b, _SliceAnonLayout)
+	if err != nil {
+		return
+	}
+
+	var _int int
+	var _n int
+	var _string string
+	var _uint uint
+	var _uint32 uint32
+
+	{
+		_s := &s.Anon
+
+		_int, err = serializer.Read_int(r, _b)
+		if err != nil {
+			return
+		}
+		_s.Int = _int
+
+		_string, err = serializer.Read_string(r, _b)
+		if err != nil {
+			return
+		}
+		_s.String = _string
+
+	}
+
+	_n, err = serializer.Read_int(r, _b)
+	if err != nil {
+		return
+	}
+	if _c := cap(s.AnonSlice); _n > _c || _c-_n > _c/8 {
+		s.AnonSlice = make([]struct {
+			Uint   uint
+			Uint32 uint32
+		}, _n)
+	} else {
+		s.AnonSlice = (s.AnonSlice)[:_n]
+	}
+	if _n > 0 {
+		_s := s.AnonSlice
+		for _k := 0; _k < _n; _k++ {
+			{
+				_s := &_s[_k]
+
+				_uint, err = serializer.Read_uint(r, _b)
+				if err != nil {
+					return
+				}
+				_s.Uint = _uint
+
+				_uint32, err = serializer.Read_uint32(r, _b)
+				if err != nil {
+					return
+				}
+				_s.Uint32 = _uint32
+
+			}
+		}
+	}
+
+	return
+}

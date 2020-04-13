@@ -60,6 +60,19 @@ func TestGen(t *testing.T) {
 			Complex128: [4]complex128{11, 22, 33, 44},
 			String:     [4]string{"one", "two", "three", "four"},
 		}
+		sliceAnon = &SliceAnon{
+			Anon: struct {
+				Int    int
+				String string
+			}{1, "a"},
+			AnonSlice: []struct {
+				Uint   uint
+				Uint32 uint32
+			}{
+				{11, 22},
+				{111, 222},
+			},
+		}
 		mapp = &Map{
 			StringInt:  map[string]int{"a": 1, "b": 2},
 			StringInts: map[string][]int{"a": _s(1, 11), "b": _s(2, 22)},
@@ -82,6 +95,7 @@ func TestGen(t *testing.T) {
 			Slice: *slice,
 			Array: *array,
 		},
+		sliceAnon,
 	} {
 		label := fmt.Sprintf("%T", tc)
 		t.Run(label, func(t *testing.T) {

@@ -10,6 +10,8 @@ import (
 	"unicode"
 )
 
+//go:generate go run golang.org/x/tools/cmd/stringer -type=isKind -linecomment
+
 type _error string
 
 func (e _error) Error() string { return string(e) }
@@ -131,7 +133,7 @@ func stripLocalPkgName(records []genRecord, name string) {
 // Slices are encoded as: <slice length><item0>...
 // Structs are encoded in their fields order.
 type genRecord struct {
-	Is      uint8
+	Is      isKind
 	RKind   reflect.Kind
 	Ident   string      // target identifier
 	Kind    string      // target kind (only fixed size kinds)
@@ -142,22 +144,27 @@ type genRecord struct {
 
 type convFunc func(genRecord) (id, value, conv string)
 
+type isKind uint8
+
 const (
-	_ uint8 = iota
-	isSlice
-	isArray
-	isByteArray
-	isStruct
-	isMap
-	isMapStruct
-	isPointer
+	_            isKind = iota // None
+	isSlice                    // Slice
+	isArray                    // Array
+	isByteArray                // ByteArray
+	isStruct                   // Struct
+	isAnonStruct               // AnonStruct
+	isMap                      // Map
+	isMapStruct                // MapStruct
+	isPointer                  // Pointer
 )
 
 func walkDataType(p []string, ident string, data interface{}) ([]genRecord, []interface{}, error) {
 	var records []genRecord
 	var deps []interface{}
 	typ := reflect.TypeOf(data)
-	switch kind := typ.Kind(); kind {
+	//switch kind := typ.Kind(); kind {
+	kind := typ.Kind()
+	switch kind {
 	case reflect.Bool,
 		reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
 		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
@@ -215,34 +222,47 @@ func walkDataType(p []string, ident string, data interface{}) ([]genRecord, []in
 		deps = append(deps, subdeps...)
 		deps = append(deps, keydeps...)
 	case reflect.Struct:
+		isTopStruct := len(p) == 0
 		value := reflect.ValueOf(data)
-		if len(p) > 0 && typ.Name() != "" {
+		if !isTopStruct && typ.Name() != "" {
 			// Named struct type: add to the the list of dependents to get the marshal methods
 			// if it does not already implement the methods.
-			records = append(records, genRecord{RKind: kind, Is: isStruct, Ident: ident, Kind: typ.String()})
+			records = []genRecord{
+				{RKind: kind, Is: isStruct, Ident: ident, Kind: typ.String()}}
 			if !reflect.New(typ).Type().Implements(_Interface) {
 				deps = append(deps, value.Interface())
 			}
 			break
 		}
 		n := typ.NumField()
+		subrecords := make([]genRecord, 0, n)
 		for i := 0; i < n; i++ {
 			sf := typ.Field(i)
 			if sf.Name == "" {
 				continue
 			}
-			ident := fmt.Sprintf("%s.%s", ident, sf.Name)
+			id := sf.Name
+			if isTopStruct {
+				id = fmt.Sprintf("%s.%s", ident, sf.Name)
+			}
 			field := value.Field(i)
 			if !field.CanInterface() {
 				continue
 			}
 			data := field.Interface()
-			s, d, err := walkDataType(append(p, sf.Name), ident, data)
+			s, d, err := walkDataType(append(p, sf.Name), id, data)
 			if err != nil {
 				return records, deps, err
 			}
-			records = append(records, s...)
+			subrecords = append(subrecords, s...)
 			deps = append(deps, d...)
+		}
+		if isTopStruct {
+			// Top level struct, use its fields' content.
+			records = subrecords
+		} else {
+			records = []genRecord{
+				{RKind: kind, Is: isAnonStruct, Ident: ident, Kind: typ.String(), Include: subrecords}}
 		}
 	case reflect.Ptr:
 		etyp := typ.Elem()
@@ -264,17 +284,18 @@ func walkDataType(p []string, ident string, data interface{}) ([]genRecord, []in
 }
 
 type genConfig struct {
-	WithDecl  bool
-	Head      string
-	Tail      string
-	Call      string
-	Slice     string
-	Array     string
-	ByteArray string
-	Struct    string
-	Map       string
-	MapStruct string
-	Pointer   string
+	WithDecl   bool
+	Head       string
+	Tail       string
+	Call       string
+	Slice      string
+	Array      string
+	ByteArray  string
+	Struct     string
+	AnonStruct string
+	Map        string
+	MapStruct  string
+	Pointer    string
 
 	Conv convFunc
 }
@@ -310,6 +331,12 @@ func (%rcv% *%type%) MarshalBinaryTo(w io.Writer) (err error) {
 `,
 		Struct: `
 %tab%err = %idlevel%.MarshalBinaryTo(w); if err != nil { return }
+`,
+		AnonStruct: `
+%tab%{
+%tab%	_s := &%value%
+%tab%	%include%
+%tab%}
 `,
 		MapStruct: `
 %tab%{
@@ -376,6 +403,12 @@ func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		Struct: `
 %tab%err = %idlevel%.UnmarshalBinaryFrom(r); if err != nil { return }
 `,
+		AnonStruct: `
+%tab%{
+%tab%	_s := &%value%
+%tab%	%include%
+%tab%}
+`,
 		MapStruct: `
 %tab%{
 %tab%	_struct := %idlevel%
@@ -423,7 +456,8 @@ func (c genConfig) genHeader(w io.Writer, records []genRecord, data map[string]s
 	vars := make(map[string]string)
 	genHeaderNext(records, c.WithDecl, vars)
 
-	data["layout"] = strings.Join(genCheck(records, nil), "")
+	layouts := genCheck(records, nil, nil)
+	data["layout"] = strings.Join(layouts, "")
 	if err := templateExec(w, c.Head, data); err != nil {
 		return err
 	}
@@ -454,30 +488,28 @@ func (c genConfig) genHeader(w io.Writer, records []genRecord, data map[string]s
 	return nil
 }
 
-func genCheck(records []genRecord, s []string) []string {
-	// Cache layout strings.
-	m := map[reflect.Kind]string{
-		reflect.Slice: string('A' + reflect.Slice),
-		reflect.Uint8: string('A' + reflect.Uint8),
+func genCheck(records []genRecord, cache map[reflect.Kind]string, ls []string) []string {
+	if cache == nil {
+		// Cache layout strings.
+		cache = map[reflect.Kind]string{
+			reflect.Slice: string('A' + reflect.Slice),
+			reflect.Uint8: string('A' + reflect.Uint8),
+		}
 	}
 	for _, rec := range records {
-		if _, ok := m[rec.RKind]; !ok {
-			m[rec.RKind] = string('A' + rec.RKind)
+		if _, ok := cache[rec.RKind]; !ok {
+			cache[rec.RKind] = string('A' + rec.RKind)
 		}
-		s = append(s, m[rec.RKind])
+		ls = append(ls, cache[rec.RKind])
 		switch rec.Is {
-		case isSlice, isPointer:
-			s = genCheck(rec.Include, s)
 		case isArray, isByteArray:
 			size := rec.Kind[1:strings.Index(rec.Kind, "]")]
-			s = append(s, size)
-			s = genCheck(rec.Include, s)
-		case isMap:
-			s = genCheck(rec.Key, s)
-			s = genCheck(rec.Include, s)
+			ls = append(ls, size)
 		}
+		ls = genCheck(rec.Key, cache, ls)
+		ls = genCheck(rec.Include, cache, ls)
 	}
-	return s
+	return ls
 }
 
 func genHeaderNext(records []genRecord, withDecl bool, vars map[string]string) {
@@ -491,17 +523,15 @@ func genHeaderNext(records []genRecord, withDecl bool, vars map[string]string) {
 		switch rec.Is {
 		case isSlice:
 			vars["_n"] = "int"
-			genHeaderNext(rec.Include, withDecl, vars)
 		case isMap:
 			reg("_n", "int")
-			genHeaderNext(rec.Key, withDecl, vars)
-			genHeaderNext(rec.Include, withDecl, vars)
-		case isArray:
-			genHeaderNext(rec.Include, withDecl, vars)
 		case isPointer:
 			reg("_bool", "bool")
-			genHeaderNext(rec.Include, withDecl, vars)
 		}
+
+		genHeaderNext(rec.Key, withDecl, vars)
+		genHeaderNext(rec.Include, withDecl, vars)
+
 		switch kind := rec.Kind; kind {
 		case "bool",
 			"int", "int8", "int16", "int32", "int64",
@@ -523,10 +553,11 @@ func (c *genConfig) genBody(level int, w io.Writer, records []genRecord, data ma
 	inctab := tab + "\t"
 	var include strings.Builder
 
-	wconv := sliceConv(conv)
+	sconv := sliceConv(conv)
 	kconv := keyConv(conv)
 	vconv := valueConv(conv)
 	pconv := pointerConv(conv)
+	aconv := anonConv(conv)
 	doinc := func(incname string, records []genRecord, conv convFunc) error {
 		include.Reset()
 		data["tab"] = inctab
@@ -560,12 +591,12 @@ func (c *genConfig) genBody(level int, w io.Writer, records []genRecord, data ma
 		var s string
 		switch rec.Is {
 		case isSlice:
-			if err := doinc("include", rec.Include, wconv); err != nil {
+			if err := doinc("include", rec.Include, sconv); err != nil {
 				return err
 			}
 			s = c.Slice
 		case isArray:
-			if err := doinc("include", rec.Include, wconv); err != nil {
+			if err := doinc("include", rec.Include, sconv); err != nil {
 				return err
 			}
 			s = c.Array
@@ -575,6 +606,11 @@ func (c *genConfig) genBody(level int, w io.Writer, records []genRecord, data ma
 			s = c.MapStruct
 		case isStruct:
 			s = c.Struct
+		case isAnonStruct:
+			if err := doinc("include", rec.Include, aconv); err != nil {
+				return err
+			}
+			s = c.AnonStruct
 		case isMap:
 			if err := doinc("includekey", rec.Key, kconv); err != nil {
 				return err
@@ -640,5 +676,13 @@ func pointerConv(conv convFunc) convFunc {
 		i, v, c := conv(rec)
 		_s := "*" + v
 		return i, _s, strings.ReplaceAll(c, v, _s)
+	}
+}
+
+func anonConv(conv convFunc) convFunc {
+	return func(rec genRecord) (a, b, c string) {
+		_, v, c := conv(rec)
+		_s := "_s." + rec.Ident
+		return _s, _s, strings.ReplaceAll(c, v, _s)
 	}
 }
