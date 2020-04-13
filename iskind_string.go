@@ -9,18 +9,19 @@ func _() {
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
 	_ = x[isSlice-1]
-	_ = x[isArray-2]
-	_ = x[isByteArray-3]
-	_ = x[isStruct-4]
-	_ = x[isAnonStruct-5]
-	_ = x[isMap-6]
-	_ = x[isMapStruct-7]
-	_ = x[isPointer-8]
+	_ = x[isByteSlice-2]
+	_ = x[isArray-3]
+	_ = x[isByteArray-4]
+	_ = x[isStruct-5]
+	_ = x[isAnonStruct-6]
+	_ = x[isMap-7]
+	_ = x[isMapStruct-8]
+	_ = x[isPointer-9]
 }
 
-const _isKind_name = "SliceArrayByteArrayStructAnonStructMapMapStructPointer"
+const _isKind_name = "SliceBytesArrayByteArrayStructAnonStructMapMapStructPointer"
 
-var _isKind_index = [...]uint8{0, 5, 10, 19, 25, 35, 38, 47, 54}
+var _isKind_index = [...]uint8{0, 5, 10, 15, 24, 30, 40, 43, 52, 59}
 
 func (i isKind) String() string {
 	i -= 1

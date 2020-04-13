@@ -2,11 +2,14 @@ package testpkg
 
 import (
 	"io"
+	"time"
 
 	"github.com/pierrec/serializer"
 )
 
-const _SliceLayout = "XCXDXEXFXGXHXIXJXKXLXPXQXYXVYXC"
+var _ time.Time
+
+const _SliceLayout = "XCXDXEXFXGXHXXJXKXLXPXQXYXVYXC"
 
 func (s *Slice) MarshalBinaryTo(w io.Writer) (err error) {
 	var _buf [16]byte
@@ -102,20 +105,11 @@ func (s *Slice) MarshalBinaryTo(w io.Writer) (err error) {
 			}
 		}
 	}
-	{
-		_s := s.Uint8
-		_n = len(_s)
-		err = serializer.Write_int(w, _b, _n)
-		if err != nil {
-			return
-		}
-		for _k := 0; _k < _n; _k++ {
-			err = serializer.Write_uint8(w, _b, _s[_k])
-			if err != nil {
-				return
-			}
-		}
+	err = serializer.Write_bytes(w, _b, s.Uint8)
+	if err != nil {
+		return
 	}
+
 	{
 		_s := s.Uint16
 		_n = len(_s)
@@ -262,7 +256,6 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	var _uint16 uint16
 	var _uint32 uint32
 	var _uint64 uint64
-	var _uint8 uint8
 
 	_n, err = serializer.Read_int(r, _b)
 	if err != nil {
@@ -384,24 +377,9 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_n, err = serializer.Read_int(r, _b)
+	s.Uint8, err = serializer.Read_bytes(r, _b)
 	if err != nil {
 		return
-	}
-	if _c := cap(s.Uint8); _n > _c || _c-_n > _c/8 {
-		s.Uint8 = make([]uint8, _n)
-	} else {
-		s.Uint8 = (s.Uint8)[:_n]
-	}
-	if _n > 0 {
-		_s := s.Uint8
-		for _k := 0; _k < _n; _k++ {
-			_uint8, err = serializer.Read_uint8(r, _b)
-			if err != nil {
-				return
-			}
-			_s[_k] = _uint8
-		}
 	}
 
 	_n, err = serializer.Read_int(r, _b)
@@ -580,7 +558,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	return
 }
 
-const _SlicePtrLayout = "WXCWXDWXEWXFWXGWXHWXIWXJWXKWXLWXPWXQWXYWXVYXC"
+const _SlicePtrLayout = "WXCWXDWXEWXFWXGWXHWXWXJWXKWXLWXPWXQWXYWXVYXC"
 
 func (s *SlicePtr) MarshalBinaryTo(w io.Writer) (err error) {
 	var _buf [16]byte
@@ -723,19 +701,9 @@ func (s *SlicePtr) MarshalBinaryTo(w io.Writer) (err error) {
 		return
 	}
 	if s.Uint8 != nil {
-		{
-			_s := *s.Uint8
-			_n = len(_s)
-			err = serializer.Write_int(w, _b, _n)
-			if err != nil {
-				return
-			}
-			for _k := 0; _k < _n; _k++ {
-				err = serializer.Write_uint8(w, _b, _s[_k])
-				if err != nil {
-					return
-				}
-			}
+		err = serializer.Write_bytes(w, _b, *s.Uint8)
+		if err != nil {
+			return
 		}
 	}
 
@@ -935,7 +903,6 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	var _uint16 uint16
 	var _uint32 uint32
 	var _uint64 uint64
-	var _uint8 uint8
 
 	_bool, err = serializer.Read_bool(r, _b)
 	if err != nil {
@@ -1118,25 +1085,9 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _bool {
 		s.Uint8 = nil
 	} else {
-		s.Uint8 = new([]uint8)
-		_n, err = serializer.Read_int(r, _b)
+		*s.Uint8, err = serializer.Read_bytes(r, _b)
 		if err != nil {
 			return
-		}
-		if _c := cap(*s.Uint8); _n > _c || _c-_n > _c/8 {
-			*s.Uint8 = make([]uint8, _n)
-		} else {
-			*s.Uint8 = (*s.Uint8)[:_n]
-		}
-		if _n > 0 {
-			_s := *s.Uint8
-			for _k := 0; _k < _n; _k++ {
-				_uint8, err = serializer.Read_uint8(r, _b)
-				if err != nil {
-					return
-				}
-				_s[_k] = _uint8
-			}
 		}
 	}
 

@@ -7,6 +7,8 @@ import (
 	"github.com/pierrec/serializer"
 )
 
+var _ time.Time
+
 const _MiscLayout = "ZZ"
 
 func (m *Misc) MarshalBinaryTo(w io.Writer) (err error) {

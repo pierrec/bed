@@ -2,9 +2,12 @@ package testpkg
 
 import (
 	"io"
+	"time"
 
 	"github.com/pierrec/serializer"
 )
+
+var _ time.Time
 
 const _CompositeOnlyLayout = "ZZZZ"
 

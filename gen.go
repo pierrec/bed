@@ -49,14 +49,18 @@ type Config struct {
 // Gen generates the MarshalBinaryTo and UnmarshalBinaryFrom methods for
 // the provided types out to the given Writer.
 func Gen(out io.Writer, config Config, data ...interface{}) error {
+	// imports contains all the packages that are or may be required, which
+	// are referenced via _ to avoid import errors.
 	const imports = `package %pkgname%
 
 import (
 	"io"
+	"time"
 
 	"%pkgpath%"
 )
 
+var _ time.Time
 `
 	if config.PkgName == "" {
 		return ErrMissingPackageName
@@ -138,13 +142,14 @@ func stripLocalPkgName(records []genRecord, name string) {
 // Slices are encoded as: <slice length><item0>...
 // Structs are encoded in their fields order.
 type genRecord struct {
-	Is      isKind
-	RKind   reflect.Kind
-	Ident   string      // target identifier
-	Kind    string      // target kind (only fixed size kinds)
-	Name    string      // target type name
-	Include []genRecord // slice, array or map value
-	Key     []genRecord // map key
+	Is       isKind
+	RKind    reflect.Kind
+	Ident    string      // target identifier
+	Kind     string      // target kind (only fixed size kinds)
+	Name     string      // target type name
+	FuncKind string      // if set, used for Write_ and Read_ instead of Kind
+	Include  []genRecord // slice, array or map value
+	Key      []genRecord // map key
 }
 
 type convFunc func(genRecord) (id, value, conv string)
@@ -154,6 +159,7 @@ type isKind uint8
 const (
 	_            isKind = iota // None
 	isSlice                    // Slice
+	isByteSlice                // Bytes
 	isArray                    // Array
 	isByteArray                // ByteArray
 	isStruct                   // Struct
@@ -177,7 +183,7 @@ func walkDataType(p []string, ident string, data interface{}) ([]genRecord, []in
 		reflect.Complex64, reflect.Complex128,
 		reflect.String:
 		records = []genRecord{
-			{RKind: kind, Ident: ident, Kind: kind.String(), Name: typ.String()},
+			{RKind: kind, Ident: ident, Kind: kind.String(), Name: typ.String(), FuncKind: kind.String()},
 		}
 	case reflect.Slice:
 		etyp := typ.Elem()
@@ -186,8 +192,13 @@ func walkDataType(p []string, ident string, data interface{}) ([]genRecord, []in
 		if err != nil {
 			return nil, nil, err
 		}
-		records = []genRecord{
-			{RKind: kind, Is: isSlice, Ident: ident, Kind: typ.String(), Include: subrecords},
+		if typ.String() == "[]uint8" {
+			records = []genRecord{
+				{RKind: kind, Is: isByteSlice, Ident: ident, Kind: "[]byte", Name: "[]byte"}}
+		} else {
+			records = []genRecord{
+				{RKind: kind, Is: isSlice, Ident: ident, Kind: typ.String(), Include: subrecords},
+			}
 		}
 		deps = append(deps, subdeps...)
 	case reflect.Array:
@@ -229,14 +240,8 @@ func walkDataType(p []string, ident string, data interface{}) ([]genRecord, []in
 	case reflect.Struct:
 		// Special structs.
 		if _Time.ConvertibleTo(typ) {
-			if typ.PkgPath() == "time" {
-				// Native time.Time.
-				records = []genRecord{
-					{RKind: kind, Ident: ident, Kind: "time", Name: "time"}}
-			} else {
-				records = []genRecord{
-					{RKind: kind, Ident: ident, Kind: "time", Name: typ.String()}}
-			}
+			records = []genRecord{
+				{RKind: kind, Ident: ident, Kind: "time.Time", Name: typ.String(), FuncKind: "time"}}
 			break
 		}
 
@@ -307,10 +312,11 @@ type genConfig struct {
 	Tail       string
 	Call       string
 	Slice      string
+	ByteSlice  string
+	AnonStruct string
 	Array      string
 	ByteArray  string
 	Struct     string
-	AnonStruct string
 	Map        string
 	MapStruct  string
 	Pointer    string
@@ -330,7 +336,7 @@ func (%rcv% *%type%) MarshalBinaryTo(w io.Writer) (err error) {
 	err = %pkg%.Write_layout(w, _b, _%type%Layout); if err != nil { return }
 `,
 		Call: `
-%tab%err = %pkg%.Write_%kind%(w, _b, %conv%); if err != nil { return }
+%tab%err = %pkg%.Write_%funckind%(w, _b, %conv%); if err != nil { return }
 `,
 		Slice: `
 %tab%{
@@ -339,6 +345,9 @@ func (%rcv% *%type%) MarshalBinaryTo(w io.Writer) (err error) {
 %tab%	err = %pkg%.Write_int(w, _b, _n); if err != nil { return }
 %tab%	for _k := 0; _k < _n; _k++ {%include%	%tab%}
 %tab%}`,
+		ByteSlice: `
+%tab%err = %pkg%.Write_bytes(w, _b, %conv%); if err != nil { return }
+`,
 		Array: `
 %tab%{
 %tab%	_s := &%value%
@@ -386,9 +395,6 @@ func (%rcv% *%type%) MarshalBinaryTo(w io.Writer) (err error) {
 			if rec.Name == kind {
 				return id, val, val
 			}
-			if kind == "time" {
-				return id, val, fmt.Sprintf("time.Time(%s)", val)
-			}
 			return id, val, fmt.Sprintf("%s(%s)", kind, val)
 		},
 	}
@@ -401,7 +407,7 @@ func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	err = %pkg%.Read_layout(r, _b, _%type%Layout); if err != nil { return }
 `,
 		Call: `
-%tab%_%kind%, err = %pkg%.Read_%kind%(r, _b); if err != nil { return }
+%tab%_%funckind%, err = %pkg%.Read_%funckind%(r, _b); if err != nil { return }
 %tab%%value% = %conv%
 `,
 		Slice: `
@@ -411,6 +417,9 @@ func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {
 %tab%	_s := %value%
 %tab%	for _k := 0; _k < _n; _k++ {%include%	%tab%}
 %tab%}
+`,
+		ByteSlice: `
+%tab%%value%, err = %pkg%.Read_bytes(r, _b); if err != nil { return }
 `,
 		Array: `
 %tab%{
@@ -458,7 +467,7 @@ func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {
 			id := rec.Ident
 			val := rec.Ident
 			kind := rec.Kind
-			conv := "_" + kind
+			conv := "_" + rec.FuncKind
 			if rec.Is == isPointer {
 				val = "*" + val
 			}
@@ -553,18 +562,8 @@ func genHeaderNext(records []genRecord, withDecl bool, vars map[string]string) {
 		genHeaderNext(rec.Key, withDecl, vars)
 		genHeaderNext(rec.Include, withDecl, vars)
 
-		switch kind := rec.Kind; kind {
-		case "bool",
-			"int", "int8", "int16", "int32", "int64",
-			"uint", "uint8", "uint16", "uint32", "uint64",
-			"float32", "float64",
-			"complex64", "complex128",
-			"string":
-			reg("_"+kind, kind)
-		case "[]byte":
-			reg("_bytes", kind)
-		case "time":
-			reg("_time", "time.Time")
+		if f := rec.FuncKind; f != "" {
+			reg("_"+f, rec.Kind)
 		}
 	}
 }
@@ -593,10 +592,14 @@ func (c *genConfig) genBody(level int, w io.Writer, records []genRecord, data ma
 	}
 	doalloc := func(rec genRecord) error {
 		var alloc string
-		if rec.Is == isMap {
+		switch rec.Is {
+		case isByteSlice:
+			// No allocation required as Read_bytes does it.
+			return nil
+		case isMap:
 			alloc = `
 %tab%%idlevel% = make(%kind%)`
-		} else {
+		default:
 			alloc = `
 %tab%%idlevel% = new(%kind%)`
 		}
@@ -618,6 +621,8 @@ func (c *genConfig) genBody(level int, w io.Writer, records []genRecord, data ma
 				return err
 			}
 			s = c.Slice
+		case isByteSlice:
+			s = c.ByteSlice
 		case isArray:
 			if err := doinc("include", rec.Include, sconv); err != nil {
 				return err
@@ -656,6 +661,7 @@ func (c *genConfig) genBody(level int, w io.Writer, records []genRecord, data ma
 		}
 		data["id"] = rec.Ident
 		data["kind"] = rec.Kind
+		data["funckind"] = rec.FuncKind
 		data["idlevel"], data["value"], data["conv"] = conv(rec)
 		if err := templateExec(w, s, data); err != nil {
 			return err

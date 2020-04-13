@@ -2,9 +2,12 @@ package testpkg
 
 import (
 	"io"
+	"time"
 
 	"github.com/pierrec/serializer"
 )
+
+var _ time.Time
 
 const _ArrayLayout = "R4CR4DR4ER4FR4GR4HR4R4JR4KR4LR4PR4QR4Y"
 
