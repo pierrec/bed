@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"io"
 	"math"
+	"math/bits"
 	"strings"
 )
 
@@ -104,7 +105,8 @@ func Read_float32(r io.Reader, buf []byte) (float32, error) {
 	if err != nil {
 		return 0, err
 	}
-	return math.Float32frombits(uint32(v)), err
+	u := bits.Reverse32(uint32(v))
+	return math.Float32frombits(u), err
 }
 
 func Read_float64(r io.Reader, buf []byte) (float64, error) {
@@ -112,30 +114,25 @@ func Read_float64(r io.Reader, buf []byte) (float64, error) {
 	if err != nil {
 		return 0, err
 	}
+	v = bits.Reverse64(v)
 	return math.Float64frombits(v), err
 }
 
 func Read_complex64(r io.Reader, buf []byte) (complex64, error) {
-	v, err := unpackUint64From(r, buf)
+	re, err := Read_float32(r, buf)
 	if err != nil {
 		return 0, err
 	}
-	re := math.Float32frombits(uint32(v >> 32))
-	im := math.Float32frombits(uint32(v))
+	im, err := Read_float32(r, buf)
 	return complex(re, im), err
 }
 
 func Read_complex128(r io.Reader, buf []byte) (complex128, error) {
-	v, err := unpackUint64From(r, buf)
+	re, err := Read_float64(r, buf)
 	if err != nil {
 		return 0, err
 	}
-	re := math.Float64frombits(v)
-	v, err = unpackUint64From(r, buf)
-	if err != nil {
-		return 0, err
-	}
-	im := math.Float64frombits(v)
+	im, err := Read_float64(r, buf)
 	return complex(re, im), err
 }
 

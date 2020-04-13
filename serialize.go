@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"io"
 	"math"
+	"math/bits"
 )
 
 func Write_layout(w io.Writer, buf []byte, layout string) error {
@@ -69,28 +70,27 @@ func Write_uint64(w io.Writer, buf []byte, v uint64) error {
 }
 
 func Write_float32(w io.Writer, buf []byte, v float32) error {
-	u := math.Float32bits(v)
+	u := bits.Reverse32(math.Float32bits(v))
 	return packUint64To(w, buf, uint64(u))
 }
 
 func Write_float64(w io.Writer, buf []byte, v float64) error {
-	u := math.Float64bits(v)
+	u := bits.Reverse64(math.Float64bits(v))
 	return packUint64To(w, buf, u)
 }
 
 func Write_complex64(w io.Writer, buf []byte, v complex64) error {
-	re := uint64(math.Float32bits(real(v)))
-	im := uint64(math.Float32bits(imag(v)))
-	return packUint64To(w, buf, re<<32|im)
+	if err := Write_float32(w, buf, real(v)); err != nil {
+		return err
+	}
+	return Write_float32(w, buf, imag(v))
 }
 
 func Write_complex128(w io.Writer, buf []byte, v complex128) error {
-	re := math.Float64bits(real(v))
-	if err := packUint64To(w, buf, re); err != nil {
+	if err := Write_float64(w, buf, real(v)); err != nil {
 		return err
 	}
-	im := math.Float64bits(imag(v))
-	return packUint64To(w, buf, im)
+	return Write_float64(w, buf, imag(v))
 }
 
 func Write_string(w io.Writer, buf []byte, v string) error {
