@@ -23,6 +23,7 @@ func NewReader(r io.Reader) ByteReader {
 type ByteWriter interface {
 	io.Writer
 	io.ByteWriter
+	io.StringWriter
 }
 
 type byteWriter struct {

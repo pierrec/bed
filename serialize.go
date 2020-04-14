@@ -97,12 +97,7 @@ func Write_string(w ByteWriter, buf []byte, v string) error {
 	if err := Write_int(w, buf, len(v)); err != nil {
 		return err
 	}
-	//TODO
-	if w, ok := w.(io.StringWriter); ok {
-		_, err := w.WriteString(v)
-		return err
-	}
-	_, err := w.Write([]byte(v))
+	_, err := w.WriteString(v)
 	return err
 }
 
