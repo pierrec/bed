@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"io"
 	"math"
+	"math/big"
 	"math/bits"
 	"strings"
 	"time"
@@ -154,17 +155,21 @@ func Read_string(r io.Reader, buf []byte) (string, error) {
 	return string(buf), nil
 }
 
-func Read_bytes(r io.Reader, buf []byte) ([]byte, error) {
+func Read_bytes(r io.Reader, buf, out []byte) ([]byte, error) {
 	n, err := Read_int(r, buf)
 	if err != nil || n == 0 {
 		return nil, err
 	}
-	buf = make([]byte, n)
-	_, err = io.ReadFull(r, buf)
+	if len(out) < n {
+		out = make([]byte, n)
+	} else {
+		out = out[:n]
+	}
+	_, err = io.ReadFull(r, out)
 	if err != nil {
 		return nil, err
 	}
-	return buf, nil
+	return out, nil
 }
 
 func Read_bytea(r io.Reader, buf []byte) error {
@@ -194,16 +199,22 @@ func Read_time(r io.Reader, buf []byte) (t time.Time, err error) {
 		}
 		ns = int(binary.LittleEndian.Uint32(buf[4:]))
 	}
+
+	const (
+		fiveMask = 1<<5 - 1
+		sixMask  = 1<<6 - 1
+	)
+
 	u >>= 1
-	offset := u & (1<<5 - 1)
+	offset := u & fiveMask
 	u >>= 5
-	sec := u & (1<<6 - 1)
+	sec := u & sixMask
 	u >>= 6
-	min := u & (1<<6 - 1)
+	min := u & sixMask
 	u >>= 6
-	hour := u & (1<<5 - 1)
+	hour := u & fiveMask
 	u >>= 5
-	day := u & (1<<5 - 1)
+	day := u & fiveMask
 	u >>= 5
 	month := u
 
@@ -211,5 +222,42 @@ func Read_time(r io.Reader, buf []byte) (t time.Time, err error) {
 
 	t = time.Date(int(year), time.Month(month), int(day), int(hour), int(min), int(sec), ns, loc)
 
+	return
+}
+
+func Read_bigfloat(r io.Reader, buf, bigbuf []byte) (b big.Float, err error) {
+	bigbuf, err = Read_bytes(r, buf, bigbuf)
+	if err == nil {
+		err = b.UnmarshalText(bigbuf)
+	}
+	return
+}
+
+func Read_bigint(r io.Reader, buf, bigbuf []byte) (b big.Int, err error) {
+	sign, err := Read_uint8(r, buf)
+	if err != nil || sign == 1 {
+		return
+	}
+	bigbuf, err = Read_bytes(r, buf, bigbuf)
+	if err != nil {
+		return
+	}
+	b.SetBytes(bigbuf)
+	if sign == 0 {
+		b.Neg(&b)
+	}
+	return
+}
+
+func Read_bigrat(r io.Reader, buf, bigbuf []byte) (b big.Rat, err error) {
+	num, err := Read_bigint(r, buf, bigbuf)
+	if err != nil {
+		return
+	}
+	denom, err := Read_bigint(r, buf, bigbuf)
+	if err != nil {
+		return
+	}
+	b.SetFrac(&num, &denom)
 	return
 }

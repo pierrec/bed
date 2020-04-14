@@ -374,7 +374,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	s.Uint8, err = serializer.Read_bytes(r, _b)
+	s.Uint8, err = serializer.Read_bytes(r, _b, nil)
 	if err != nil {
 		return
 	}
@@ -1082,7 +1082,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _bool {
 		s.Uint8 = nil
 	} else {
-		*s.Uint8, err = serializer.Read_bytes(r, _b)
+		*s.Uint8, err = serializer.Read_bytes(r, _b, nil)
 		if err != nil {
 			return
 		}

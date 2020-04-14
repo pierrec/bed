@@ -9,6 +9,13 @@ var Buffers = &bufPool{
 	pool: sync.Pool{New: func() interface{} { return make([]byte, methodBufferSize) }},
 }
 
+const bigBufferSize = 64
+
+// bigBuffers provides the scratch space used by Write_ and Read_ functions.
+var bigBuffers = &bufPool{
+	pool: sync.Pool{New: func() interface{} { return make([]byte, bigBufferSize) }},
+}
+
 type bufPool struct {
 	pool sync.Pool
 }

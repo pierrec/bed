@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"io"
 	"math"
+	"math/big"
 	"math/bits"
 	"time"
 )
@@ -121,6 +122,7 @@ func Write_time(w io.Writer, buf []byte, t time.Time) error {
 		return err
 	}
 	// item<size in bits>
+	// month=[1,12] day=[1,31] hour[0,23] minute,second=[0,59] offset=[0,23] nsec=[0,999999999]
 	// year<16> month<4> day<5> hour<5> minute<6> second<6> TZoffset<5> hasNanosecond<1> nanosecond<32>
 	// = 48 or 80 bits
 	year, month, day := t.Date()
@@ -139,13 +141,38 @@ func Write_time(w io.Writer, buf []byte, t time.Time) error {
 	u = u<<5 | uint32(offset)
 	u <<= 1
 	if ns == 0 {
-		buf = buf[:6]
+		buf = buf[:2+4]
 	} else {
 		u |= 1
 		binary.LittleEndian.PutUint32(buf[2+4:], uint32(ns))
-		buf = buf[:10]
+		buf = buf[:2+4+4]
 	}
 	binary.LittleEndian.PutUint32(buf[2:], u)
 	_, err := w.Write(buf)
 	return err
+}
+
+func Write_bigfloat(w io.Writer, buf, bigbuf []byte, v big.Float) error {
+	prec := len(bigbuf) - 6 // sign, period, exponent, exponent sign, 2 digits exponent
+	bigbuf = v.Append(bigbuf[:0], 'g', prec)
+	return Write_bytes(w, buf, bigbuf)
+}
+
+func Write_bigint(w io.Writer, buf, bigbuf []byte, v big.Int) error {
+	sign := v.Sign() + 1
+	if err := Write_uint8(w, buf, uint8(sign)); err != nil {
+		return err
+	}
+	if sign == 1 {
+		// v == 0
+		return nil
+	}
+	return Write_bytes(w, buf, v.Bytes())
+}
+
+func Write_bigrat(w io.Writer, buf, bigbuf []byte, v big.Rat) error {
+	if err := Write_bigint(w, buf, bigbuf, *v.Num()); err != nil {
+		return err
+	}
+	return Write_bigint(w, buf, bigbuf, *v.Denom())
 }

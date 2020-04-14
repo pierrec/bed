@@ -47,7 +47,7 @@ func (c *Composite) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		return
 	}
 
-	c.Bytes, err = serializer.Read_bytes(r, _b)
+	c.Bytes, err = serializer.Read_bytes(r, _b, nil)
 	if err != nil {
 		return
 	}

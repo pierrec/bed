@@ -440,7 +440,7 @@ func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {
 %tab%}
 `,
 		ByteSlice: `
-%tab%%value%, err = %pkg%.Read_bytes(r, _b); if err != nil { return }
+%tab%%value%, err = %pkg%.Read_bytes(r, _b, nil); if err != nil { return }
 `,
 		Array: `
 %tab%{
