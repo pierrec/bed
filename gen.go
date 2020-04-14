@@ -1,11 +1,13 @@
 package serializer
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"path"
 	"reflect"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 	"unicode"
@@ -27,7 +29,7 @@ var (
 	localpkgName = path.Base(localpkgPath)
 )
 
-// Interface is the interface added to types processed by Gen.
+// Interface defines the methods added to types processed by Gen.
 type Interface interface {
 	MarshalBinaryTo(io.Writer) error
 	UnmarshalBinaryFrom(io.Reader) error
@@ -54,26 +56,26 @@ func Gen(out io.Writer, config Config, data ...interface{}) error {
 	const imports = `package %pkgname%
 
 import (
-	"io"
-	"time"
+	%imports%
 
 	"%pkgpath%"
 )
-
-var _ time.Time
 `
 	if config.PkgName == "" {
 		return ErrMissingPackageName
 	}
+
 	tdata := map[string]string{
 		"pkgname": config.PkgName,
 		"pkgpath": localpkgPath,
 		"pkg":     localpkgName,
 	}
-	if err := templateExec(out, imports, tdata); err != nil {
-		return err
+	imps := map[string]bool{
+		"io": true,
 	}
 
+	// Generate the methods code into buf first so that proper imports can be determined.
+	codeBuf := new(bytes.Buffer)
 	for i := 0; i < len(data); i++ {
 		item := data[i]
 		receiver := config.Receiver
@@ -96,26 +98,40 @@ var _ time.Time
 			}
 		}
 
-		stripLocalPkgName(records, config.PkgName+".")
+		processRecords(records, config.PkgName+".", imps)
 		tdata["type"] = reflect.TypeOf(item).Name()
 		tdata["rcv"] = receiver
 
 		for _, c := range []genConfig{marshalBinaryTo, unmarshalBinaryFrom} {
-			err = c.genHeader(out, records, tdata)
+			err = c.genHeader(codeBuf, records, tdata)
 			if err != nil {
 				return err
 			}
-			err = c.genBody(0, out, records, tdata, c.Conv)
+			err = c.genBody(0, codeBuf, records, tdata, c.Conv)
 			if err != nil {
 				return err
 			}
-			err = c.genTail(out, tdata)
+			err = c.genTail(codeBuf, tdata)
 			if err != nil {
 				return err
 			}
 		}
 	}
-	return nil
+
+	// Figure out the imports.
+	importsInUse := make([]string, 0, len(imps))
+	for imp := range imps {
+		importsInUse = append(importsInUse, strconv.Quote(imp))
+	}
+	sort.Strings(importsInUse)
+	tdata["imports"] = strings.Join(importsInUse, "\n\t")
+
+	if err := templateExec(out, imports, tdata); err != nil {
+		return err
+	}
+
+	_, err := out.Write(codeBuf.Bytes())
+	return err
 }
 
 // hasType returns whether or not data contains a struct type with the given name.
@@ -128,13 +144,18 @@ func hasType(name string, data []interface{}) bool {
 	return false
 }
 
-// stripLocalPkgName removes the package name if it is equal to the one where the methods are created.
-func stripLocalPkgName(records []genRecord, name string) {
+// processRecords removes the package name if it is equal to the one where the methods are created.
+// It also records imports into the imps map.
+func processRecords(records []genRecord, name string, imps map[string]bool) {
 	for i, rec := range records {
+		switch rec.FuncKind {
+		case "time":
+			imps["time"] = true
+		}
 		records[i].Kind = strings.ReplaceAll(rec.Kind, name, "")
 		records[i].Name = strings.ReplaceAll(rec.Name, name, "")
-		stripLocalPkgName(rec.Include, name)
-		stripLocalPkgName(rec.Key, name)
+		processRecords(rec.Include, name, imps)
+		processRecords(rec.Key, name, imps)
 	}
 }
 
