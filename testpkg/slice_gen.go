@@ -9,8 +9,8 @@ import (
 const _SliceLayout = "XCXDXEXFXGXHXXJXKXLXPXQXYXVYXC"
 
 func (s *Slice) MarshalBinaryTo(w io.Writer) (err error) {
-	var _buf [16]byte
-	_b := _buf[:]
+	_b := serializer.Buffers.Get()
+	defer serializer.Buffers.Put(_b)
 	err = serializer.Write_layout(w, _b, _SliceLayout)
 	if err != nil {
 		return
@@ -233,8 +233,8 @@ func (s *Slice) MarshalBinaryTo(w io.Writer) (err error) {
 }
 
 func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	var _buf [16]byte
-	_b := _buf[:]
+	_b := serializer.Buffers.Get()
+	defer serializer.Buffers.Put(_b)
 	err = serializer.Read_layout(r, _b, _SliceLayout)
 	if err != nil {
 		return
@@ -558,8 +558,8 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 const _SlicePtrLayout = "WXCWXDWXEWXFWXGWXHWXWXJWXKWXLWXPWXQWXYWXVYXC"
 
 func (s *SlicePtr) MarshalBinaryTo(w io.Writer) (err error) {
-	var _buf [16]byte
-	_b := _buf[:]
+	_b := serializer.Buffers.Get()
+	defer serializer.Buffers.Put(_b)
 	err = serializer.Write_layout(w, _b, _SlicePtrLayout)
 	if err != nil {
 		return
@@ -879,8 +879,8 @@ func (s *SlicePtr) MarshalBinaryTo(w io.Writer) (err error) {
 }
 
 func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	var _buf [16]byte
-	_b := _buf[:]
+	_b := serializer.Buffers.Get()
+	defer serializer.Buffers.Put(_b)
 	err = serializer.Read_layout(r, _b, _SlicePtrLayout)
 	if err != nil {
 		return
@@ -1330,8 +1330,8 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 const _SliceAnonLayout = "ZCYXZHK"
 
 func (s *SliceAnon) MarshalBinaryTo(w io.Writer) (err error) {
-	var _buf [16]byte
-	_b := _buf[:]
+	_b := serializer.Buffers.Get()
+	defer serializer.Buffers.Put(_b)
 	err = serializer.Write_layout(w, _b, _SliceAnonLayout)
 	if err != nil {
 		return
@@ -1382,8 +1382,8 @@ func (s *SliceAnon) MarshalBinaryTo(w io.Writer) (err error) {
 }
 
 func (s *SliceAnon) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	var _buf [16]byte
-	_b := _buf[:]
+	_b := serializer.Buffers.Get()
+	defer serializer.Buffers.Put(_b)
 	err = serializer.Read_layout(r, _b, _SliceAnonLayout)
 	if err != nil {
 		return

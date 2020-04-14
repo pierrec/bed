@@ -352,8 +352,8 @@ var (
 const _%type%Layout = "%layout%"
 
 func (%rcv% *%type%) MarshalBinaryTo(w io.Writer) (err error) {
-	var _buf [16]byte
-	_b := _buf[:]
+	_b := %pkg%.Buffers.Get()
+	defer %pkg%.Buffers.Put(_b)
 	err = %pkg%.Write_layout(w, _b, _%type%Layout); if err != nil { return }
 `,
 		Call: `
@@ -423,8 +423,8 @@ func (%rcv% *%type%) MarshalBinaryTo(w io.Writer) (err error) {
 		WithDecl: true,
 		Head: `
 func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	var _buf [16]byte
-	_b := _buf[:]
+	_b := %pkg%.Buffers.Get()
+	defer %pkg%.Buffers.Put(_b)
 	err = %pkg%.Read_layout(r, _b, _%type%Layout); if err != nil { return }
 `,
 		Call: `

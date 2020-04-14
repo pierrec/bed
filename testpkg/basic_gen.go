@@ -9,8 +9,8 @@ import (
 const _BasicLayout = "BCDEFGHIJKLPQY"
 
 func (b *Basic) MarshalBinaryTo(w io.Writer) (err error) {
-	var _buf [16]byte
-	_b := _buf[:]
+	_b := serializer.Buffers.Get()
+	defer serializer.Buffers.Put(_b)
 	err = serializer.Write_layout(w, _b, _BasicLayout)
 	if err != nil {
 		return
@@ -90,8 +90,8 @@ func (b *Basic) MarshalBinaryTo(w io.Writer) (err error) {
 }
 
 func (b *Basic) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	var _buf [16]byte
-	_b := _buf[:]
+	_b := serializer.Buffers.Get()
+	defer serializer.Buffers.Put(_b)
 	err = serializer.Read_layout(r, _b, _BasicLayout)
 	if err != nil {
 		return
@@ -202,8 +202,8 @@ func (b *Basic) UnmarshalBinaryFrom(r io.Reader) (err error) {
 const _BasicPtrLayout = "WBWCWDWEWFWGWHWIWJWKWLWPWQWY"
 
 func (b *BasicPtr) MarshalBinaryTo(w io.Writer) (err error) {
-	var _buf [16]byte
-	_b := _buf[:]
+	_b := serializer.Buffers.Get()
+	defer serializer.Buffers.Put(_b)
 	err = serializer.Write_layout(w, _b, _BasicPtrLayout)
 	if err != nil {
 		return
@@ -367,8 +367,8 @@ func (b *BasicPtr) MarshalBinaryTo(w io.Writer) (err error) {
 }
 
 func (b *BasicPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	var _buf [16]byte
-	_b := _buf[:]
+	_b := serializer.Buffers.Get()
+	defer serializer.Buffers.Put(_b)
 	err = serializer.Read_layout(r, _b, _BasicPtrLayout)
 	if err != nil {
 		return
@@ -605,8 +605,8 @@ func (b *BasicPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 const _BasicEmbedLayout = "Z"
 
 func (b *BasicEmbed) MarshalBinaryTo(w io.Writer) (err error) {
-	var _buf [16]byte
-	_b := _buf[:]
+	_b := serializer.Buffers.Get()
+	defer serializer.Buffers.Put(_b)
 	err = serializer.Write_layout(w, _b, _BasicEmbedLayout)
 	if err != nil {
 		return
@@ -621,8 +621,8 @@ func (b *BasicEmbed) MarshalBinaryTo(w io.Writer) (err error) {
 }
 
 func (b *BasicEmbed) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	var _buf [16]byte
-	_b := _buf[:]
+	_b := serializer.Buffers.Get()
+	defer serializer.Buffers.Put(_b)
 	err = serializer.Read_layout(r, _b, _BasicEmbedLayout)
 	if err != nil {
 		return
@@ -639,8 +639,8 @@ func (b *BasicEmbed) UnmarshalBinaryFrom(r io.Reader) (err error) {
 const _BasicAnonLayout = "ZCY"
 
 func (b *BasicAnon) MarshalBinaryTo(w io.Writer) (err error) {
-	var _buf [16]byte
-	_b := _buf[:]
+	_b := serializer.Buffers.Get()
+	defer serializer.Buffers.Put(_b)
 	err = serializer.Write_layout(w, _b, _BasicAnonLayout)
 	if err != nil {
 		return
@@ -665,8 +665,8 @@ func (b *BasicAnon) MarshalBinaryTo(w io.Writer) (err error) {
 }
 
 func (b *BasicAnon) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	var _buf [16]byte
-	_b := _buf[:]
+	_b := serializer.Buffers.Get()
+	defer serializer.Buffers.Put(_b)
 	err = serializer.Read_layout(r, _b, _BasicAnonLayout)
 	if err != nil {
 		return

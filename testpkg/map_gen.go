@@ -9,8 +9,8 @@ import (
 const _MapLayout = "VCCVYCVYXCVWHHVWCCVCWCVWCWCVCZVCWZ"
 
 func (m *Map) MarshalBinaryTo(w io.Writer) (err error) {
-	var _buf [16]byte
-	_b := _buf[:]
+	_b := serializer.Buffers.Get()
+	defer serializer.Buffers.Put(_b)
 	err = serializer.Write_layout(w, _b, _MapLayout)
 	if err != nil {
 		return
@@ -233,8 +233,8 @@ func (m *Map) MarshalBinaryTo(w io.Writer) (err error) {
 }
 
 func (m *Map) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	var _buf [16]byte
-	_b := _buf[:]
+	_b := serializer.Buffers.Get()
+	defer serializer.Buffers.Put(_b)
 	err = serializer.Read_layout(r, _b, _MapLayout)
 	if err != nil {
 		return
