@@ -153,7 +153,7 @@ func Write_time(w io.Writer, buf []byte, t time.Time) error {
 }
 
 func Write_bigfloat(w io.Writer, buf, bigbuf []byte, v big.Float) error {
-	prec := len(bigbuf) - 6 // sign, period, exponent, exponent sign, 2 digits exponent
+	prec := int(v.MinPrec())
 	bigbuf = v.Append(bigbuf[:0], 'g', prec)
 	return Write_bytes(w, buf, bigbuf)
 }

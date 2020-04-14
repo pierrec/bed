@@ -11,8 +11,8 @@ var Buffers = &bufPool{
 
 const bigBufferSize = 64
 
-// bigBuffers provides the scratch space used by Write_ and Read_ functions.
-var bigBuffers = &bufPool{
+// BigBuffers provides the scratch space used by Write_big and Read_big functions.
+var BigBuffers = &bufPool{
 	pool: sync.Pool{New: func() interface{} { return make([]byte, bigBufferSize) }},
 }
 

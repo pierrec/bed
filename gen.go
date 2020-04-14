@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"math/big"
 	"path"
 	"reflect"
 	"sort"
@@ -38,6 +39,9 @@ type Interface interface {
 var (
 	_Interface = reflect.TypeOf([]Interface(nil)).Elem()
 	_Time      = reflect.TypeOf(time.Time{})
+	_BigFloat  = reflect.TypeOf(big.Float{})
+	_BigInt    = reflect.TypeOf(big.Int{})
+	_BigRat    = reflect.TypeOf(big.Rat{})
 )
 
 // Config defines the elements used to generate the code.
@@ -151,6 +155,8 @@ func processRecords(records []genRecord, name string, imps map[string]bool) {
 		switch rec.FuncKind {
 		case "time":
 			imps["time"] = true
+		case "bigfloat", "bigint", "bigrat":
+			imps["math/big"] = true
 		}
 		records[i].Kind = strings.ReplaceAll(rec.Kind, name, "")
 		records[i].Name = strings.ReplaceAll(rec.Name, name, "")
@@ -188,15 +194,14 @@ const (
 	isMap                      // Map
 	isMapStruct                // MapStruct
 	isPointer                  // Pointer
+	isBig                      // Big{Float,Int,Rat}
 )
 
 func walkDataType(p []string, ident string, data interface{}) ([]genRecord, []interface{}, error) {
 	var records []genRecord
 	var deps []interface{}
 	typ := reflect.TypeOf(data)
-	//switch kind := typ.Kind(); kind {
-	kind := typ.Kind()
-	switch kind {
+	switch kind := typ.Kind(); kind {
 	case reflect.Bool,
 		reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
 		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
@@ -263,6 +268,21 @@ func walkDataType(p []string, ident string, data interface{}) ([]genRecord, []in
 		if _Time.ConvertibleTo(typ) {
 			records = []genRecord{
 				{RKind: kind, Ident: ident, Kind: "time.Time", Name: typ.String(), FuncKind: "time"}}
+			break
+		}
+		if _BigFloat.ConvertibleTo(typ) {
+			records = []genRecord{
+				{RKind: kind, Is: isBig, Ident: ident, Kind: "big.Float", Name: typ.String(), FuncKind: "bigfloat"}}
+			break
+		}
+		if _BigInt.ConvertibleTo(typ) {
+			records = []genRecord{
+				{RKind: kind, Is: isBig, Ident: ident, Kind: "big.Int", Name: typ.String(), FuncKind: "bigint"}}
+			break
+		}
+		if _BigRat.ConvertibleTo(typ) {
+			records = []genRecord{
+				{RKind: kind, Is: isBig, Ident: ident, Kind: "big.Rat", Name: typ.String(), FuncKind: "bigrat"}}
 			break
 		}
 
@@ -341,6 +361,7 @@ type genConfig struct {
 	Map        string
 	MapStruct  string
 	Pointer    string
+	Big        string
 
 	Conv convFunc
 }
@@ -352,8 +373,7 @@ var (
 const _%type%Layout = "%layout%"
 
 func (%rcv% *%type%) MarshalBinaryTo(w io.Writer) (err error) {
-	_b := %pkg%.Buffers.Get()
-	defer %pkg%.Buffers.Put(_b)
+	_b := %pkg%.Buffers.Get(); defer %pkg%.Buffers.Put(_b)
 	err = %pkg%.Write_layout(w, _b, _%type%Layout); if err != nil { return }
 `,
 		Call: `
@@ -402,6 +422,9 @@ func (%rcv% *%type%) MarshalBinaryTo(w io.Writer) (err error) {
 %tab%err = %pkg%.Write_bool(w, _b, %idlevel% == nil); if err != nil { return }
 %tab%if %idlevel% != nil {%include%	%tab%}
 `,
+		Big: `
+%tab%err = %pkg%.Write_%funckind%(w, _b, _bb, %conv%); if err != nil { return }
+`,
 		Tail: `
 	return
 }
@@ -423,8 +446,7 @@ func (%rcv% *%type%) MarshalBinaryTo(w io.Writer) (err error) {
 		WithDecl: true,
 		Head: `
 func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	_b := %pkg%.Buffers.Get()
-	defer %pkg%.Buffers.Put(_b)
+	_b := %pkg%.Buffers.Get(); defer %pkg%.Buffers.Put(_b)
 	err = %pkg%.Read_layout(r, _b, _%type%Layout); if err != nil { return }
 `,
 		Call: `
@@ -480,6 +502,10 @@ func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {
 %tab%_bool, err = %pkg%.Read_bool(r, _b); if err != nil { return }
 %tab%if _bool { %idlevel% = nil } else {%alloc%%include%%tab%}
 `,
+		Big: `
+%tab%_%funckind%, err = %pkg%.Read_%funckind%(r, _b, _bb); if err != nil { return }
+%tab%%value% = %conv%
+`,
 		Tail: `
 	return
 }
@@ -507,7 +533,7 @@ func (c genConfig) genHeader(w io.Writer, records []genRecord, data map[string]s
 	vars := make(map[string]string)
 	genHeaderNext(records, c.WithDecl, vars)
 
-	layouts := genCheck(records, nil, nil)
+	layouts := genLayout(records, nil, nil)
 	data["layout"] = strings.Join(layouts, "")
 	if err := templateExec(w, c.Head, data); err != nil {
 		return err
@@ -526,12 +552,17 @@ func (c genConfig) genHeader(w io.Writer, records []genRecord, data map[string]s
 		sortedVars = append(sortedVars, kv{v, kind})
 	}
 	sort.Slice(sortedVars, func(i, j int) bool { return sortedVars[i].k < sortedVars[j].k })
+	buf := new(bytes.Buffer)
 	for _, kv := range sortedVars {
 		data["var"] = kv.k
-		data["kind"] = kv.v
+		if err := templateExec(buf, kv.v, data); err != nil {
+			return err
+		}
+		data["kind"] = buf.String()
 		if err := templateExec(w, decl, data); err != nil {
 			return err
 		}
+		buf.Reset()
 	}
 	delete(data, "var")
 	delete(data, "kind")
@@ -539,7 +570,7 @@ func (c genConfig) genHeader(w io.Writer, records []genRecord, data map[string]s
 	return nil
 }
 
-func genCheck(records []genRecord, cache map[reflect.Kind]string, ls []string) []string {
+func genLayout(records []genRecord, cache map[reflect.Kind]string, ls []string) []string {
 	if cache == nil {
 		// Cache layout strings.
 		cache = map[reflect.Kind]string{
@@ -557,8 +588,8 @@ func genCheck(records []genRecord, cache map[reflect.Kind]string, ls []string) [
 			size := rec.Kind[1:strings.Index(rec.Kind, "]")]
 			ls = append(ls, size)
 		}
-		ls = genCheck(rec.Key, cache, ls)
-		ls = genCheck(rec.Include, cache, ls)
+		ls = genLayout(rec.Key, cache, ls)
+		ls = genLayout(rec.Include, cache, ls)
 	}
 	return ls
 }
@@ -578,6 +609,8 @@ func genHeaderNext(records []genRecord, withDecl bool, vars map[string]string) {
 			reg("_n", "int")
 		case isPointer:
 			reg("_bool", "bool")
+		case isBig:
+			vars["_bb"] = "= %pkg%.BigBuffers.Get(); defer %pkg%.BigBuffers.Put(_bb)"
 		}
 
 		genHeaderNext(rec.Key, withDecl, vars)
@@ -677,6 +710,8 @@ func (c *genConfig) genBody(level int, w io.Writer, records []genRecord, data ma
 				return err
 			}
 			s = c.Pointer
+		case isBig:
+			s = c.Big
 		default:
 			s = c.Call
 		}

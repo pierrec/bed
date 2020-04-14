@@ -4,7 +4,6 @@
 // serialized fields not modified.
 package serializer
 
-//TODO support some internal types (time.Time, big.Big*)
 //TODO io.Reader to io.Reader + io.ByteReader
 //TODO benchmarks
 //TODO version support?

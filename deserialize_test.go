@@ -436,7 +436,7 @@ func TestRead_bigfloat(t *testing.T) {
 		t.Run(label, func(t *testing.T) {
 			b := Buffers.Get()
 			defer Buffers.Put(b)
-			bb := bigBuffers.Get()
+			bb := BigBuffers.Get()
 			defer Buffers.Put(bb)
 			rw := new(bytes.Buffer)
 
@@ -473,7 +473,7 @@ func TestRead_bigint(t *testing.T) {
 		t.Run(label, func(t *testing.T) {
 			b := Buffers.Get()
 			defer Buffers.Put(b)
-			bb := bigBuffers.Get()
+			bb := BigBuffers.Get()
 			defer Buffers.Put(bb)
 			rw := new(bytes.Buffer)
 
@@ -510,7 +510,7 @@ func TestRead_bigrat(t *testing.T) {
 		t.Run(label, func(t *testing.T) {
 			b := Buffers.Get()
 			defer Buffers.Put(b)
-			bb := bigBuffers.Get()
+			bb := BigBuffers.Get()
 			defer Buffers.Put(bb)
 			rw := new(bytes.Buffer)
 
