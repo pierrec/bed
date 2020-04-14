@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func Read_layout(r io.Reader, buf []byte, layout string) error {
+func Read_layout(r ByteReader, buf []byte, layout string) error {
 	s, err := Read_string(r, buf)
 	if err != nil {
 		return err
@@ -21,14 +21,15 @@ func Read_layout(r io.Reader, buf []byte, layout string) error {
 	return nil
 }
 
-func Read_bool(r io.Reader, buf []byte) (bool, error) {
-	if _, err := io.ReadFull(r, buf[:1]); err != nil {
+func Read_bool(r ByteReader, _ []byte) (bool, error) {
+	b, err := r.ReadByte()
+	if err != nil {
 		return false, err
 	}
-	return buf[0] != 0, nil
+	return b == _true, nil
 }
 
-func Read_int(r io.Reader, buf []byte) (int, error) {
+func Read_int(r ByteReader, buf []byte) (int, error) {
 	v, err := unpackUint64From(r, buf)
 	if err != nil {
 		return 0, err
@@ -36,14 +37,15 @@ func Read_int(r io.Reader, buf []byte) (int, error) {
 	return int(v), nil
 }
 
-func Read_int8(r io.Reader, buf []byte) (int8, error) {
-	if _, err := io.ReadFull(r, buf[:1]); err != nil {
+func Read_int8(r ByteReader, _ []byte) (int8, error) {
+	b, err := r.ReadByte()
+	if err != nil {
 		return 0, err
 	}
-	return int8(buf[0]), nil
+	return int8(b), nil
 }
 
-func Read_int16(r io.Reader, buf []byte) (int16, error) {
+func Read_int16(r ByteReader, buf []byte) (int16, error) {
 	if _, err := io.ReadFull(r, buf[:2]); err != nil {
 		return 0, err
 	}
@@ -51,7 +53,7 @@ func Read_int16(r io.Reader, buf []byte) (int16, error) {
 	return int16(v), nil
 }
 
-func Read_int32(r io.Reader, buf []byte) (int32, error) {
+func Read_int32(r ByteReader, buf []byte) (int32, error) {
 	v, err := unpackUint64From(r, buf)
 	if err != nil {
 		return 0, err
@@ -59,7 +61,7 @@ func Read_int32(r io.Reader, buf []byte) (int32, error) {
 	return int32(v), nil
 }
 
-func Read_int64(r io.Reader, buf []byte) (int64, error) {
+func Read_int64(r ByteReader, buf []byte) (int64, error) {
 	v, err := unpackUint64From(r, buf)
 	if err != nil {
 		return 0, err
@@ -67,7 +69,7 @@ func Read_int64(r io.Reader, buf []byte) (int64, error) {
 	return int64(v), nil
 }
 
-func Read_uint(r io.Reader, buf []byte) (uint, error) {
+func Read_uint(r ByteReader, buf []byte) (uint, error) {
 	v, err := unpackUint64From(r, buf)
 	if err != nil {
 		return 0, err
@@ -75,14 +77,11 @@ func Read_uint(r io.Reader, buf []byte) (uint, error) {
 	return uint(v), nil
 }
 
-func Read_uint8(r io.Reader, buf []byte) (uint8, error) {
-	if _, err := io.ReadFull(r, buf[:1]); err != nil {
-		return 0, err
-	}
-	return buf[0], nil
+func Read_uint8(r ByteReader, _ []byte) (uint8, error) {
+	return r.ReadByte()
 }
 
-func Read_uint16(r io.Reader, buf []byte) (uint16, error) {
+func Read_uint16(r ByteReader, buf []byte) (uint16, error) {
 	if _, err := io.ReadFull(r, buf[:2]); err != nil {
 		return 0, err
 	}
@@ -90,7 +89,7 @@ func Read_uint16(r io.Reader, buf []byte) (uint16, error) {
 	return v, nil
 }
 
-func Read_uint32(r io.Reader, buf []byte) (uint32, error) {
+func Read_uint32(r ByteReader, buf []byte) (uint32, error) {
 	v, err := unpackUint64From(r, buf)
 	if err != nil {
 		return 0, err
@@ -98,11 +97,11 @@ func Read_uint32(r io.Reader, buf []byte) (uint32, error) {
 	return uint32(v), nil
 }
 
-func Read_uint64(r io.Reader, buf []byte) (uint64, error) {
+func Read_uint64(r ByteReader, buf []byte) (uint64, error) {
 	return unpackUint64From(r, buf)
 }
 
-func Read_float32(r io.Reader, buf []byte) (float32, error) {
+func Read_float32(r ByteReader, buf []byte) (float32, error) {
 	v, err := unpackUint64From(r, buf)
 	if err != nil {
 		return 0, err
@@ -111,7 +110,7 @@ func Read_float32(r io.Reader, buf []byte) (float32, error) {
 	return math.Float32frombits(u), err
 }
 
-func Read_float64(r io.Reader, buf []byte) (float64, error) {
+func Read_float64(r ByteReader, buf []byte) (float64, error) {
 	v, err := unpackUint64From(r, buf)
 	if err != nil {
 		return 0, err
@@ -120,7 +119,7 @@ func Read_float64(r io.Reader, buf []byte) (float64, error) {
 	return math.Float64frombits(v), err
 }
 
-func Read_complex64(r io.Reader, buf []byte) (complex64, error) {
+func Read_complex64(r ByteReader, buf []byte) (complex64, error) {
 	re, err := Read_float32(r, buf)
 	if err != nil {
 		return 0, err
@@ -129,7 +128,7 @@ func Read_complex64(r io.Reader, buf []byte) (complex64, error) {
 	return complex(re, im), err
 }
 
-func Read_complex128(r io.Reader, buf []byte) (complex128, error) {
+func Read_complex128(r ByteReader, buf []byte) (complex128, error) {
 	re, err := Read_float64(r, buf)
 	if err != nil {
 		return 0, err
@@ -138,7 +137,7 @@ func Read_complex128(r io.Reader, buf []byte) (complex128, error) {
 	return complex(re, im), err
 }
 
-func Read_string(r io.Reader, buf []byte) (string, error) {
+func Read_string(r ByteReader, buf []byte) (string, error) {
 	n, err := Read_int(r, buf)
 	if err != nil || n == 0 {
 		return "", err
@@ -155,7 +154,7 @@ func Read_string(r io.Reader, buf []byte) (string, error) {
 	return string(buf), nil
 }
 
-func Read_bytes(r io.Reader, buf, out []byte) ([]byte, error) {
+func Read_bytes(r ByteReader, buf, out []byte) ([]byte, error) {
 	n, err := Read_int(r, buf)
 	if err != nil || n == 0 {
 		return nil, err
@@ -172,12 +171,12 @@ func Read_bytes(r io.Reader, buf, out []byte) ([]byte, error) {
 	return out, nil
 }
 
-func Read_bytea(r io.Reader, buf []byte) error {
+func Read_bytea(r ByteReader, buf []byte) error {
 	_, err := io.ReadFull(r, buf)
 	return err
 }
 
-func Read_time(r io.Reader, buf []byte) (t time.Time, err error) {
+func Read_time(r ByteReader, buf []byte) (t time.Time, err error) {
 	_ = buf[:10]
 	if _, err = io.ReadFull(r, buf[:2]); err != nil {
 		return
@@ -225,7 +224,7 @@ func Read_time(r io.Reader, buf []byte) (t time.Time, err error) {
 	return
 }
 
-func Read_bigfloat(r io.Reader, buf, bigbuf []byte) (b big.Float, err error) {
+func Read_bigfloat(r ByteReader, buf, bigbuf []byte) (b big.Float, err error) {
 	bigbuf, err = Read_bytes(r, buf, bigbuf)
 	if err == nil {
 		err = b.UnmarshalText(bigbuf)
@@ -233,8 +232,8 @@ func Read_bigfloat(r io.Reader, buf, bigbuf []byte) (b big.Float, err error) {
 	return
 }
 
-func Read_bigint(r io.Reader, buf, bigbuf []byte) (b big.Int, err error) {
-	sign, err := Read_uint8(r, buf)
+func Read_bigint(r ByteReader, buf, bigbuf []byte) (b big.Int, err error) {
+	sign, err := r.ReadByte()
 	if err != nil || sign == 1 {
 		return
 	}
@@ -249,7 +248,7 @@ func Read_bigint(r io.Reader, buf, bigbuf []byte) (b big.Int, err error) {
 	return
 }
 
-func Read_bigrat(r io.Reader, buf, bigbuf []byte) (b big.Rat, err error) {
+func Read_bigrat(r ByteReader, buf, bigbuf []byte) (b big.Rat, err error) {
 	num, err := Read_bigint(r, buf, bigbuf)
 	if err != nil {
 		return

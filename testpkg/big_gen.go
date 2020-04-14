@@ -10,9 +10,11 @@ import (
 const _BigLayout = "ZZZ"
 
 func (b *Big) MarshalBinaryTo(w io.Writer) (err error) {
+	_w, _done := serializer.NewWriter(w)
+	defer _done(&err)
 	_b := serializer.Buffers.Get()
 	defer serializer.Buffers.Put(_b)
-	err = serializer.Write_layout(w, _b, _BigLayout)
+	err = serializer.Write_layout(_w, _b, _BigLayout)
 	if err != nil {
 		return
 	}
@@ -20,17 +22,17 @@ func (b *Big) MarshalBinaryTo(w io.Writer) (err error) {
 	var _bb = serializer.BigBuffers.Get()
 	defer serializer.BigBuffers.Put(_bb)
 
-	err = serializer.Write_bigfloat(w, _b, _bb, b.Float)
+	err = serializer.Write_bigfloat(_w, _b, _bb, b.Float)
 	if err != nil {
 		return
 	}
 
-	err = serializer.Write_bigint(w, _b, _bb, b.Int)
+	err = serializer.Write_bigint(_w, _b, _bb, b.Int)
 	if err != nil {
 		return
 	}
 
-	err = serializer.Write_bigrat(w, _b, _bb, b.Rat)
+	err = serializer.Write_bigrat(_w, _b, _bb, b.Rat)
 	if err != nil {
 		return
 	}
@@ -39,9 +41,10 @@ func (b *Big) MarshalBinaryTo(w io.Writer) (err error) {
 }
 
 func (b *Big) UnmarshalBinaryFrom(r io.Reader) (err error) {
+	_r := serializer.NewReader(r)
 	_b := serializer.Buffers.Get()
 	defer serializer.Buffers.Put(_b)
-	err = serializer.Read_layout(r, _b, _BigLayout)
+	err = serializer.Read_layout(_r, _b, _BigLayout)
 	if err != nil {
 		return
 	}
@@ -52,19 +55,19 @@ func (b *Big) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	var _bigint big.Int
 	var _bigrat big.Rat
 
-	_bigfloat, err = serializer.Read_bigfloat(r, _b, _bb)
+	_bigfloat, err = serializer.Read_bigfloat(_r, _b, _bb)
 	if err != nil {
 		return
 	}
 	b.Float = _bigfloat
 
-	_bigint, err = serializer.Read_bigint(r, _b, _bb)
+	_bigint, err = serializer.Read_bigint(_r, _b, _bb)
 	if err != nil {
 		return
 	}
 	b.Int = _bigint
 
-	_bigrat, err = serializer.Read_bigrat(r, _b, _bb)
+	_bigrat, err = serializer.Read_bigrat(_r, _b, _bb)
 	if err != nil {
 		return
 	}
@@ -76,9 +79,11 @@ func (b *Big) UnmarshalBinaryFrom(r io.Reader) (err error) {
 const _BigPtrLayout = "WZWZWZ"
 
 func (b *BigPtr) MarshalBinaryTo(w io.Writer) (err error) {
+	_w, _done := serializer.NewWriter(w)
+	defer _done(&err)
 	_b := serializer.Buffers.Get()
 	defer serializer.Buffers.Put(_b)
-	err = serializer.Write_layout(w, _b, _BigPtrLayout)
+	err = serializer.Write_layout(_w, _b, _BigPtrLayout)
 	if err != nil {
 		return
 	}
@@ -86,34 +91,34 @@ func (b *BigPtr) MarshalBinaryTo(w io.Writer) (err error) {
 	var _bb = serializer.BigBuffers.Get()
 	defer serializer.BigBuffers.Put(_bb)
 
-	err = serializer.Write_bool(w, _b, b.Float == nil)
+	err = serializer.Write_bool(_w, _b, b.Float == nil)
 	if err != nil {
 		return
 	}
 	if b.Float != nil {
-		err = serializer.Write_bigfloat(w, _b, _bb, *b.Float)
+		err = serializer.Write_bigfloat(_w, _b, _bb, *b.Float)
 		if err != nil {
 			return
 		}
 	}
 
-	err = serializer.Write_bool(w, _b, b.Int == nil)
+	err = serializer.Write_bool(_w, _b, b.Int == nil)
 	if err != nil {
 		return
 	}
 	if b.Int != nil {
-		err = serializer.Write_bigint(w, _b, _bb, *b.Int)
+		err = serializer.Write_bigint(_w, _b, _bb, *b.Int)
 		if err != nil {
 			return
 		}
 	}
 
-	err = serializer.Write_bool(w, _b, b.Rat == nil)
+	err = serializer.Write_bool(_w, _b, b.Rat == nil)
 	if err != nil {
 		return
 	}
 	if b.Rat != nil {
-		err = serializer.Write_bigrat(w, _b, _bb, *b.Rat)
+		err = serializer.Write_bigrat(_w, _b, _bb, *b.Rat)
 		if err != nil {
 			return
 		}
@@ -123,9 +128,10 @@ func (b *BigPtr) MarshalBinaryTo(w io.Writer) (err error) {
 }
 
 func (b *BigPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
+	_r := serializer.NewReader(r)
 	_b := serializer.Buffers.Get()
 	defer serializer.Buffers.Put(_b)
-	err = serializer.Read_layout(r, _b, _BigPtrLayout)
+	err = serializer.Read_layout(_r, _b, _BigPtrLayout)
 	if err != nil {
 		return
 	}
@@ -137,7 +143,7 @@ func (b *BigPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	var _bigrat big.Rat
 	var _bool bool
 
-	_bool, err = serializer.Read_bool(r, _b)
+	_bool, err = serializer.Read_bool(_r, _b)
 	if err != nil {
 		return
 	}
@@ -145,14 +151,14 @@ func (b *BigPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		b.Float = nil
 	} else {
 		b.Float = new(big.Float)
-		_bigfloat, err = serializer.Read_bigfloat(r, _b, _bb)
+		_bigfloat, err = serializer.Read_bigfloat(_r, _b, _bb)
 		if err != nil {
 			return
 		}
 		*b.Float = _bigfloat
 	}
 
-	_bool, err = serializer.Read_bool(r, _b)
+	_bool, err = serializer.Read_bool(_r, _b)
 	if err != nil {
 		return
 	}
@@ -160,14 +166,14 @@ func (b *BigPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		b.Int = nil
 	} else {
 		b.Int = new(big.Int)
-		_bigint, err = serializer.Read_bigint(r, _b, _bb)
+		_bigint, err = serializer.Read_bigint(_r, _b, _bb)
 		if err != nil {
 			return
 		}
 		*b.Int = _bigint
 	}
 
-	_bool, err = serializer.Read_bool(r, _b)
+	_bool, err = serializer.Read_bool(_r, _b)
 	if err != nil {
 		return
 	}
@@ -175,7 +181,7 @@ func (b *BigPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		b.Rat = nil
 	} else {
 		b.Rat = new(big.Rat)
-		_bigrat, err = serializer.Read_bigrat(r, _b, _bb)
+		_bigrat, err = serializer.Read_bigrat(_r, _b, _bb)
 		if err != nil {
 			return
 		}
@@ -188,9 +194,11 @@ func (b *BigPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 const _BigPtrSliceLayout = "XWZXWZXWZ"
 
 func (b *BigPtrSlice) MarshalBinaryTo(w io.Writer) (err error) {
+	_w, _done := serializer.NewWriter(w)
+	defer _done(&err)
 	_b := serializer.Buffers.Get()
 	defer serializer.Buffers.Put(_b)
-	err = serializer.Write_layout(w, _b, _BigPtrSliceLayout)
+	err = serializer.Write_layout(_w, _b, _BigPtrSliceLayout)
 	if err != nil {
 		return
 	}
@@ -202,17 +210,17 @@ func (b *BigPtrSlice) MarshalBinaryTo(w io.Writer) (err error) {
 	{
 		_s := b.Float
 		_n = len(_s)
-		err = serializer.Write_int(w, _b, _n)
+		err = serializer.Write_int(_w, _b, _n)
 		if err != nil {
 			return
 		}
 		for _k := 0; _k < _n; _k++ {
-			err = serializer.Write_bool(w, _b, _s[_k] == nil)
+			err = serializer.Write_bool(_w, _b, _s[_k] == nil)
 			if err != nil {
 				return
 			}
 			if _s[_k] != nil {
-				err = serializer.Write_bigfloat(w, _b, _bb, *_s[_k])
+				err = serializer.Write_bigfloat(_w, _b, _bb, *_s[_k])
 				if err != nil {
 					return
 				}
@@ -222,17 +230,17 @@ func (b *BigPtrSlice) MarshalBinaryTo(w io.Writer) (err error) {
 	{
 		_s := b.Int
 		_n = len(_s)
-		err = serializer.Write_int(w, _b, _n)
+		err = serializer.Write_int(_w, _b, _n)
 		if err != nil {
 			return
 		}
 		for _k := 0; _k < _n; _k++ {
-			err = serializer.Write_bool(w, _b, _s[_k] == nil)
+			err = serializer.Write_bool(_w, _b, _s[_k] == nil)
 			if err != nil {
 				return
 			}
 			if _s[_k] != nil {
-				err = serializer.Write_bigint(w, _b, _bb, *_s[_k])
+				err = serializer.Write_bigint(_w, _b, _bb, *_s[_k])
 				if err != nil {
 					return
 				}
@@ -242,17 +250,17 @@ func (b *BigPtrSlice) MarshalBinaryTo(w io.Writer) (err error) {
 	{
 		_s := b.Rat
 		_n = len(_s)
-		err = serializer.Write_int(w, _b, _n)
+		err = serializer.Write_int(_w, _b, _n)
 		if err != nil {
 			return
 		}
 		for _k := 0; _k < _n; _k++ {
-			err = serializer.Write_bool(w, _b, _s[_k] == nil)
+			err = serializer.Write_bool(_w, _b, _s[_k] == nil)
 			if err != nil {
 				return
 			}
 			if _s[_k] != nil {
-				err = serializer.Write_bigrat(w, _b, _bb, *_s[_k])
+				err = serializer.Write_bigrat(_w, _b, _bb, *_s[_k])
 				if err != nil {
 					return
 				}
@@ -263,9 +271,10 @@ func (b *BigPtrSlice) MarshalBinaryTo(w io.Writer) (err error) {
 }
 
 func (b *BigPtrSlice) UnmarshalBinaryFrom(r io.Reader) (err error) {
+	_r := serializer.NewReader(r)
 	_b := serializer.Buffers.Get()
 	defer serializer.Buffers.Put(_b)
-	err = serializer.Read_layout(r, _b, _BigPtrSliceLayout)
+	err = serializer.Read_layout(_r, _b, _BigPtrSliceLayout)
 	if err != nil {
 		return
 	}
@@ -278,7 +287,7 @@ func (b *BigPtrSlice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	var _bool bool
 	var _n int
 
-	_n, err = serializer.Read_int(r, _b)
+	_n, err = serializer.Read_int(_r, _b)
 	if err != nil {
 		return
 	}
@@ -290,7 +299,7 @@ func (b *BigPtrSlice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _n > 0 {
 		_s := b.Float
 		for _k := 0; _k < _n; _k++ {
-			_bool, err = serializer.Read_bool(r, _b)
+			_bool, err = serializer.Read_bool(_r, _b)
 			if err != nil {
 				return
 			}
@@ -298,7 +307,7 @@ func (b *BigPtrSlice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 				_s[_k] = nil
 			} else {
 				_s[_k] = new(big.Float)
-				_bigfloat, err = serializer.Read_bigfloat(r, _b, _bb)
+				_bigfloat, err = serializer.Read_bigfloat(_r, _b, _bb)
 				if err != nil {
 					return
 				}
@@ -307,7 +316,7 @@ func (b *BigPtrSlice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_n, err = serializer.Read_int(r, _b)
+	_n, err = serializer.Read_int(_r, _b)
 	if err != nil {
 		return
 	}
@@ -319,7 +328,7 @@ func (b *BigPtrSlice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _n > 0 {
 		_s := b.Int
 		for _k := 0; _k < _n; _k++ {
-			_bool, err = serializer.Read_bool(r, _b)
+			_bool, err = serializer.Read_bool(_r, _b)
 			if err != nil {
 				return
 			}
@@ -327,7 +336,7 @@ func (b *BigPtrSlice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 				_s[_k] = nil
 			} else {
 				_s[_k] = new(big.Int)
-				_bigint, err = serializer.Read_bigint(r, _b, _bb)
+				_bigint, err = serializer.Read_bigint(_r, _b, _bb)
 				if err != nil {
 					return
 				}
@@ -336,7 +345,7 @@ func (b *BigPtrSlice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_n, err = serializer.Read_int(r, _b)
+	_n, err = serializer.Read_int(_r, _b)
 	if err != nil {
 		return
 	}
@@ -348,7 +357,7 @@ func (b *BigPtrSlice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _n > 0 {
 		_s := b.Rat
 		for _k := 0; _k < _n; _k++ {
-			_bool, err = serializer.Read_bool(r, _b)
+			_bool, err = serializer.Read_bool(_r, _b)
 			if err != nil {
 				return
 			}
@@ -356,7 +365,7 @@ func (b *BigPtrSlice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 				_s[_k] = nil
 			} else {
 				_s[_k] = new(big.Rat)
-				_bigrat, err = serializer.Read_bigrat(r, _b, _bb)
+				_bigrat, err = serializer.Read_bigrat(_r, _b, _bb)
 				if err != nil {
 					return
 				}
@@ -371,9 +380,11 @@ func (b *BigPtrSlice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 const _BigSliceLayout = "XZXZXZ"
 
 func (b *BigSlice) MarshalBinaryTo(w io.Writer) (err error) {
+	_w, _done := serializer.NewWriter(w)
+	defer _done(&err)
 	_b := serializer.Buffers.Get()
 	defer serializer.Buffers.Put(_b)
-	err = serializer.Write_layout(w, _b, _BigSliceLayout)
+	err = serializer.Write_layout(_w, _b, _BigSliceLayout)
 	if err != nil {
 		return
 	}
@@ -385,12 +396,12 @@ func (b *BigSlice) MarshalBinaryTo(w io.Writer) (err error) {
 	{
 		_s := b.Float
 		_n = len(_s)
-		err = serializer.Write_int(w, _b, _n)
+		err = serializer.Write_int(_w, _b, _n)
 		if err != nil {
 			return
 		}
 		for _k := 0; _k < _n; _k++ {
-			err = serializer.Write_bigfloat(w, _b, _bb, _s[_k])
+			err = serializer.Write_bigfloat(_w, _b, _bb, _s[_k])
 			if err != nil {
 				return
 			}
@@ -399,12 +410,12 @@ func (b *BigSlice) MarshalBinaryTo(w io.Writer) (err error) {
 	{
 		_s := b.Int
 		_n = len(_s)
-		err = serializer.Write_int(w, _b, _n)
+		err = serializer.Write_int(_w, _b, _n)
 		if err != nil {
 			return
 		}
 		for _k := 0; _k < _n; _k++ {
-			err = serializer.Write_bigint(w, _b, _bb, _s[_k])
+			err = serializer.Write_bigint(_w, _b, _bb, _s[_k])
 			if err != nil {
 				return
 			}
@@ -413,12 +424,12 @@ func (b *BigSlice) MarshalBinaryTo(w io.Writer) (err error) {
 	{
 		_s := b.Rat
 		_n = len(_s)
-		err = serializer.Write_int(w, _b, _n)
+		err = serializer.Write_int(_w, _b, _n)
 		if err != nil {
 			return
 		}
 		for _k := 0; _k < _n; _k++ {
-			err = serializer.Write_bigrat(w, _b, _bb, _s[_k])
+			err = serializer.Write_bigrat(_w, _b, _bb, _s[_k])
 			if err != nil {
 				return
 			}
@@ -428,9 +439,10 @@ func (b *BigSlice) MarshalBinaryTo(w io.Writer) (err error) {
 }
 
 func (b *BigSlice) UnmarshalBinaryFrom(r io.Reader) (err error) {
+	_r := serializer.NewReader(r)
 	_b := serializer.Buffers.Get()
 	defer serializer.Buffers.Put(_b)
-	err = serializer.Read_layout(r, _b, _BigSliceLayout)
+	err = serializer.Read_layout(_r, _b, _BigSliceLayout)
 	if err != nil {
 		return
 	}
@@ -442,7 +454,7 @@ func (b *BigSlice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	var _bigrat big.Rat
 	var _n int
 
-	_n, err = serializer.Read_int(r, _b)
+	_n, err = serializer.Read_int(_r, _b)
 	if err != nil {
 		return
 	}
@@ -454,7 +466,7 @@ func (b *BigSlice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _n > 0 {
 		_s := b.Float
 		for _k := 0; _k < _n; _k++ {
-			_bigfloat, err = serializer.Read_bigfloat(r, _b, _bb)
+			_bigfloat, err = serializer.Read_bigfloat(_r, _b, _bb)
 			if err != nil {
 				return
 			}
@@ -462,7 +474,7 @@ func (b *BigSlice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_n, err = serializer.Read_int(r, _b)
+	_n, err = serializer.Read_int(_r, _b)
 	if err != nil {
 		return
 	}
@@ -474,7 +486,7 @@ func (b *BigSlice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _n > 0 {
 		_s := b.Int
 		for _k := 0; _k < _n; _k++ {
-			_bigint, err = serializer.Read_bigint(r, _b, _bb)
+			_bigint, err = serializer.Read_bigint(_r, _b, _bb)
 			if err != nil {
 				return
 			}
@@ -482,7 +494,7 @@ func (b *BigSlice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_n, err = serializer.Read_int(r, _b)
+	_n, err = serializer.Read_int(_r, _b)
 	if err != nil {
 		return
 	}
@@ -494,7 +506,7 @@ func (b *BigSlice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _n > 0 {
 		_s := b.Rat
 		for _k := 0; _k < _n; _k++ {
-			_bigrat, err = serializer.Read_bigrat(r, _b, _bb)
+			_bigrat, err = serializer.Read_bigrat(_r, _b, _bb)
 			if err != nil {
 				return
 			}

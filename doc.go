@@ -4,7 +4,6 @@
 // serialized fields not modified.
 package serializer
 
-//TODO io.Reader to io.Reader + io.ByteReader
 //TODO benchmarks
 //TODO version support?
 //TODO pack slice items in batches?
