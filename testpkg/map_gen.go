@@ -6,7 +6,7 @@ import (
 	"github.com/pierrec/serializer"
 )
 
-const _MapLayout = "VCCVYCVYXCVWHHVWCCVCWCVWCWCVCZVCWZ"
+const _MapLayout = "VCCVBBVYCVYXCVWHHVWCCVCWCVWCWCVZCYC"
 
 func (m *Map) MarshalBinaryTo(w io.Writer) (err error) {
 	_w, _done := serializer.NewWriter(w)
@@ -33,6 +33,24 @@ func (m *Map) MarshalBinaryTo(w io.Writer) (err error) {
 			}
 
 			err = serializer.Write_int(_w, _b, _s[_k])
+			if err != nil {
+				return
+			}
+		}
+	}
+	{
+		_s := m.BoolBool
+		err = serializer.Write_int(_w, _b, len(_s))
+		if err != nil {
+			return
+		}
+		for _k := range _s {
+			err = serializer.Write_bool(_w, _b, _k)
+			if err != nil {
+				return
+			}
+
+			err = serializer.Write_bool(_w, _b, _s[_k])
 			if err != nil {
 				return
 			}
@@ -187,47 +205,30 @@ func (m *Map) MarshalBinaryTo(w io.Writer) (err error) {
 		}
 	}
 	{
-		_s := m.IntStruct
+		_s := m.AnonInt
 		err = serializer.Write_int(_w, _b, len(_s))
 		if err != nil {
 			return
 		}
 		for _k := range _s {
-			err = serializer.Write_int(_w, _b, _k)
-			if err != nil {
-				return
-			}
-
 			{
-				_struct := _s[_k]
-				err = _struct.MarshalBinaryTo(_w)
+				_s := &_k
+
+				err = serializer.Write_int(_w, _b, _s.Int)
 				if err != nil {
 					return
 				}
-			}
-		}
-	}
-	{
-		_s := m.IntStructPtr
-		err = serializer.Write_int(_w, _b, len(_s))
-		if err != nil {
-			return
-		}
-		for _k := range _s {
-			err = serializer.Write_int(_w, _b, _k)
-			if err != nil {
-				return
+
+				err = serializer.Write_string(_w, _b, _s.String)
+				if err != nil {
+					return
+				}
+
 			}
 
-			err = serializer.Write_bool(_w, _b, _s[_k] == nil)
+			err = serializer.Write_int(_w, _b, _s[_k])
 			if err != nil {
 				return
-			}
-			if _s[_k] != nil {
-				err = _s[_k].MarshalBinaryTo(_w)
-				if err != nil {
-					return
-				}
 			}
 		}
 	}
@@ -271,6 +272,31 @@ func (m *Map) UnmarshalBinaryFrom(r io.Reader) (err error) {
 				return
 			}
 			_s[_k] = _int
+		}
+	}
+
+	_n, err = serializer.Read_int(_r, _b)
+	if err != nil {
+		return
+	}
+	if _n == 0 {
+		m.BoolBool = nil
+	} else {
+		m.BoolBool = make(map[bool]bool, _n)
+		_s := m.BoolBool
+		var _k bool
+		for _j := 0; _j < _n; _j++ {
+			_bool, err = serializer.Read_bool(_r, _b)
+			if err != nil {
+				return
+			}
+			_k = _bool
+
+			_bool, err = serializer.Read_bool(_r, _b)
+			if err != nil {
+				return
+			}
+			_s[_k] = _bool
 		}
 	}
 
@@ -488,59 +514,40 @@ func (m *Map) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		return
 	}
 	if _n == 0 {
-		m.IntStruct = nil
+		m.AnonInt = nil
 	} else {
-		m.IntStruct = make(map[int]Basic, _n)
-		_s := m.IntStruct
-		var _k int
-		for _j := 0; _j < _n; _j++ {
-			_int, err = serializer.Read_int(_r, _b)
-			if err != nil {
-				return
-			}
-			_k = _int
-
-			{
-				_struct := _s[_k]
-				err = _struct.UnmarshalBinaryFrom(_r)
-				if err != nil {
-					return
-				}
-				_s[_k] = _struct
-			}
+		m.AnonInt = make(map[struct {
+			Int    int
+			String string
+		}]int, _n)
+		_s := m.AnonInt
+		var _k struct {
+			Int    int
+			String string
 		}
-	}
-
-	_n, err = serializer.Read_int(_r, _b)
-	if err != nil {
-		return
-	}
-	if _n == 0 {
-		m.IntStructPtr = nil
-	} else {
-		m.IntStructPtr = make(map[int]*Basic, _n)
-		_s := m.IntStructPtr
-		var _k int
 		for _j := 0; _j < _n; _j++ {
+			{
+				_s := &_k
+
+				_int, err = serializer.Read_int(_r, _b)
+				if err != nil {
+					return
+				}
+				_s.Int = _int
+
+				_string, err = serializer.Read_string(_r, _b)
+				if err != nil {
+					return
+				}
+				_s.String = _string
+
+			}
+
 			_int, err = serializer.Read_int(_r, _b)
 			if err != nil {
 				return
 			}
-			_k = _int
-
-			_bool, err = serializer.Read_bool(_r, _b)
-			if err != nil {
-				return
-			}
-			if _bool {
-				_s[_k] = nil
-			} else {
-				_s[_k] = new(Basic)
-				err = _s[_k].UnmarshalBinaryFrom(_r)
-				if err != nil {
-					return
-				}
-			}
+			_s[_k] = _int
 		}
 	}
 

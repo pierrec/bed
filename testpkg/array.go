@@ -31,3 +31,14 @@ type ArrayPtr struct {
 	Complex128 *[4]complex128
 	String     *[4]string
 }
+
+type ArrayAnon struct {
+	Anon [4]struct {
+		Int    int
+		String string
+	}
+	AnonSlice [4][]struct {
+		Uint   uint
+		Uint32 uint32
+	}
+}

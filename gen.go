@@ -148,8 +148,9 @@ func hasType(name string, data []interface{}) bool {
 	return false
 }
 
-// processRecords removes the package name if it is equal to the one where the methods are created.
-// It also records imports into the imps map.
+// processRecords mutates the records as follow:
+//  - removes the package name if it is equal to the one where the methods are created
+//  - records imports into the imps map
 func processRecords(records []genRecord, name string, imps map[string]bool) {
 	for i, rec := range records {
 		switch rec.FuncKind {
@@ -648,13 +649,19 @@ func (c *genConfig) genBody(level int, w io.Writer, records []genRecord, data ma
 	}
 	doalloc := func(rec genRecord) error {
 		var alloc string
-		switch rec.Is {
-		case isByteSlice:
+		switch is, custom := rec.Is, rec.Name != "" && rec.Kind != rec.Name; {
+		case is == isByteSlice && !custom:
 			// No allocation required as Read_bytes does it.
 			return nil
-		case isMap:
+		case is == isMap && !custom:
 			alloc = `
 %tab%%idlevel% = make(%kind%)`
+		case is == isMap && custom:
+			alloc = `
+%tab%%idlevel% = make(%kindname%)`
+		case custom:
+			alloc = `
+%tab%%idlevel% = new(%kindname%)`
 		default:
 			alloc = `
 %tab%%idlevel% = new(%kind%)`
@@ -702,7 +709,11 @@ func (c *genConfig) genBody(level int, w io.Writer, records []genRecord, data ma
 			if err := doinc("include", rec.Include, vconv); err != nil {
 				return err
 			}
-			data["kindkey"] = rec.Key[0].Kind
+			if key := rec.Key[0]; key.Name == "" {
+				data["kindkey"] = key.Kind
+			} else {
+				data["kindkey"] = key.Name
+			}
 			s = c.Map
 		case isPointer:
 			if err := doinc("include", rec.Include, pconv); err != nil {
@@ -719,6 +730,7 @@ func (c *genConfig) genBody(level int, w io.Writer, records []genRecord, data ma
 		}
 		data["id"] = rec.Ident
 		data["kind"] = rec.Kind
+		data["kindname"] = rec.Name
 		data["funckind"] = rec.FuncKind
 		data["idlevel"], data["value"], data["conv"] = conv(rec)
 		if err := templateExec(w, s, data); err != nil {

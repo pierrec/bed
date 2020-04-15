@@ -11,11 +11,12 @@ import (
 	"github.com/pierrec/serializer"
 )
 
-func TestGen(t *testing.T) {
+func TestMethods(t *testing.T) {
 	var (
 		_s       = func(v ...int) []int { return v }
 		one, two = 1, 2
 		basic    = &Basic{
+			Bool:       true,
 			Int:        -100,
 			Int8:       -80,
 			Int16:      -1600,
@@ -31,6 +32,7 @@ func TestGen(t *testing.T) {
 			String:     "hi",
 		}
 		slice = &Slice{
+			Bool:       []bool{false, true, false, true},
 			Int:        []int{-100, -200, -300, -400},
 			Int8:       []int8{-81, -82, -83, -84},
 			Int16:      []int16{-1601, -1602, -1603, -1604},
@@ -74,6 +76,7 @@ func TestGen(t *testing.T) {
 			},
 		}
 		mapp = &Map{
+			BoolBool:   map[bool]bool{false: true, true: false},
 			StringInt:  map[string]int{"a": 1, "b": 2},
 			StringInts: map[string][]int{"a": _s(1, 11), "b": _s(2, 22)},
 			IntPtrInt:  map[*int]int{&one: 11, &two: 22},
@@ -81,22 +84,7 @@ func TestGen(t *testing.T) {
 		cmpUintPointers = cmpopts.SortMaps(func(x, y *uint) bool { return *x < *y })
 		cmpIntPointers  = cmpopts.SortMaps(func(x, y *int) bool { return *x < *y })
 	)
-	for _, tc := range []interface{}{
-		basic, slice, array,
-		&CompositeOnly{
-			Basic: *basic,
-			Slice: *slice,
-			Array: *array,
-			Map:   *mapp,
-		},
-		&Composite{
-			Bytes: []byte("I am a slice of bytes"),
-			Basic: *basic,
-			Slice: *slice,
-			Array: *array,
-		},
-		sliceAnon,
-	} {
+	for _, tc := range []interface{}{basic, slice, array, sliceAnon, mapp} {
 		label := fmt.Sprintf("%T", tc)
 		t.Run(label, func(t *testing.T) {
 			from := tc.(serializer.Interface)

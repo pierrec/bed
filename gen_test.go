@@ -1,9 +1,9 @@
 package serializer_test
 
 import (
-	"fmt"
 	"os"
 	"path"
+	"strings"
 	"testing"
 
 	"github.com/pierrec/serializer"
@@ -20,14 +20,12 @@ func TestGen(t *testing.T) {
 	for _, tc := range []tcase{
 		{"basic_gen.go", _s(testpkg.Basic{}, testpkg.BasicPtr{}, testpkg.BasicEmbed{}, testpkg.BasicAnon{})},
 		{"slice_gen.go", _s(testpkg.Slice{}, testpkg.SlicePtr{}, testpkg.SliceAnon{})},
-		{"array_gen.go", _s(testpkg.Array{}, testpkg.ArrayPtr{})},
+		{"array_gen.go", _s(testpkg.Array{}, testpkg.ArrayPtr{}, testpkg.ArrayAnon{})},
 		{"map_gen.go", _s(testpkg.Map{})},
-		{"compositeonly_gen.go", _s(testpkg.CompositeOnly{})},
-		{"composite_gen.go", _s(testpkg.Composite{})},
-		{"misc_gen.go", _s(testpkg.Misc{})},
-		{"big_gen.go", _s(testpkg.Big{}, testpkg.BigPtr{}, testpkg.BigPtrSlice{}, testpkg.BigSlice{})},
+		{"time_gen.go", _s(testpkg.Time{}, testpkg.TimePtr{}, testpkg.TimeSlice{}, testpkg.TimeArray{}, testpkg.TimeMap{})},
+		{"big_gen.go", _s(testpkg.Big{}, testpkg.BigPtr{}, testpkg.BigPtrSlice{}, testpkg.BigSlice{}, testpkg.BigArray{}, testpkg.BigMap{})},
 	} {
-		label := fmt.Sprintf("%T", tc.data)
+		label := strings.TrimSuffix(tc.out, "_gen.go")
 		t.Run(label, func(t *testing.T) {
 			out, err := os.Create(path.Join("testpkg", tc.out))
 			if err != nil {

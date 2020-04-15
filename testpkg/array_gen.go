@@ -793,3 +793,147 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 
 	return
 }
+
+const _ArrayAnonLayout = "R4ZCYR4XZHK"
+
+func (a *ArrayAnon) MarshalBinaryTo(w io.Writer) (err error) {
+	_w, _done := serializer.NewWriter(w)
+	defer _done(&err)
+	_b := serializer.Buffers.Get()
+	defer serializer.Buffers.Put(_b)
+	err = serializer.Write_layout(_w, _b, _ArrayAnonLayout)
+	if err != nil {
+		return
+	}
+
+	var _n int
+
+	{
+		_s := &a.Anon
+		for _k := 0; _k < len(_s); _k++ {
+			{
+				_s := &_s[_k]
+
+				err = serializer.Write_int(_w, _b, _s.Int)
+				if err != nil {
+					return
+				}
+
+				err = serializer.Write_string(_w, _b, _s.String)
+				if err != nil {
+					return
+				}
+
+			}
+		}
+	}
+	{
+		_s := &a.AnonSlice
+		for _k := 0; _k < len(_s); _k++ {
+			{
+				_s := _s[_k]
+				_n = len(_s)
+				err = serializer.Write_int(_w, _b, _n)
+				if err != nil {
+					return
+				}
+				for _k := 0; _k < _n; _k++ {
+					{
+						_s := &_s[_k]
+
+						err = serializer.Write_uint(_w, _b, _s.Uint)
+						if err != nil {
+							return
+						}
+
+						err = serializer.Write_uint32(_w, _b, _s.Uint32)
+						if err != nil {
+							return
+						}
+
+					}
+				}
+			}
+		}
+	}
+	return
+}
+
+func (a *ArrayAnon) UnmarshalBinaryFrom(r io.Reader) (err error) {
+	_r := serializer.NewReader(r)
+	_b := serializer.Buffers.Get()
+	defer serializer.Buffers.Put(_b)
+	err = serializer.Read_layout(_r, _b, _ArrayAnonLayout)
+	if err != nil {
+		return
+	}
+
+	var _int int
+	var _n int
+	var _string string
+	var _uint uint
+	var _uint32 uint32
+
+	{
+		_s := &a.Anon
+		for _k := 0; _k < len(_s); _k++ {
+			{
+				_s := &_s[_k]
+
+				_int, err = serializer.Read_int(_r, _b)
+				if err != nil {
+					return
+				}
+				_s.Int = _int
+
+				_string, err = serializer.Read_string(_r, _b)
+				if err != nil {
+					return
+				}
+				_s.String = _string
+
+			}
+		}
+	}
+
+	{
+		_s := &a.AnonSlice
+		for _k := 0; _k < len(_s); _k++ {
+			_n, err = serializer.Read_int(_r, _b)
+			if err != nil {
+				return
+			}
+			if _c := cap(_s[_k]); _n > _c || _c-_n > _c/8 {
+				_s[_k] = make([]struct {
+					Uint   uint
+					Uint32 uint32
+				}, _n)
+			} else {
+				_s[_k] = (_s[_k])[:_n]
+			}
+			if _n > 0 {
+				_s := _s[_k]
+				for _k := 0; _k < _n; _k++ {
+					{
+						_s := &_s[_k]
+
+						_uint, err = serializer.Read_uint(_r, _b)
+						if err != nil {
+							return
+						}
+						_s.Uint = _uint
+
+						_uint32, err = serializer.Read_uint32(_r, _b)
+						if err != nil {
+							return
+						}
+						_s.Uint32 = _uint32
+
+					}
+				}
+			}
+		}
+	}
+
+	return
+}

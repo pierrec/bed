@@ -1,6 +1,7 @@
 package testpkg
 
 type Slice struct {
+	Bool       []bool
 	Int        []int
 	Int8       []int8
 	Int16      []int16
@@ -18,6 +19,7 @@ type Slice struct {
 }
 
 type SlicePtr struct {
+	Bool       *[]bool
 	Int        *[]int
 	Int8       *[]int8
 	Int16      *[]int16

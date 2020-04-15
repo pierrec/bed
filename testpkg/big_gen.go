@@ -516,3 +516,266 @@ func (b *BigSlice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 
 	return
 }
+
+const _BigArrayLayout = "R4ZR4ZR4Z"
+
+func (b *BigArray) MarshalBinaryTo(w io.Writer) (err error) {
+	_w, _done := serializer.NewWriter(w)
+	defer _done(&err)
+	_b := serializer.Buffers.Get()
+	defer serializer.Buffers.Put(_b)
+	err = serializer.Write_layout(_w, _b, _BigArrayLayout)
+	if err != nil {
+		return
+	}
+
+	var _bb = serializer.BigBuffers.Get()
+	defer serializer.BigBuffers.Put(_bb)
+
+	{
+		_s := &b.Float
+		for _k := 0; _k < len(_s); _k++ {
+			err = serializer.Write_bigfloat(_w, _b, _bb, _s[_k])
+			if err != nil {
+				return
+			}
+		}
+	}
+	{
+		_s := &b.Int
+		for _k := 0; _k < len(_s); _k++ {
+			err = serializer.Write_bigint(_w, _b, _bb, _s[_k])
+			if err != nil {
+				return
+			}
+		}
+	}
+	{
+		_s := &b.Rat
+		for _k := 0; _k < len(_s); _k++ {
+			err = serializer.Write_bigrat(_w, _b, _bb, _s[_k])
+			if err != nil {
+				return
+			}
+		}
+	}
+	return
+}
+
+func (b *BigArray) UnmarshalBinaryFrom(r io.Reader) (err error) {
+	_r := serializer.NewReader(r)
+	_b := serializer.Buffers.Get()
+	defer serializer.Buffers.Put(_b)
+	err = serializer.Read_layout(_r, _b, _BigArrayLayout)
+	if err != nil {
+		return
+	}
+
+	var _bb = serializer.BigBuffers.Get()
+	defer serializer.BigBuffers.Put(_bb)
+	var _bigfloat big.Float
+	var _bigint big.Int
+	var _bigrat big.Rat
+
+	{
+		_s := &b.Float
+		for _k := 0; _k < len(_s); _k++ {
+			_bigfloat, err = serializer.Read_bigfloat(_r, _b, _bb)
+			if err != nil {
+				return
+			}
+			_s[_k] = _bigfloat
+		}
+	}
+
+	{
+		_s := &b.Int
+		for _k := 0; _k < len(_s); _k++ {
+			_bigint, err = serializer.Read_bigint(_r, _b, _bb)
+			if err != nil {
+				return
+			}
+			_s[_k] = _bigint
+		}
+	}
+
+	{
+		_s := &b.Rat
+		for _k := 0; _k < len(_s); _k++ {
+			_bigrat, err = serializer.Read_bigrat(_r, _b, _bb)
+			if err != nil {
+				return
+			}
+			_s[_k] = _bigrat
+		}
+	}
+
+	return
+}
+
+const _BigMapLayout = "VCZVCZVCZ"
+
+func (b *BigMap) MarshalBinaryTo(w io.Writer) (err error) {
+	_w, _done := serializer.NewWriter(w)
+	defer _done(&err)
+	_b := serializer.Buffers.Get()
+	defer serializer.Buffers.Put(_b)
+	err = serializer.Write_layout(_w, _b, _BigMapLayout)
+	if err != nil {
+		return
+	}
+
+	var _bb = serializer.BigBuffers.Get()
+	defer serializer.BigBuffers.Put(_bb)
+
+	{
+		_s := b.Float
+		err = serializer.Write_int(_w, _b, len(_s))
+		if err != nil {
+			return
+		}
+		for _k := range _s {
+			err = serializer.Write_int(_w, _b, _k)
+			if err != nil {
+				return
+			}
+
+			err = serializer.Write_bigfloat(_w, _b, _bb, _s[_k])
+			if err != nil {
+				return
+			}
+		}
+	}
+	{
+		_s := b.Int
+		err = serializer.Write_int(_w, _b, len(_s))
+		if err != nil {
+			return
+		}
+		for _k := range _s {
+			err = serializer.Write_int(_w, _b, _k)
+			if err != nil {
+				return
+			}
+
+			err = serializer.Write_bigint(_w, _b, _bb, _s[_k])
+			if err != nil {
+				return
+			}
+		}
+	}
+	{
+		_s := b.Rat
+		err = serializer.Write_int(_w, _b, len(_s))
+		if err != nil {
+			return
+		}
+		for _k := range _s {
+			err = serializer.Write_int(_w, _b, _k)
+			if err != nil {
+				return
+			}
+
+			err = serializer.Write_bigrat(_w, _b, _bb, _s[_k])
+			if err != nil {
+				return
+			}
+		}
+	}
+	return
+}
+
+func (b *BigMap) UnmarshalBinaryFrom(r io.Reader) (err error) {
+	_r := serializer.NewReader(r)
+	_b := serializer.Buffers.Get()
+	defer serializer.Buffers.Put(_b)
+	err = serializer.Read_layout(_r, _b, _BigMapLayout)
+	if err != nil {
+		return
+	}
+
+	var _bb = serializer.BigBuffers.Get()
+	defer serializer.BigBuffers.Put(_bb)
+	var _bigfloat big.Float
+	var _bigint big.Int
+	var _bigrat big.Rat
+	var _int int
+	var _n int
+
+	_n, err = serializer.Read_int(_r, _b)
+	if err != nil {
+		return
+	}
+	if _n == 0 {
+		b.Float = nil
+	} else {
+		b.Float = make(map[int]big.Float, _n)
+		_s := b.Float
+		var _k int
+		for _j := 0; _j < _n; _j++ {
+			_int, err = serializer.Read_int(_r, _b)
+			if err != nil {
+				return
+			}
+			_k = _int
+
+			_bigfloat, err = serializer.Read_bigfloat(_r, _b, _bb)
+			if err != nil {
+				return
+			}
+			_s[_k] = _bigfloat
+		}
+	}
+
+	_n, err = serializer.Read_int(_r, _b)
+	if err != nil {
+		return
+	}
+	if _n == 0 {
+		b.Int = nil
+	} else {
+		b.Int = make(map[int]big.Int, _n)
+		_s := b.Int
+		var _k int
+		for _j := 0; _j < _n; _j++ {
+			_int, err = serializer.Read_int(_r, _b)
+			if err != nil {
+				return
+			}
+			_k = _int
+
+			_bigint, err = serializer.Read_bigint(_r, _b, _bb)
+			if err != nil {
+				return
+			}
+			_s[_k] = _bigint
+		}
+	}
+
+	_n, err = serializer.Read_int(_r, _b)
+	if err != nil {
+		return
+	}
+	if _n == 0 {
+		b.Rat = nil
+	} else {
+		b.Rat = make(map[int]big.Rat, _n)
+		_s := b.Rat
+		var _k int
+		for _j := 0; _j < _n; _j++ {
+			_int, err = serializer.Read_int(_r, _b)
+			if err != nil {
+				return
+			}
+			_k = _int
+
+			_bigrat, err = serializer.Read_bigrat(_r, _b, _bb)
+			if err != nil {
+				return
+			}
+			_s[_k] = _bigrat
+		}
+	}
+
+	return
+}

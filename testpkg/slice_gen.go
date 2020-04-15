@@ -6,7 +6,7 @@ import (
 	"github.com/pierrec/serializer"
 )
 
-const _SliceLayout = "XCXDXEXFXGXHXXJXKXLXPXQXYXVYXC"
+const _SliceLayout = "XBXCXDXEXFXGXHXXJXKXLXPXQXYXVYXC"
 
 func (s *Slice) MarshalBinaryTo(w io.Writer) (err error) {
 	_w, _done := serializer.NewWriter(w)
@@ -20,6 +20,20 @@ func (s *Slice) MarshalBinaryTo(w io.Writer) (err error) {
 
 	var _n int
 
+	{
+		_s := s.Bool
+		_n = len(_s)
+		err = serializer.Write_int(_w, _b, _n)
+		if err != nil {
+			return
+		}
+		for _k := 0; _k < _n; _k++ {
+			err = serializer.Write_bool(_w, _b, _s[_k])
+			if err != nil {
+				return
+			}
+		}
+	}
 	{
 		_s := s.Int
 		_n = len(_s)
@@ -243,6 +257,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		return
 	}
 
+	var _bool bool
 	var _complex128 complex128
 	var _complex64 complex64
 	var _int int
@@ -256,6 +271,26 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	var _uint16 uint16
 	var _uint32 uint32
 	var _uint64 uint64
+
+	_n, err = serializer.Read_int(_r, _b)
+	if err != nil {
+		return
+	}
+	if _c := cap(s.Bool); _n > _c || _c-_n > _c/8 {
+		s.Bool = make([]bool, _n)
+	} else {
+		s.Bool = (s.Bool)[:_n]
+	}
+	if _n > 0 {
+		_s := s.Bool
+		for _k := 0; _k < _n; _k++ {
+			_bool, err = serializer.Read_bool(_r, _b)
+			if err != nil {
+				return
+			}
+			_s[_k] = _bool
+		}
+	}
 
 	_n, err = serializer.Read_int(_r, _b)
 	if err != nil {
@@ -558,7 +593,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	return
 }
 
-const _SlicePtrLayout = "WXCWXDWXEWXFWXGWXHWXWXJWXKWXLWXPWXQWXYWXVYXC"
+const _SlicePtrLayout = "WXBWXCWXDWXEWXFWXGWXHWXWXJWXKWXLWXPWXQWXYWXVYXC"
 
 func (s *SlicePtr) MarshalBinaryTo(w io.Writer) (err error) {
 	_w, _done := serializer.NewWriter(w)
@@ -571,6 +606,27 @@ func (s *SlicePtr) MarshalBinaryTo(w io.Writer) (err error) {
 	}
 
 	var _n int
+
+	err = serializer.Write_bool(_w, _b, s.Bool == nil)
+	if err != nil {
+		return
+	}
+	if s.Bool != nil {
+		{
+			_s := *s.Bool
+			_n = len(_s)
+			err = serializer.Write_int(_w, _b, _n)
+			if err != nil {
+				return
+			}
+			for _k := 0; _k < _n; _k++ {
+				err = serializer.Write_bool(_w, _b, _s[_k])
+				if err != nil {
+					return
+				}
+			}
+		}
+	}
 
 	err = serializer.Write_bool(_w, _b, s.Int == nil)
 	if err != nil {
@@ -906,6 +962,35 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	var _uint16 uint16
 	var _uint32 uint32
 	var _uint64 uint64
+
+	_bool, err = serializer.Read_bool(_r, _b)
+	if err != nil {
+		return
+	}
+	if _bool {
+		s.Bool = nil
+	} else {
+		s.Bool = new([]bool)
+		_n, err = serializer.Read_int(_r, _b)
+		if err != nil {
+			return
+		}
+		if _c := cap(*s.Bool); _n > _c || _c-_n > _c/8 {
+			*s.Bool = make([]bool, _n)
+		} else {
+			*s.Bool = (*s.Bool)[:_n]
+		}
+		if _n > 0 {
+			_s := *s.Bool
+			for _k := 0; _k < _n; _k++ {
+				_bool, err = serializer.Read_bool(_r, _b)
+				if err != nil {
+					return
+				}
+				_s[_k] = _bool
+			}
+		}
+	}
 
 	_bool, err = serializer.Read_bool(_r, _b)
 	if err != nil {
