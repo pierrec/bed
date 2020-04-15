@@ -25,6 +25,13 @@ func Write_bool(w ByteWriter, _ []byte, v bool) error {
 	return w.WriteByte(_false)
 }
 
+// Write_Len is used when the value is most likely `small` (less than 1<<16).
+func Write_len(w ByteWriter, buf []byte, v int) error {
+	n := binary.PutUvarint(buf, uint64(v))
+	_, err := w.Write(buf[:n])
+	return err
+}
+
 func Write_int(w ByteWriter, buf []byte, v int) error {
 	return packUint64To(w, buf, uint64(v))
 }

@@ -157,7 +157,7 @@ func (t *TimeSlice) MarshalBinaryTo(w io.Writer) (err error) {
 	{
 		_s := t.Time
 		_n = len(_s)
-		err = serializer.Write_int(_w, _b, _n)
+		err = serializer.Write_len(_w, _b, _n)
 		if err != nil {
 			return
 		}
@@ -171,7 +171,7 @@ func (t *TimeSlice) MarshalBinaryTo(w io.Writer) (err error) {
 	{
 		_s := t.MyTime
 		_n = len(_s)
-		err = serializer.Write_int(_w, _b, _n)
+		err = serializer.Write_len(_w, _b, _n)
 		if err != nil {
 			return
 		}
@@ -197,7 +197,7 @@ func (t *TimeSlice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	var _n int
 	var _time time.Time
 
-	_n, err = serializer.Read_int(_r, _b)
+	_n, err = serializer.Read_len(_r)
 	if err != nil {
 		return
 	}
@@ -217,7 +217,7 @@ func (t *TimeSlice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_n, err = serializer.Read_int(_r, _b)
+	_n, err = serializer.Read_len(_r)
 	if err != nil {
 		return
 	}
@@ -323,7 +323,7 @@ func (t *TimeMap) MarshalBinaryTo(w io.Writer) (err error) {
 
 	{
 		_s := t.TimeKey
-		err = serializer.Write_int(_w, _b, len(_s))
+		err = serializer.Write_len(_w, _b, len(_s))
 		if err != nil {
 			return
 		}
@@ -341,7 +341,7 @@ func (t *TimeMap) MarshalBinaryTo(w io.Writer) (err error) {
 	}
 	{
 		_s := t.MyTimeKey
-		err = serializer.Write_int(_w, _b, len(_s))
+		err = serializer.Write_len(_w, _b, len(_s))
 		if err != nil {
 			return
 		}
@@ -359,7 +359,7 @@ func (t *TimeMap) MarshalBinaryTo(w io.Writer) (err error) {
 	}
 	{
 		_s := t.Time
-		err = serializer.Write_int(_w, _b, len(_s))
+		err = serializer.Write_len(_w, _b, len(_s))
 		if err != nil {
 			return
 		}
@@ -377,7 +377,7 @@ func (t *TimeMap) MarshalBinaryTo(w io.Writer) (err error) {
 	}
 	{
 		_s := t.MyTime
-		err = serializer.Write_int(_w, _b, len(_s))
+		err = serializer.Write_len(_w, _b, len(_s))
 		if err != nil {
 			return
 		}
@@ -410,7 +410,7 @@ func (t *TimeMap) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	var _n int
 	var _time time.Time
 
-	_n, err = serializer.Read_int(_r, _b)
+	_n, err = serializer.Read_len(_r)
 	if err != nil {
 		return
 	}
@@ -435,7 +435,7 @@ func (t *TimeMap) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_n, err = serializer.Read_int(_r, _b)
+	_n, err = serializer.Read_len(_r)
 	if err != nil {
 		return
 	}
@@ -460,7 +460,7 @@ func (t *TimeMap) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_n, err = serializer.Read_int(_r, _b)
+	_n, err = serializer.Read_len(_r)
 	if err != nil {
 		return
 	}
@@ -485,7 +485,7 @@ func (t *TimeMap) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_n, err = serializer.Read_int(_r, _b)
+	_n, err = serializer.Read_len(_r)
 	if err != nil {
 		return
 	}

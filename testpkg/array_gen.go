@@ -833,7 +833,7 @@ func (a *ArrayAnon) MarshalBinaryTo(w io.Writer) (err error) {
 			{
 				_s := _s[_k]
 				_n = len(_s)
-				err = serializer.Write_int(_w, _b, _n)
+				err = serializer.Write_len(_w, _b, _n)
 				if err != nil {
 					return
 				}
@@ -899,7 +899,7 @@ func (a *ArrayAnon) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	{
 		_s := &a.AnonSlice
 		for _k, _kn := 0, len(_s); _k < _kn; _k++ {
-			_n, err = serializer.Read_int(_r, _b)
+			_n, err = serializer.Read_len(_r)
 			if err != nil {
 				return
 			}

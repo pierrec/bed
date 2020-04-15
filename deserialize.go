@@ -29,6 +29,11 @@ func Read_bool(r ByteReader, _ []byte) (bool, error) {
 	return b == _true, nil
 }
 
+func Read_len(r ByteReader) (int, error) {
+	n, err := binary.ReadUvarint(r)
+	return int(n), err
+}
+
 func Read_int(r ByteReader, buf []byte) (int, error) {
 	v, err := unpackUint64From(r, buf)
 	if err != nil {

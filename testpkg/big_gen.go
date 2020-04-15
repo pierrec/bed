@@ -210,7 +210,7 @@ func (b *BigPtrSlice) MarshalBinaryTo(w io.Writer) (err error) {
 	{
 		_s := b.Float
 		_n = len(_s)
-		err = serializer.Write_int(_w, _b, _n)
+		err = serializer.Write_len(_w, _b, _n)
 		if err != nil {
 			return
 		}
@@ -230,7 +230,7 @@ func (b *BigPtrSlice) MarshalBinaryTo(w io.Writer) (err error) {
 	{
 		_s := b.Int
 		_n = len(_s)
-		err = serializer.Write_int(_w, _b, _n)
+		err = serializer.Write_len(_w, _b, _n)
 		if err != nil {
 			return
 		}
@@ -250,7 +250,7 @@ func (b *BigPtrSlice) MarshalBinaryTo(w io.Writer) (err error) {
 	{
 		_s := b.Rat
 		_n = len(_s)
-		err = serializer.Write_int(_w, _b, _n)
+		err = serializer.Write_len(_w, _b, _n)
 		if err != nil {
 			return
 		}
@@ -287,7 +287,7 @@ func (b *BigPtrSlice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	var _bool bool
 	var _n int
 
-	_n, err = serializer.Read_int(_r, _b)
+	_n, err = serializer.Read_len(_r)
 	if err != nil {
 		return
 	}
@@ -316,7 +316,7 @@ func (b *BigPtrSlice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_n, err = serializer.Read_int(_r, _b)
+	_n, err = serializer.Read_len(_r)
 	if err != nil {
 		return
 	}
@@ -345,7 +345,7 @@ func (b *BigPtrSlice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_n, err = serializer.Read_int(_r, _b)
+	_n, err = serializer.Read_len(_r)
 	if err != nil {
 		return
 	}
@@ -396,7 +396,7 @@ func (b *BigSlice) MarshalBinaryTo(w io.Writer) (err error) {
 	{
 		_s := b.Float
 		_n = len(_s)
-		err = serializer.Write_int(_w, _b, _n)
+		err = serializer.Write_len(_w, _b, _n)
 		if err != nil {
 			return
 		}
@@ -410,7 +410,7 @@ func (b *BigSlice) MarshalBinaryTo(w io.Writer) (err error) {
 	{
 		_s := b.Int
 		_n = len(_s)
-		err = serializer.Write_int(_w, _b, _n)
+		err = serializer.Write_len(_w, _b, _n)
 		if err != nil {
 			return
 		}
@@ -424,7 +424,7 @@ func (b *BigSlice) MarshalBinaryTo(w io.Writer) (err error) {
 	{
 		_s := b.Rat
 		_n = len(_s)
-		err = serializer.Write_int(_w, _b, _n)
+		err = serializer.Write_len(_w, _b, _n)
 		if err != nil {
 			return
 		}
@@ -454,7 +454,7 @@ func (b *BigSlice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	var _bigrat big.Rat
 	var _n int
 
-	_n, err = serializer.Read_int(_r, _b)
+	_n, err = serializer.Read_len(_r)
 	if err != nil {
 		return
 	}
@@ -474,7 +474,7 @@ func (b *BigSlice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_n, err = serializer.Read_int(_r, _b)
+	_n, err = serializer.Read_len(_r)
 	if err != nil {
 		return
 	}
@@ -494,7 +494,7 @@ func (b *BigSlice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_n, err = serializer.Read_int(_r, _b)
+	_n, err = serializer.Read_len(_r)
 	if err != nil {
 		return
 	}
@@ -630,7 +630,7 @@ func (b *BigMap) MarshalBinaryTo(w io.Writer) (err error) {
 
 	{
 		_s := b.Float
-		err = serializer.Write_int(_w, _b, len(_s))
+		err = serializer.Write_len(_w, _b, len(_s))
 		if err != nil {
 			return
 		}
@@ -648,7 +648,7 @@ func (b *BigMap) MarshalBinaryTo(w io.Writer) (err error) {
 	}
 	{
 		_s := b.Int
-		err = serializer.Write_int(_w, _b, len(_s))
+		err = serializer.Write_len(_w, _b, len(_s))
 		if err != nil {
 			return
 		}
@@ -666,7 +666,7 @@ func (b *BigMap) MarshalBinaryTo(w io.Writer) (err error) {
 	}
 	{
 		_s := b.Rat
-		err = serializer.Write_int(_w, _b, len(_s))
+		err = serializer.Write_len(_w, _b, len(_s))
 		if err != nil {
 			return
 		}
@@ -702,7 +702,7 @@ func (b *BigMap) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	var _int int
 	var _n int
 
-	_n, err = serializer.Read_int(_r, _b)
+	_n, err = serializer.Read_len(_r)
 	if err != nil {
 		return
 	}
@@ -727,7 +727,7 @@ func (b *BigMap) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_n, err = serializer.Read_int(_r, _b)
+	_n, err = serializer.Read_len(_r)
 	if err != nil {
 		return
 	}
@@ -752,7 +752,7 @@ func (b *BigMap) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_n, err = serializer.Read_int(_r, _b)
+	_n, err = serializer.Read_len(_r)
 	if err != nil {
 		return
 	}

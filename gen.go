@@ -385,7 +385,7 @@ func (%rcv% *%type%) MarshalBinaryTo(w io.Writer) (err error) {
 %tab%{
 %tab%	_s := %value%
 %tab%	_n = len(_s)
-%tab%	err = %pkg%.Write_int(_w, _b, _n); if err != nil { return }
+%tab%	err = %pkg%.Write_len(_w, _b, _n); if err != nil { return }
 %tab%	for _k, _kn := 0, _n; _k < _kn; _k++ {%include%	%tab%}
 %tab%}`,
 		ByteSlice: `
@@ -417,7 +417,7 @@ func (%rcv% *%type%) MarshalBinaryTo(w io.Writer) (err error) {
 		Map: `
 %tab%{
 %tab%	_s := %value%
-%tab%	err = %pkg%.Write_int(_w, _b, len(_s)); if err != nil { return }
+%tab%	err = %pkg%.Write_len(_w, _b, len(_s)); if err != nil { return }
 %tab%	for _k := range _s {%includekey%%include%	%tab%}
 %tab%}`,
 		Pointer: `
@@ -457,7 +457,7 @@ func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {
 %tab%%value% = %conv%
 `,
 		Slice: `
-%tab%_n, err = %pkg%.Read_int(_r, _b); if err != nil { return }
+%tab%_n, err = %pkg%.Read_len(_r); if err != nil { return }
 %tab%if _c := cap(%value%); _n > _c || _c - _n > _c/8 { %value% = make(%kind%, _n) } else { %value% = (%value%)[:_n] }
 %tab%if _n > 0 {
 %tab%	_s := %value%
@@ -493,7 +493,7 @@ func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {
 %tab%}
 `,
 		Map: `
-%tab%_n, err = %pkg%.Read_int(_r, _b); if err != nil { return }
+%tab%_n, err = %pkg%.Read_len(_r); if err != nil { return }
 %tab%if _n == 0 {  %idlevel% = nil } else {
 %tab%	%idlevel% = make(%kind%, _n)
 %tab%	_s := %idlevel%
