@@ -386,7 +386,7 @@ func (%rcv% *%type%) MarshalBinaryTo(w io.Writer) (err error) {
 %tab%	_s := %value%
 %tab%	_n = len(_s)
 %tab%	err = %pkg%.Write_int(_w, _b, _n); if err != nil { return }
-%tab%	for _k := 0; _k < _n; _k++ {%include%	%tab%}
+%tab%	for _k, _kn := 0, _n; _k < _kn; _k++ {%include%	%tab%}
 %tab%}`,
 		ByteSlice: `
 %tab%err = %pkg%.Write_bytes(_w, _b, %conv%); if err != nil { return }
@@ -394,7 +394,7 @@ func (%rcv% *%type%) MarshalBinaryTo(w io.Writer) (err error) {
 		Array: `
 %tab%{
 %tab%	_s := &%value%
-%tab%	for _k := 0; _k < len(_s); _k++ {%include%	%tab%}
+%tab%	for _k, _kn := 0, len(_s); _k < _kn; _k++ {%include%	%tab%}
 %tab%}`,
 		ByteArray: `
 %tab%err = %pkg%.Write_bytea(_w, (%conv%)[:]); if err != nil { return }
@@ -461,7 +461,7 @@ func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {
 %tab%if _c := cap(%value%); _n > _c || _c - _n > _c/8 { %value% = make(%kind%, _n) } else { %value% = (%value%)[:_n] }
 %tab%if _n > 0 {
 %tab%	_s := %value%
-%tab%	for _k := 0; _k < _n; _k++ {%include%	%tab%}
+%tab%	for _k, _kn := 0, _n; _k < _kn; _k++ {%include%	%tab%}
 %tab%}
 `,
 		ByteSlice: `
@@ -470,7 +470,7 @@ func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		Array: `
 %tab%{
 %tab%	_s := &%value%
-%tab%	for _k := 0; _k < len(_s); _k++ {%include%	%tab%}
+%tab%	for _k, _kn := 0, len(_s); _k < _kn; _k++ {%include%	%tab%}
 %tab%}
 `,
 		ByteArray: `
@@ -498,7 +498,7 @@ func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {
 %tab%	%idlevel% = make(%kind%, _n)
 %tab%	_s := %idlevel%
 %tab%	var _k %kindkey%
-%tab%	for _j := 0; _j < _n; _j++ {%includekey%%include%	%tab%}
+%tab%	for _j, _jn := 0 ,_n; _j < _jn; _j++ {%includekey%%include%	%tab%}
 %tab%}
 `,
 		Pointer: `

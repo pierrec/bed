@@ -93,7 +93,7 @@ func (m *Map) MarshalBinaryTo(w io.Writer) (err error) {
 				if err != nil {
 					return
 				}
-				for _k := 0; _k < _n; _k++ {
+				for _k, _kn := 0, _n; _k < _kn; _k++ {
 					err = serializer.Write_int(_w, _b, _s[_k])
 					if err != nil {
 						return
@@ -260,7 +260,7 @@ func (m *Map) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		m.Empty = make(map[int]int, _n)
 		_s := m.Empty
 		var _k int
-		for _j := 0; _j < _n; _j++ {
+		for _j, _jn := 0, _n; _j < _jn; _j++ {
 			_int, err = serializer.Read_int(_r, _b)
 			if err != nil {
 				return
@@ -285,7 +285,7 @@ func (m *Map) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		m.BoolBool = make(map[bool]bool, _n)
 		_s := m.BoolBool
 		var _k bool
-		for _j := 0; _j < _n; _j++ {
+		for _j, _jn := 0, _n; _j < _jn; _j++ {
 			_bool, err = serializer.Read_bool(_r, _b)
 			if err != nil {
 				return
@@ -310,7 +310,7 @@ func (m *Map) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		m.StringInt = make(map[string]int, _n)
 		_s := m.StringInt
 		var _k string
-		for _j := 0; _j < _n; _j++ {
+		for _j, _jn := 0, _n; _j < _jn; _j++ {
 			_string, err = serializer.Read_string(_r, _b)
 			if err != nil {
 				return
@@ -335,7 +335,7 @@ func (m *Map) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		m.StringInts = make(map[string][]int, _n)
 		_s := m.StringInts
 		var _k string
-		for _j := 0; _j < _n; _j++ {
+		for _j, _jn := 0, _n; _j < _jn; _j++ {
 			_string, err = serializer.Read_string(_r, _b)
 			if err != nil {
 				return
@@ -353,7 +353,7 @@ func (m *Map) UnmarshalBinaryFrom(r io.Reader) (err error) {
 			}
 			if _n > 0 {
 				_s := _s[_k]
-				for _k := 0; _k < _n; _k++ {
+				for _k, _kn := 0, _n; _k < _kn; _k++ {
 					_int, err = serializer.Read_int(_r, _b)
 					if err != nil {
 						return
@@ -374,7 +374,7 @@ func (m *Map) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		m.UintPtrUint = make(map[*uint]uint, _n)
 		_s := m.UintPtrUint
 		var _k *uint
-		for _j := 0; _j < _n; _j++ {
+		for _j, _jn := 0, _n; _j < _jn; _j++ {
 			_bool, err = serializer.Read_bool(_r, _b)
 			if err != nil {
 				return
@@ -408,7 +408,7 @@ func (m *Map) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		m.IntPtrInt = make(map[*int]int, _n)
 		_s := m.IntPtrInt
 		var _k *int
-		for _j := 0; _j < _n; _j++ {
+		for _j, _jn := 0, _n; _j < _jn; _j++ {
 			_bool, err = serializer.Read_bool(_r, _b)
 			if err != nil {
 				return
@@ -442,7 +442,7 @@ func (m *Map) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		m.IntIntPtr = make(map[int]*int, _n)
 		_s := m.IntIntPtr
 		var _k int
-		for _j := 0; _j < _n; _j++ {
+		for _j, _jn := 0, _n; _j < _jn; _j++ {
 			_int, err = serializer.Read_int(_r, _b)
 			if err != nil {
 				return
@@ -476,7 +476,7 @@ func (m *Map) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		m.IntPtrIntPtr = make(map[*int]*int, _n)
 		_s := m.IntPtrIntPtr
 		var _k *int
-		for _j := 0; _j < _n; _j++ {
+		for _j, _jn := 0, _n; _j < _jn; _j++ {
 			_bool, err = serializer.Read_bool(_r, _b)
 			if err != nil {
 				return
@@ -525,7 +525,7 @@ func (m *Map) UnmarshalBinaryFrom(r io.Reader) (err error) {
 			Int    int
 			String string
 		}
-		for _j := 0; _j < _n; _j++ {
+		for _j, _jn := 0, _n; _j < _jn; _j++ {
 			{
 				_s := &_k
 

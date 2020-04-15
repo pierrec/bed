@@ -161,7 +161,7 @@ func (t *TimeSlice) MarshalBinaryTo(w io.Writer) (err error) {
 		if err != nil {
 			return
 		}
-		for _k := 0; _k < _n; _k++ {
+		for _k, _kn := 0, _n; _k < _kn; _k++ {
 			err = serializer.Write_time(_w, _b, _s[_k])
 			if err != nil {
 				return
@@ -175,7 +175,7 @@ func (t *TimeSlice) MarshalBinaryTo(w io.Writer) (err error) {
 		if err != nil {
 			return
 		}
-		for _k := 0; _k < _n; _k++ {
+		for _k, _kn := 0, _n; _k < _kn; _k++ {
 			err = serializer.Write_time(_w, _b, time.Time(_s[_k]))
 			if err != nil {
 				return
@@ -208,7 +208,7 @@ func (t *TimeSlice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	}
 	if _n > 0 {
 		_s := t.Time
-		for _k := 0; _k < _n; _k++ {
+		for _k, _kn := 0, _n; _k < _kn; _k++ {
 			_time, err = serializer.Read_time(_r, _b)
 			if err != nil {
 				return
@@ -228,7 +228,7 @@ func (t *TimeSlice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	}
 	if _n > 0 {
 		_s := t.MyTime
-		for _k := 0; _k < _n; _k++ {
+		for _k, _kn := 0, _n; _k < _kn; _k++ {
 			_time, err = serializer.Read_time(_r, _b)
 			if err != nil {
 				return
@@ -254,7 +254,7 @@ func (t *TimeArray) MarshalBinaryTo(w io.Writer) (err error) {
 
 	{
 		_s := &t.Time
-		for _k := 0; _k < len(_s); _k++ {
+		for _k, _kn := 0, len(_s); _k < _kn; _k++ {
 			err = serializer.Write_time(_w, _b, _s[_k])
 			if err != nil {
 				return
@@ -263,7 +263,7 @@ func (t *TimeArray) MarshalBinaryTo(w io.Writer) (err error) {
 	}
 	{
 		_s := &t.MyTime
-		for _k := 0; _k < len(_s); _k++ {
+		for _k, _kn := 0, len(_s); _k < _kn; _k++ {
 			err = serializer.Write_time(_w, _b, time.Time(_s[_k]))
 			if err != nil {
 				return
@@ -286,7 +286,7 @@ func (t *TimeArray) UnmarshalBinaryFrom(r io.Reader) (err error) {
 
 	{
 		_s := &t.Time
-		for _k := 0; _k < len(_s); _k++ {
+		for _k, _kn := 0, len(_s); _k < _kn; _k++ {
 			_time, err = serializer.Read_time(_r, _b)
 			if err != nil {
 				return
@@ -297,7 +297,7 @@ func (t *TimeArray) UnmarshalBinaryFrom(r io.Reader) (err error) {
 
 	{
 		_s := &t.MyTime
-		for _k := 0; _k < len(_s); _k++ {
+		for _k, _kn := 0, len(_s); _k < _kn; _k++ {
 			_time, err = serializer.Read_time(_r, _b)
 			if err != nil {
 				return
@@ -420,7 +420,7 @@ func (t *TimeMap) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		t.TimeKey = make(map[time.Time]bool, _n)
 		_s := t.TimeKey
 		var _k time.Time
-		for _j := 0; _j < _n; _j++ {
+		for _j, _jn := 0, _n; _j < _jn; _j++ {
 			_time, err = serializer.Read_time(_r, _b)
 			if err != nil {
 				return
@@ -445,7 +445,7 @@ func (t *TimeMap) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		t.MyTimeKey = make(map[MyTime]bool, _n)
 		_s := t.MyTimeKey
 		var _k MyTime
-		for _j := 0; _j < _n; _j++ {
+		for _j, _jn := 0, _n; _j < _jn; _j++ {
 			_time, err = serializer.Read_time(_r, _b)
 			if err != nil {
 				return
@@ -470,7 +470,7 @@ func (t *TimeMap) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		t.Time = make(map[int]time.Time, _n)
 		_s := t.Time
 		var _k int
-		for _j := 0; _j < _n; _j++ {
+		for _j, _jn := 0, _n; _j < _jn; _j++ {
 			_int, err = serializer.Read_int(_r, _b)
 			if err != nil {
 				return
@@ -495,7 +495,7 @@ func (t *TimeMap) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		t.MyTime = make(map[int]MyTime, _n)
 		_s := t.MyTime
 		var _k int
-		for _j := 0; _j < _n; _j++ {
+		for _j, _jn := 0, _n; _j < _jn; _j++ {
 			_int, err = serializer.Read_int(_r, _b)
 			if err != nil {
 				return
