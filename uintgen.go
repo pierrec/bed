@@ -13,10 +13,12 @@ import (
 )
 
 func genUnpack64Table() []unpack64Entry {
-	table := make([]unpack64Entry, 256)
+	// Skip first and last entry as they are trivial.
+	table := make([]unpack64Entry, 254)
 
 	for i := range table {
 		entry := &table[i]
+		i++
 		i := bits.Reverse8(uint8(i))
 		entry.num = bits.OnesCount8(i)
 		shift := bits.TrailingZeros8(i) / 8
