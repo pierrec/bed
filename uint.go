@@ -12,24 +12,21 @@ import (
 // packUint64 packs x into buf and returns the number of bytes used.
 // buf must be at least 9 bytes long.
 func packUint64(buf []byte, x uint64) int {
-	_ = buf[:9]
-
 	if x == 0 {
 		buf[0] = 0
 		return 1
 	}
-	x = bits.ReverseBytes64(x)
 	var bitmap uint8
 	b := buf[1:1]
 	for i := 0; i < 8; i++ {
 		bitmap <<= 1
-		if x&0xFF > 0 {
+		if x := byte(x); x > 0 {
 			bitmap |= 1
-			b = append(b, byte(x))
+			b = append(b, x)
 		}
 		x >>= 8
 	}
-	buf[0] = bits.Reverse8(bitmap)
+	buf[0] = bitmap
 
 	return len(b) + 1
 }
@@ -42,17 +39,16 @@ func packUint64To(w io.Writer, buf []byte, x uint64) error {
 
 // unpackUint64 unpacks buf and returns the value.
 func unpackUint64(bitmap byte, buf []byte) (x uint64) {
-	if bitmap == 0 {
-		return
-	}
-	for i := 0; i < 8; i++ {
+	left := bits.LeadingZeros8(bitmap)
+	for i := bits.OnesCount8(bitmap); i > 0; {
 		x <<= 8
 		if bitmap&1 > 0 {
-			x |= uint64(buf[0])
-			buf = buf[1:]
+			i--
+			x |= uint64(buf[i])
 		}
 		bitmap >>= 1
 	}
+	x <<= 8 * left
 	return
 }
 
