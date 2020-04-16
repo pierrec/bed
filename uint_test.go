@@ -17,6 +17,8 @@ func TestPackUint(t *testing.T) {
 		1 << 20,
 		1<<20 | 1<<10,
 		1 << 63,
+		0xF0F0F0F0,
+		0xF0F0F0F0F0F0F0F0,
 		math.Float64bits(math.Pi),
 		math.Float64bits(math.Phi),
 		math.Float64bits(math.E),
@@ -56,11 +58,16 @@ func BenchmarkPackUint64_zebra(b *testing.B) {
 	benchmarkPackUint64(b, 0xF0F0F0F0)
 }
 
+func BenchmarkPackUint64_zebra2(b *testing.B) {
+	benchmarkPackUint64(b, 0xF0F0F0F0F0F0F0F0)
+}
+
 func benchmarkUnpackUint64(b *testing.B, x uint64) {
 	buf := make([]byte, 16)
 	n := packUint64(buf, x)
 	bitmap := buf[0]
 	buf = buf[1:n]
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		benchX = unpackUint64(bitmap, buf)
 	}
@@ -76,4 +83,8 @@ func BenchmarkUnpackUint64_1024(b *testing.B) {
 
 func BenchmarkUnpackUint64_zebra(b *testing.B) {
 	benchmarkUnpackUint64(b, 0xF0F0F0F0)
+}
+
+func BenchmarkUnpackUint64_zebra2(b *testing.B) {
+	benchmarkUnpackUint64(b, 0xF0F0F0F0F0F0F0F0)
 }

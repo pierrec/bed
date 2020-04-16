@@ -1,6 +1,7 @@
 package serializer
 
 import (
+	"encoding/binary"
 	"io"
 	"math/bits"
 )
@@ -12,13 +13,19 @@ import (
 // packUint64 packs x into buf and returns the number of bytes used.
 // buf must be at least 9 bytes long.
 func packUint64(buf []byte, x uint64) int {
-	if x == 0 {
+	switch x {
+	case 0:
 		buf[0] = 0
 		return 1
+	case ^uint64(0):
+		buf[0] = 0xF
+		binary.BigEndian.PutUint64(buf[1:], x)
+		return 9
 	}
+	left := bits.LeadingZeros64(x)
 	var bitmap uint8
 	b := buf[1:1]
-	for i := 0; i < 8; i++ {
+	for x > 0 {
 		bitmap <<= 1
 		if x := byte(x); x > 0 {
 			bitmap |= 1
@@ -26,7 +33,7 @@ func packUint64(buf []byte, x uint64) int {
 		}
 		x >>= 8
 	}
-	buf[0] = bitmap
+	buf[0] = bitmap << (left / 8)
 
 	return len(b) + 1
 }
