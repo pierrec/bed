@@ -6,9 +6,16 @@ import (
 	"math/bits"
 )
 
+//go:generate go run uintgen.go
+
 // Pack and unpack integers:
 //  - first byte contains a bitmap of the non zero bytes found in the integer
 //  - following bytes are the integer non zero bytes
+
+type unpack64Entry struct {
+	num                 int // number of non zero bytes
+	a, b, c, d, e, f, g int // shifts
+}
 
 // packUint64 packs x into buf and returns the number of bytes used.
 // buf must be at least 9 bytes long.
@@ -46,16 +53,28 @@ func packUint64To(w io.Writer, buf []byte, x uint64) error {
 
 // unpackUint64 unpacks buf and returns the value.
 func unpackUint64(bitmap byte, buf []byte) (x uint64) {
-	left := bits.LeadingZeros8(bitmap)
-	for i := bits.OnesCount8(bitmap); i > 0; {
-		x <<= 8
-		if bitmap&1 > 0 {
-			i--
-			x |= uint64(buf[i])
-		}
-		bitmap >>= 1
+	entry := unpack64Table[bitmap]
+	switch entry.num {
+	case 1:
+		x = uint64(buf[0]) << entry.a
+	case 2:
+		x = uint64(buf[0])<<entry.a | uint64(buf[1])<<entry.b
+	case 3:
+		x = uint64(buf[0])<<entry.a | uint64(buf[1])<<entry.b | uint64(buf[2])<<entry.c
+	case 4:
+		x = uint64(buf[0])<<entry.a | uint64(buf[1])<<entry.b | uint64(buf[2])<<entry.c | uint64(buf[3])<<entry.d
+	case 5:
+		x = uint64(buf[0])<<entry.a | uint64(buf[1])<<entry.b | uint64(buf[2])<<entry.c | uint64(buf[3])<<entry.d |
+			uint64(buf[4])<<entry.e
+	case 6:
+		x = uint64(buf[0])<<entry.a | uint64(buf[1])<<entry.b | uint64(buf[2])<<entry.c | uint64(buf[3])<<entry.d |
+			uint64(buf[4])<<entry.e | uint64(buf[5])<<entry.f
+	case 7:
+		x = uint64(buf[0])<<entry.a | uint64(buf[1])<<entry.b | uint64(buf[2])<<entry.c | uint64(buf[3])<<entry.d |
+			uint64(buf[4])<<entry.e | uint64(buf[5])<<entry.f | uint64(buf[6])<<entry.g
+	case 8:
+		x = binary.LittleEndian.Uint64(buf)
 	}
-	x <<= 8 * left
 	return
 }
 

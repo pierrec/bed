@@ -81,10 +81,18 @@ func BenchmarkUnpackUint64_1024(b *testing.B) {
 	benchmarkUnpackUint64(b, 1024)
 }
 
-func BenchmarkUnpackUint64_zebra(b *testing.B) {
+func BenchmarkUnpackUint64_zebra2(b *testing.B) {
+	benchmarkUnpackUint64(b, 0xF0F0)
+}
+
+func BenchmarkUnpackUint64_zebra4(b *testing.B) {
 	benchmarkUnpackUint64(b, 0xF0F0F0F0)
 }
 
-func BenchmarkUnpackUint64_zebra2(b *testing.B) {
+func BenchmarkUnpackUint64_zebra6(b *testing.B) {
+	benchmarkUnpackUint64(b, 0xF0F0F0F0F0F0F0)
+}
+
+func BenchmarkUnpackUint64_zebra8(b *testing.B) {
 	benchmarkUnpackUint64(b, 0xF0F0F0F0F0F0F0F0)
 }
