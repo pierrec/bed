@@ -28,7 +28,7 @@ func TestPackUint(t *testing.T) {
 			buf := make([]byte, 16)
 			n := packUint64(buf, tc)
 			t.Logf("packed size for %d = %d", tc, n)
-			x := unpackUint64(buf[0], buf[1:n])
+			x := unpackUint64(buf[0], buf[1:])
 			if got, want := x, tc; got != want {
 				t.Errorf("got %d; want %d", got, want)
 			}
@@ -64,9 +64,9 @@ func BenchmarkPackUint64_zebra2(b *testing.B) {
 
 func benchmarkUnpackUint64(b *testing.B, x uint64) {
 	buf := make([]byte, 16)
-	n := packUint64(buf, x)
+	packUint64(buf, x)
 	bitmap := buf[0]
-	buf = buf[1:n]
+	buf = buf[1:]
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		benchX = unpackUint64(bitmap, buf)

@@ -128,10 +128,10 @@ func packUint64To(w io.Writer, buf []byte, x uint64) error {
 }
 
 // unpackUint64 unpacks buf and returns the value.
-func unpackUint64(bitmap byte, buf []byte) (x uint64) {
+func unpackUint64(bitmap byte, buf []byte) uint64 {
 	switch bitmap {
 	case 0:
-		return
+		return 0
 	case 0xFF:
 		return binary.LittleEndian.Uint64(buf)
 	}
@@ -140,24 +140,22 @@ func unpackUint64(bitmap byte, buf []byte) (x uint64) {
 	a, b, c, d, e, f, g := entry.a, entry.b, entry.c, entry.d, entry.e, entry.f, entry.g
 	switch entry.num {
 	case 1:
-		x = uint64(buf[0]) << a
+		return uint64(buf[0]) << a
 	case 2:
-		x = uint64(buf[0])<<a | uint64(buf[1])<<b
+		return uint64(buf[0])<<a | uint64(buf[1])<<b
 	case 3:
-		x = uint64(buf[0])<<a | uint64(buf[1])<<b | uint64(buf[2])<<c
+		return uint64(buf[0])<<a | uint64(buf[1])<<b | uint64(buf[2])<<c
 	case 4:
-		x = uint64(buf[0])<<a | uint64(buf[1])<<b | uint64(buf[2])<<c | uint64(buf[3])<<d
+		return uint64(buf[0])<<a | uint64(buf[1])<<b | uint64(buf[2])<<c | uint64(buf[3])<<d
 	case 5:
-		x = uint64(buf[0])<<a | uint64(buf[1])<<b | uint64(buf[2])<<c | uint64(buf[3])<<d |
+		return uint64(buf[0])<<a | uint64(buf[1])<<b | uint64(buf[2])<<c | uint64(buf[3])<<d |
 			uint64(buf[4])<<e
 	case 6:
-		x = uint64(buf[0])<<a | uint64(buf[1])<<b | uint64(buf[2])<<c | uint64(buf[3])<<d |
+		return uint64(buf[0])<<a | uint64(buf[1])<<b | uint64(buf[2])<<c | uint64(buf[3])<<d |
 			uint64(buf[4])<<e | uint64(buf[5])<<f
-	case 7:
-		x = uint64(buf[0])<<a | uint64(buf[1])<<b | uint64(buf[2])<<c | uint64(buf[3])<<d |
-			uint64(buf[4])<<e | uint64(buf[5])<<f | uint64(buf[6])<<g
 	}
-	return
+	return uint64(buf[0])<<a | uint64(buf[1])<<b | uint64(buf[2])<<c | uint64(buf[3])<<d |
+		uint64(buf[4])<<e | uint64(buf[5])<<f | uint64(buf[6])<<g
 }
 
 func unpackUint64From(r ByteReader, buf []byte) (uint64, error) {
@@ -283,28 +281,6 @@ func packUint32To(w io.Writer, buf []byte, x uint32) error {
 
 // unpackUint32 unpacks buf and returns the value.
 func unpackUint32(bitmap byte, buf []byte) (x uint32) {
-	entry := unpack64Table[bitmap]
-	switch entry.num {
-	case 1:
-		x = uint32(buf[0]) << entry.a
-	case 2:
-		x = uint32(buf[0])<<entry.a | uint32(buf[1])<<entry.b
-	case 3:
-		x = uint32(buf[0])<<entry.a | uint32(buf[1])<<entry.b | uint32(buf[2])<<entry.c
-	case 4:
-		x = uint32(buf[0])<<entry.a | uint32(buf[1])<<entry.b | uint32(buf[2])<<entry.c | uint32(buf[3])<<entry.d
-	case 5:
-		x = uint32(buf[0])<<entry.a | uint32(buf[1])<<entry.b | uint32(buf[2])<<entry.c | uint32(buf[3])<<entry.d |
-			uint32(buf[4])<<entry.e
-	case 6:
-		x = uint32(buf[0])<<entry.a | uint32(buf[1])<<entry.b | uint32(buf[2])<<entry.c | uint32(buf[3])<<entry.d |
-			uint32(buf[4])<<entry.e | uint32(buf[5])<<entry.f
-	case 7:
-		x = uint32(buf[0])<<entry.a | uint32(buf[1])<<entry.b | uint32(buf[2])<<entry.c | uint32(buf[3])<<entry.d |
-			uint32(buf[4])<<entry.e | uint32(buf[5])<<entry.f | uint32(buf[6])<<entry.g
-	case 8:
-		x = binary.LittleEndian.Uint32(buf)
-	}
 	return
 }
 
