@@ -1,54 +1,37 @@
 package serializer
 
 import (
-	"encoding/binary"
 	"io"
 	"math/bits"
 )
 
 // Pack and unpack integers:
-//  - first byte contains the number of non zero bytes of the original integer
-//  - first byte packs the last byte if it fits
-//  - following bytes are the integer bytes up to the first non leading zero
-
-func packSize(n int) uint8 {
-	if n == 0 {
-		return 1
-	}
-	return uint8(n-1) << 5
-}
-
-func unpackSize(c byte) int {
-	return 1 + int(c)>>5
-}
-
-func packIsSmall(c byte) bool {
-	return c < 1<<5
-}
-
-func unpackSmall(c byte) (byte, bool) {
-	r := c & (1<<5 - 1)
-	return r, r > 0
-}
+//  - first byte contains a bitmap of the non zero bytes found in the integer
+//  - following bytes are the integer non zero bytes
 
 // packUint64 packs x into buf and returns the number of bytes used.
 // buf must be at least 9 bytes long.
 func packUint64(buf []byte, x uint64) int {
 	_ = buf[:9]
-	buf[0] = 0
-	b := buf[1:]
-	binary.LittleEndian.PutUint64(b, x)
 
-	n := 1
-	if size := 8 - bits.LeadingZeros64(x)/8; size > 0 {
-		n = size
-		if last := uint8(x >> (8 * (n - 1))); packIsSmall(last) {
-			// Pack the last byte into the header.
-			buf[0] = last
-		}
+	if x == 0 {
+		buf[0] = 0
+		return 1
 	}
-	buf[0] |= packSize(n)
-	return n + 1
+	x = bits.ReverseBytes64(x)
+	var bitmap uint8
+	b := buf[1:1]
+	for i := 0; i < 8; i++ {
+		bitmap <<= 1
+		if x&0xFF > 0 {
+			bitmap |= 1
+			b = append(b, byte(x))
+		}
+		x >>= 8
+	}
+	buf[0] = bits.Reverse8(bitmap)
+
+	return len(b) + 1
 }
 
 func packUint64To(w io.Writer, buf []byte, x uint64) error {
@@ -58,43 +41,63 @@ func packUint64To(w io.Writer, buf []byte, x uint64) error {
 }
 
 // unpackUint64 unpacks buf and returns the value.
-func unpackUint64(buf []byte) (x uint64) {
-	h := buf[0]
-	b := buf[1:]
-	size := unpackSize(h)
-	if last, ok := unpackSmall(h); ok {
-		size--
-		x |= uint64(last) << (8 * size)
+func unpackUint64(bitmap byte, buf []byte) (x uint64) {
+	if bitmap == 0 {
+		return
 	}
-	for i := 0; i < size; i++ {
-		x |= uint64(b[i]) << (8 * i)
+	for i := 0; i < 8; i++ {
+		x <<= 8
+		if bitmap&1 > 0 {
+			x |= uint64(buf[0])
+			buf = buf[1:]
+		}
+		bitmap >>= 1
 	}
 	return
 }
 
-func unpackUint64From(r io.Reader, buf []byte) (uint64, error) {
-	if br, ok := r.(io.ByteReader); ok {
-		b, err := br.ReadByte()
-		if err != nil {
-			return 0, err
+func unpackUint64From(r ByteReader, buf []byte) (uint64, error) {
+	bitmap, err := r.ReadByte()
+	if err != nil {
+		return 0, err
+	}
+	if bitmap == 0 {
+		return 0, nil
+	}
+	n := bits.OnesCount8(bitmap)
+	if _, err := io.ReadFull(r, buf[:n]); err != nil {
+		return 0, err
+	}
+	return unpackUint64(bitmap, buf), nil
+}
+
+// packUint32 packs x into buf and returns the number of bytes used.
+// buf must be at least 5 bytes long.
+func packUint32(buf []byte, x uint32) int {
+	_ = buf[:5]
+
+	var bitmap uint8
+	b := buf[1:1]
+	var c byte
+	for x := x; x > 0; x >>= 4 {
+		bitmap <<= 1
+		if q := byte(x & 0xF); q > 0 {
+			bitmap |= 1
+			if c == 0 {
+				c = q
+			} else {
+				b = append(b, c|(q<<4))
+				c = 0
+			}
 		}
-		buf[0] = b
-	} else if _, err := io.ReadFull(r, buf[:1]); err != nil {
-		return 0, err
 	}
-	h := buf[0]
-	b := buf[1:]
-	size := unpackSize(h)
-	if _, err := io.ReadFull(r, b[:size]); err != nil {
-		return 0, err
-	}
-	var x uint64
-	if last, ok := unpackSmall(h); ok {
-		size--
-		x |= uint64(last) << (8 * size)
-	}
-	for i := 0; i < size; i++ {
-		x |= uint64(b[i]) << (8 * i)
-	}
-	return x, nil
+	buf[0] = bits.Reverse8(bitmap)
+
+	return len(b) + 1
+}
+
+func packUint32To(w io.Writer, buf []byte, x uint32) error {
+	n := packUint32(buf, x)
+	_, err := w.Write(buf[:n])
+	return err
 }

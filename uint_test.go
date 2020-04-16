@@ -21,7 +21,8 @@ func TestPackUint(t *testing.T) {
 		t.Run(label, func(t *testing.T) {
 			buf := make([]byte, 16)
 			n := packUint64(buf, tc)
-			x := unpackUint64(buf[:n])
+			t.Logf("packed size for %d = %d", tc, n)
+			x := unpackUint64(buf[0], buf[1:n])
 			if got, want := x, tc; got != want {
 				t.Errorf("got %d; want %d", got, want)
 			}
