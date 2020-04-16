@@ -20,29 +20,105 @@ type unpack64Entry struct {
 // packUint64 packs x into buf and returns the number of bytes used.
 // buf must be at least 9 bytes long.
 func packUint64(buf []byte, x uint64) int {
-	switch x {
-	case 0:
+	if x == 0 {
 		buf[0] = 0
 		return 1
-	case ^uint64(0):
-		buf[0] = 0xF
-		binary.BigEndian.PutUint64(buf[1:], x)
-		return 9
 	}
-	left := bits.LeadingZeros64(x)
 	var bitmap uint8
-	b := buf[1:1]
-	for x > 0 {
-		bitmap <<= 1
-		if x := byte(x); x > 0 {
-			bitmap |= 1
-			b = append(b, x)
-		}
-		x >>= 8
-	}
-	buf[0] = bitmap << (left / 8)
+	i := 0
 
-	return len(b) + 1
+	if x := byte(x); x > 0 {
+		bitmap = 1
+		i++
+		buf[i] = x
+	}
+	x >>= 8
+	if x == 0 {
+		buf[0] = bitmap << 7
+		return 2
+	}
+	bitmap <<= 1
+
+	if x := byte(x); x > 0 {
+		bitmap |= 1
+		i++
+		buf[i] = x
+	}
+	x >>= 8
+	if x == 0 {
+		buf[0] = bitmap << 6
+		return 3
+	}
+	bitmap <<= 1
+
+	if x := byte(x); x > 0 {
+		bitmap |= 1
+		i++
+		buf[i] = x
+	}
+	x >>= 8
+	if x == 0 {
+		buf[0] = bitmap << 5
+		return 4
+	}
+	bitmap <<= 1
+
+	if x := byte(x); x > 0 {
+		bitmap |= 1
+		i++
+		buf[i] = x
+	}
+	x >>= 8
+	if x == 0 {
+		buf[0] = bitmap << 4
+		return 5
+	}
+	bitmap <<= 1
+
+	if x := byte(x); x > 0 {
+		bitmap |= 1
+		i++
+		buf[i] = x
+	}
+	x >>= 8
+	if x == 0 {
+		buf[0] = bitmap << 3
+		return 6
+	}
+	bitmap <<= 1
+
+	if x := byte(x); x > 0 {
+		bitmap |= 1
+		i++
+		buf[i] = x
+	}
+	x >>= 8
+	if x == 0 {
+		buf[0] = bitmap << 2
+		return 7
+	}
+	bitmap <<= 1
+
+	if x := byte(x); x > 0 {
+		bitmap |= 1
+		i++
+		buf[i] = x
+	}
+	x >>= 8
+	if x == 0 {
+		buf[0] = bitmap << 1
+		return 8
+	}
+	bitmap <<= 1
+
+	if x := byte(x); x > 0 {
+		bitmap |= 1
+		i++
+		buf[i] = x
+	}
+
+	buf[0] = bitmap
+	return 9
 }
 
 func packUint64To(w io.Writer, buf []byte, x uint64) error {
