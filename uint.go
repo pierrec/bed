@@ -25,91 +25,84 @@ func packUint64(buf []byte, x uint64) int {
 		return 1
 	}
 	var bitmap uint8
-	i := 0
+	var i int
 
 	if x := byte(x); x > 0 {
-		bitmap = 1
-		i++
-		buf[i] = x
+		bitmap = 1 << 7
+		i = 1
+		buf[1] = x
 	}
 	x >>= 8
 	if x == 0 {
-		buf[0] = bitmap << 7
+		buf[0] = bitmap
 		return 2
 	}
-	bitmap <<= 1
 
 	if x := byte(x); x > 0 {
-		bitmap |= 1
+		bitmap |= 1 << 6
 		i++
 		buf[i] = x
 	}
 	x >>= 8
 	if x == 0 {
-		buf[0] = bitmap << 6
+		buf[0] = bitmap
 		return 3
 	}
-	bitmap <<= 1
 
 	if x := byte(x); x > 0 {
-		bitmap |= 1
+		bitmap |= 1 << 5
 		i++
 		buf[i] = x
 	}
 	x >>= 8
 	if x == 0 {
-		buf[0] = bitmap << 5
+		buf[0] = bitmap
 		return 4
 	}
-	bitmap <<= 1
 
 	if x := byte(x); x > 0 {
-		bitmap |= 1
+		bitmap |= 1 << 4
 		i++
 		buf[i] = x
 	}
 	x >>= 8
 	if x == 0 {
-		buf[0] = bitmap << 4
+		buf[0] = bitmap
 		return 5
 	}
-	bitmap <<= 1
 
 	if x := byte(x); x > 0 {
-		bitmap |= 1
+		bitmap |= 1 << 3
 		i++
 		buf[i] = x
 	}
 	x >>= 8
 	if x == 0 {
-		buf[0] = bitmap << 3
+		buf[0] = bitmap
 		return 6
 	}
-	bitmap <<= 1
 
 	if x := byte(x); x > 0 {
-		bitmap |= 1
+		bitmap |= 1 << 2
 		i++
 		buf[i] = x
 	}
 	x >>= 8
 	if x == 0 {
-		buf[0] = bitmap << 2
+		buf[0] = bitmap
 		return 7
 	}
-	bitmap <<= 1
 
 	if x := byte(x); x > 0 {
-		bitmap |= 1
+		bitmap |= 1 << 1
 		i++
 		buf[i] = x
 	}
 	x >>= 8
 	if x == 0 {
-		buf[0] = bitmap << 1
+		buf[0] = bitmap
 		return 8
 	}
-	bitmap <<= 1
 
 	if x := byte(x); x > 0 {
 		bitmap |= 1
@@ -180,97 +173,105 @@ func packUint32(buf []byte, x uint32) int {
 		buf[0] = 0
 		return 1
 	}
+	var acc uint32
+	var i int
 	var bitmap uint8
-	i := 0
 
-	if x := byte(x) & 0xF; x > 0 {
-		bitmap = 1
-		i++
-		buf[i] = x
+	if x := x & 0xF; x > 0 {
+		bitmap = 1 << 7
+		acc = x
+		i = 1
 	}
 	x >>= 4
 	if x == 0 {
-		buf[0] = bitmap << 7
+		buf[0] = bitmap
+		buf[1] = byte(acc)
 		return 2
 	}
-	bitmap <<= 1
 
-	if x := byte(x) & 0xF0; x > 0 {
-		bitmap |= 1
-		buf[i] |= x
+	if x := x & 0xF; x > 0 {
+		bitmap |= 1 << 6
+		acc |= x << (i * 4)
+		i++
 	}
 	x >>= 4
 	if x == 0 {
-		buf[0] = bitmap << 6
+		buf[0] = bitmap
+		buf[1] = byte(acc)
+		return 2
+	}
+
+	if x := x & 0xF; x > 0 {
+		bitmap |= 1 << 5
+		acc |= x << (i * 4)
+		i++
+	}
+	x >>= 4
+	if x == 0 {
+		buf[0] = bitmap
+		buf[1] = byte(acc)
+		buf[2] = byte(acc >> 8)
 		return 3
 	}
-	bitmap <<= 1
 
-	if x := byte(x) & 0xF; x > 0 {
-		bitmap |= 1
+	if x := x & 0xF; x > 0 {
+		bitmap |= 1 << 4
+		acc |= x << (i * 4)
 		i++
-		buf[i] = x
 	}
 	x >>= 4
 	if x == 0 {
-		buf[0] = bitmap << 5
+		buf[0] = bitmap
+		buf[1] = byte(acc)
+		buf[2] = byte(acc >> 8)
+		return 3
+	}
+
+	if x := x & 0xF; x > 0 {
+		bitmap |= 1 << 3
+		acc |= x << (i * 4)
+		i++
+	}
+	x >>= 4
+	if x == 0 {
+		buf[0] = bitmap
+		buf[1] = byte(acc)
+		buf[2] = byte(acc >> 8)
+		buf[3] = byte(acc >> 16)
 		return 4
 	}
-	bitmap <<= 1
 
-	if x := byte(x) & 0xF0; x > 0 {
-		bitmap |= 1
-		buf[i] |= x
-	}
-	x >>= 4
-	if x == 0 {
-		buf[0] = bitmap << 4
-		return 5
-	}
-	bitmap <<= 1
-
-	if x := byte(x) & 0xF; x > 0 {
-		bitmap |= 1
+	if x := x & 0xF; x > 0 {
+		bitmap |= 1 << 2
+		acc |= x << (i * 4)
 		i++
-		buf[i] = x
 	}
 	x >>= 4
 	if x == 0 {
-		buf[0] = bitmap << 3
-		return 6
+		buf[0] = bitmap
+		buf[1] = byte(acc)
+		buf[2] = byte(acc >> 8)
+		buf[3] = byte(acc >> 16)
+		return 4
 	}
-	bitmap <<= 1
 
-	if x := byte(x) & 0xF0; x > 0 {
-		bitmap |= 1
-		buf[i] |= x
-	}
-	x >>= 4
-	if x == 0 {
-		buf[0] = bitmap << 2
-		return 7
-	}
-	bitmap <<= 1
-
-	if x := byte(x) & 0xF; x > 0 {
-		bitmap |= 1
+	if x := x & 0xF; x > 0 {
+		bitmap |= 1 << 1
+		acc |= x << (i * 4)
 		i++
-		buf[i] = x
 	}
 	x >>= 4
-	if x == 0 {
-		buf[0] = bitmap << 1
-		return 8
-	}
-	bitmap <<= 1
-
-	if x := byte(x) & 0xF; x > 0 {
+	if x := x & 0xF; x > 0 {
 		bitmap |= 1
-		buf[i] |= x
+		acc |= x << (i * 4)
 	}
 
 	buf[0] = bitmap
-	return 9
+	buf[1] = byte(acc)
+	buf[2] = byte(acc >> 8)
+	buf[3] = byte(acc >> 16)
+	buf[4] = byte(acc >> 24)
+	return 5
 }
 
 func packUint32To(w io.Writer, buf []byte, x uint32) error {
@@ -280,8 +281,34 @@ func packUint32To(w io.Writer, buf []byte, x uint32) error {
 }
 
 // unpackUint32 unpacks buf and returns the value.
-func unpackUint32(bitmap byte, buf []byte) (x uint32) {
-	return
+func unpackUint32(bitmap byte, buf []byte) uint32 {
+	switch bitmap {
+	case 0:
+		return 0
+	case 255:
+		return binary.LittleEndian.Uint32(buf)
+	}
+	bitmap--
+	entry := unpack64Table[bitmap]
+	a, b, c, d, e, f, g := entry.a/2, entry.b/2, entry.c/2, entry.d/2, entry.e/2, entry.f/2, entry.g/2
+	switch entry.num {
+	case 1:
+		return uint32(buf[0]) << a
+	case 2:
+		return uint32(buf[0]&0xF)<<a | uint32(buf[0]>>4)<<b
+	case 3:
+		return uint32(buf[0]&0xF)<<a | uint32(buf[0]>>4)<<b | uint32(buf[1])<<c
+	case 4:
+		return uint32(buf[0]&0xF)<<a | uint32(buf[0]>>4)<<b | uint32(buf[1]&0xF)<<c | uint32(buf[1]>>4)<<d
+	case 5:
+		return uint32(buf[0]&0xF)<<a | uint32(buf[0]>>4)<<b | uint32(buf[1]&0xF)<<c | uint32(buf[1]>>4)<<d |
+			uint32(buf[2])<<e
+	case 6:
+		return uint32(buf[0]&0xF)<<a | uint32(buf[0]>>4)<<b | uint32(buf[1]&0xF)<<c | uint32(buf[1]>>4)<<d |
+			uint32(buf[2]&0xF)<<e | uint32(buf[2]>>4)<<f
+	}
+	return uint32(buf[0]&0xF)<<a | uint32(buf[0]>>4)<<b | uint32(buf[1]&0xF)<<c | uint32(buf[1]>>4)<<d |
+		uint32(buf[2]&0xF)<<e | uint32(buf[2]>>4)<<f | uint32(buf[3])<<g
 }
 
 func unpackUint32From(r ByteReader, buf []byte) (uint32, error) {

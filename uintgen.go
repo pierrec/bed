@@ -21,7 +21,7 @@ func genUnpack64Table() []unpack64Entry {
 		i++
 		i := bits.Reverse8(uint8(i))
 		entry.num = bits.OnesCount8(i)
-		shift := bits.TrailingZeros8(i) / 8
+		var shift int
 		for j := 0; i > 0; {
 			if i&1 > 0 {
 				entry.shifts[j] = 8 * shift
@@ -64,6 +64,58 @@ func printUnpack64Table(w io.Writer, t []unpack64Entry) (err error) {
 	return
 }
 
+func genUnpack32Table() []unpack32Entry {
+	// Skip first and last entry as they are trivial.
+	table := make([]unpack32Entry, 254)
+
+	for i := range table {
+		entry := &table[i]
+		i++
+		i := bits.Reverse8(uint8(i))
+		entry.num = bits.OnesCount8(i)
+		var shift int
+		for j := 0; i > 0; {
+			if i&1 > 0 {
+				entry.shifts[j] = 4 * shift
+				j++
+			}
+			i >>= 1
+			shift++
+		}
+	}
+
+	return table
+}
+
+type unpack32Entry struct {
+	num    int // number of non zero bytes
+	shifts [8]int
+}
+
+func printUnpack32Table(w io.Writer, t []unpack32Entry) (err error) {
+	_, err = fmt.Fprint(w, "var unpack32Table = [...]unpack32Entry{")
+	if err != nil {
+		return
+	}
+	for i, e := range t {
+		if i%8 == 0 {
+			_, err = fmt.Fprintf(w, "\n\t")
+			if err != nil {
+				return
+			}
+		}
+
+		// Drop the last shift as it is only set for 255.
+		_, err = fmt.Fprintf(w, "{%d,%d,%d,%d,%d,%d,%d,%d}, ", e.num,
+			e.shifts[0], e.shifts[1], e.shifts[2], e.shifts[3], e.shifts[4], e.shifts[5], e.shifts[6])
+		if err != nil {
+			return
+		}
+	}
+	_, err = fmt.Fprint(w, "\n}\n")
+	return
+}
+
 func main() {
 	out, err := os.Create("uint_gen.go")
 	if err != nil {
@@ -82,6 +134,9 @@ package serializer
 	}
 
 	if err := printUnpack64Table(out, genUnpack64Table()); err != nil {
+		log.Fatal(err)
+	}
+	if err := printUnpack32Table(out, genUnpack32Table()); err != nil {
 		log.Fatal(err)
 	}
 }

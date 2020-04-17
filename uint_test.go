@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestPackUint(t *testing.T) {
+func TestPackUint64(t *testing.T) {
 	for _, tc := range []uint64{
 		0,
 		1,
@@ -19,6 +19,7 @@ func TestPackUint(t *testing.T) {
 		1 << 63,
 		0xF0F0F0F0,
 		0xF0F0F0F0F0F0F0F0,
+		^uint64(0),
 		math.Float64bits(math.Pi),
 		math.Float64bits(math.Phi),
 		math.Float64bits(math.E),
@@ -29,6 +30,33 @@ func TestPackUint(t *testing.T) {
 			n := packUint64(buf, tc)
 			t.Logf("packed size for %d = %d", tc, n)
 			x := unpackUint64(buf[0], buf[1:])
+			if got, want := x, tc; got != want {
+				t.Errorf("got %d; want %d", got, want)
+			}
+		})
+	}
+}
+
+func TestPackUint32(t *testing.T) {
+	for _, tc := range []uint32{
+		0,
+		1,
+		127,
+		128,
+		256,
+		1 << 10,
+		1 << 20,
+		1<<20 | 1<<10,
+		1 << 31,
+		0xF0F0F0F0,
+		^uint32(0),
+	} {
+		label := fmt.Sprintf("%d", tc)
+		t.Run(label, func(t *testing.T) {
+			buf := make([]byte, 16)
+			n := packUint32(buf, tc)
+			t.Logf("packed size for %d = %d", tc, n)
+			x := unpackUint32(buf[0], buf[1:n])
 			if got, want := x, tc; got != want {
 				t.Errorf("got %d; want %d", got, want)
 			}
