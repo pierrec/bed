@@ -20,98 +20,98 @@ type unpack64Entry struct {
 // packUint64 packs x into buf and returns the number of bytes used.
 // buf must be at least 9 bytes long.
 func packUint64(buf []byte, x uint64) int {
+	_ = buf[8]
 	if x == 0 {
 		buf[0] = 0
 		return 1
 	}
-	var bitmap uint8
-	var i int
+	const (
+		shift = 8
+		max   = 1 << shift
+	)
+	var (
+		bitmap uint8
+		i      int
+	)
 
 	if x := byte(x); x > 0 {
 		bitmap = 1 << 7
 		i = 1
 		buf[1] = x
 	}
-	x >>= 8
-	if x == 0 {
+	if x < max {
 		buf[0] = bitmap
 		return 2
 	}
+	x >>= shift
 
 	if x := byte(x); x > 0 {
 		bitmap |= 1 << 6
 		i++
 		buf[i] = x
 	}
-	x >>= 8
-	if x == 0 {
+	if x < max {
 		buf[0] = bitmap
-		return 3
+		return i + 1
 	}
+	x >>= shift
 
 	if x := byte(x); x > 0 {
 		bitmap |= 1 << 5
 		i++
 		buf[i] = x
 	}
-	x >>= 8
-	if x == 0 {
+	if x < max {
 		buf[0] = bitmap
-		return 4
+		return i + 1
 	}
+	x >>= shift
 
 	if x := byte(x); x > 0 {
 		bitmap |= 1 << 4
 		i++
 		buf[i] = x
 	}
-	x >>= 8
-	if x == 0 {
+	if x < max {
 		buf[0] = bitmap
-		return 5
+		return i + 1
 	}
+	x >>= shift
 
 	if x := byte(x); x > 0 {
 		bitmap |= 1 << 3
 		i++
 		buf[i] = x
 	}
-	x >>= 8
-	if x == 0 {
+	if x < max {
 		buf[0] = bitmap
-		return 6
+		return i + 1
 	}
+	x >>= shift
 
 	if x := byte(x); x > 0 {
 		bitmap |= 1 << 2
 		i++
 		buf[i] = x
 	}
-	x >>= 8
-	if x == 0 {
+	if x < max {
 		buf[0] = bitmap
-		return 7
+		return i + 1
 	}
+	x >>= shift
 
 	if x := byte(x); x > 0 {
 		bitmap |= 1 << 1
 		i++
 		buf[i] = x
 	}
-	x >>= 8
-	if x == 0 {
+	if x < max {
 		buf[0] = bitmap
-		return 8
+		return i + 1
 	}
-
-	if x := byte(x); x > 0 {
-		bitmap |= 1
-		i++
-		buf[i] = x
-	}
-
-	buf[0] = bitmap
-	return 9
+	buf[i+1] = byte(x >> shift)
+	buf[0] = bitmap | 1
+	return i + 1
 }
 
 func packUint64To(w io.Writer, buf []byte, x uint64) error {
@@ -128,8 +128,7 @@ func unpackUint64(bitmap byte, buf []byte) uint64 {
 	case 0xFF:
 		return binary.LittleEndian.Uint64(buf)
 	}
-	bitmap--
-	entry := unpack64Table[bitmap]
+	entry := unpack64Table[bitmap-1]
 	a, b, c, d, e, f, g := entry.a, entry.b, entry.c, entry.d, entry.e, entry.f, entry.g
 	switch entry.num {
 	case 1:
@@ -169,99 +168,107 @@ func unpackUint64From(r ByteReader, buf []byte) (uint64, error) {
 // packUint32 packs x into buf and returns the number of bytes used.
 // buf must be at least 5 bytes long.
 func packUint32(buf []byte, x uint32) int {
+	_ = buf[5]
 	if x == 0 {
 		buf[0] = 0
 		return 1
 	}
-	var acc uint32
-	var i int
-	var bitmap uint8
+	const (
+		shift = 4
+		max   = 1 << shift
+		mask  = max - 1
+	)
+	var (
+		acc    uint32
+		i      int
+		bitmap uint8
+	)
 
-	if x := x & 0xF; x > 0 {
+	if x := x & mask; x > 0 {
 		bitmap = 1 << 7
 		acc = x
 		i = 1
 	}
-	x >>= 4
-	if x == 0 {
+	if x < max {
 		buf[0] = bitmap
 		buf[1] = byte(acc)
 		return 2
 	}
+	x >>= shift
 
-	if x := x & 0xF; x > 0 {
+	if x := x & mask; x > 0 {
 		bitmap |= 1 << 6
 		acc |= x << (i * 4)
 		i++
 	}
-	x >>= 4
-	if x == 0 {
+	if x < max {
 		buf[0] = bitmap
 		buf[1] = byte(acc)
 		return 2
 	}
+	x >>= shift
 
-	if x := x & 0xF; x > 0 {
+	if x := x & mask; x > 0 {
 		bitmap |= 1 << 5
 		acc |= x << (i * 4)
 		i++
 	}
-	x >>= 4
-	if x == 0 {
+	if x < max {
 		buf[0] = bitmap
 		buf[1] = byte(acc)
 		buf[2] = byte(acc >> 8)
 		return 3
 	}
+	x >>= shift
 
-	if x := x & 0xF; x > 0 {
+	if x := x & mask; x > 0 {
 		bitmap |= 1 << 4
 		acc |= x << (i * 4)
 		i++
 	}
-	x >>= 4
-	if x == 0 {
+	if x < max {
 		buf[0] = bitmap
 		buf[1] = byte(acc)
 		buf[2] = byte(acc >> 8)
 		return 3
 	}
+	x >>= shift
 
-	if x := x & 0xF; x > 0 {
+	if x := x & mask; x > 0 {
 		bitmap |= 1 << 3
 		acc |= x << (i * 4)
 		i++
 	}
-	x >>= 4
-	if x == 0 {
+	if x < max {
 		buf[0] = bitmap
 		buf[1] = byte(acc)
 		buf[2] = byte(acc >> 8)
 		buf[3] = byte(acc >> 16)
 		return 4
 	}
+	x >>= shift
 
-	if x := x & 0xF; x > 0 {
+	if x := x & mask; x > 0 {
 		bitmap |= 1 << 2
 		acc |= x << (i * 4)
 		i++
 	}
-	x >>= 4
-	if x == 0 {
+	if x < max {
 		buf[0] = bitmap
 		buf[1] = byte(acc)
 		buf[2] = byte(acc >> 8)
 		buf[3] = byte(acc >> 16)
 		return 4
 	}
+	x >>= shift
 
-	if x := x & 0xF; x > 0 {
+	if x := x & mask; x > 0 {
 		bitmap |= 1 << 1
 		acc |= x << (i * 4)
 		i++
 	}
-	x >>= 4
-	if x := x & 0xF; x > 0 {
+	x >>= shift
+	if x := x & mask; x > 0 {
 		bitmap |= 1
 		acc |= x << (i * 4)
 	}
@@ -288,8 +295,7 @@ func unpackUint32(bitmap byte, buf []byte) uint32 {
 	case 255:
 		return binary.LittleEndian.Uint32(buf)
 	}
-	bitmap--
-	entry := unpack64Table[bitmap]
+	entry := unpack64Table[bitmap-1]
 	a, b, c, d, e, f, g := entry.a/2, entry.b/2, entry.c/2, entry.d/2, entry.e/2, entry.f/2, entry.g/2
 	switch entry.num {
 	case 1:

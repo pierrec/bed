@@ -65,7 +65,8 @@ func TestPackUint32(t *testing.T) {
 }
 
 var benchInt int
-var benchX uint64
+var benchX64 uint64
+var benchX32 uint32
 
 func benchmarkPackUint64(b *testing.B, x uint64) {
 	buf := make([]byte, 16)
@@ -97,7 +98,7 @@ func benchmarkUnpackUint64(b *testing.B, x uint64) {
 	buf = buf[1:]
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		benchX = unpackUint64(bitmap, buf)
+		benchX64 = unpackUint64(bitmap, buf)
 	}
 }
 
@@ -123,4 +124,54 @@ func BenchmarkUnpackUint64_zebra6(b *testing.B) {
 
 func BenchmarkUnpackUint64_zebra8(b *testing.B) {
 	benchmarkUnpackUint64(b, 0xF0F0F0F0F0F0F0F0)
+}
+
+func benchmarkPackUint32(b *testing.B, x uint32) {
+	buf := make([]byte, 16)
+	for i := 0; i < b.N; i++ {
+		benchInt = packUint32(buf, x)
+	}
+}
+
+func BenchmarkPackUint32_E(b *testing.B) {
+	benchmarkPackUint32(b, uint32(math.Float64bits(math.E)))
+}
+
+func BenchmarkPackUint32_1024(b *testing.B) {
+	benchmarkPackUint32(b, 1024)
+}
+
+func BenchmarkPackUint32_zebra(b *testing.B) {
+	benchmarkPackUint32(b, 0xF0F0)
+}
+
+func BenchmarkPackUint32_zebra2(b *testing.B) {
+	benchmarkPackUint32(b, 0xF0F0F0F0)
+}
+
+func benchmarkUnpackUint32(b *testing.B, x uint32) {
+	buf := make([]byte, 16)
+	packUint32(buf, x)
+	bitmap := buf[0]
+	buf = buf[1:]
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		benchX32 = unpackUint32(bitmap, buf)
+	}
+}
+
+func BenchmarkUnpackUint32_E(b *testing.B) {
+	benchmarkPackUint32(b, uint32(math.Float64bits(math.E)))
+}
+
+func BenchmarkUnpackUint32_1024(b *testing.B) {
+	benchmarkUnpackUint32(b, 1024)
+}
+
+func BenchmarkUnpackUint32_zebra2(b *testing.B) {
+	benchmarkUnpackUint32(b, 0xF0F0)
+}
+
+func BenchmarkUnpackUint32_zebra4(b *testing.B) {
+	benchmarkUnpackUint32(b, 0xF0F0F0F0)
 }
