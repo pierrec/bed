@@ -28,6 +28,7 @@ const (
 var (
 	localpkgPath = reflect.TypeOf(ErrInvalidData).PkgPath()
 	localpkgName = path.Base(localpkgPath)
+	pkgReadWrite = "readwrite"
 )
 
 // Interface defines the methods added to types processed by Gen.
@@ -50,6 +51,7 @@ var (
 type Config struct {
 	PkgName  string
 	Receiver string
+	Raw      bool
 }
 
 // Gen generates the MarshalBinaryTo and UnmarshalBinaryFrom methods for
@@ -61,8 +63,6 @@ func Gen(out io.Writer, config Config, data ...interface{}) error {
 
 import (
 	%imports%
-
-	"%pkgpath%"
 )
 `
 	if config.PkgName == "" {
@@ -71,12 +71,18 @@ import (
 
 	tdata := map[string]string{
 		"pkgname": config.PkgName,
-		"pkgpath": localpkgPath,
 		"pkg":     localpkgName,
+		"pkgrw":   pkgReadWrite,
 	}
-	imps := map[string]bool{
-		"io":                               true,
-		"github.com/pierrec/packer/iobyte": true,
+	imps := map[string]string{
+		"io":                               "",
+		"github.com/pierrec/packer/iobyte": "",
+		localpkgPath:                       "",
+	}
+	if config.Raw {
+		imps[localpkgPath+"/raw"] = pkgReadWrite
+	} else {
+		imps[localpkgPath+"/packed"] = pkgReadWrite
 	}
 
 	// Generate the methods code into buf first so that proper imports can be determined.
@@ -125,8 +131,12 @@ import (
 
 	// Figure out the imports.
 	importsInUse := make([]string, 0, len(imps))
-	for imp := range imps {
-		importsInUse = append(importsInUse, strconv.Quote(imp))
+	for imp, name := range imps {
+		s := strconv.Quote(imp)
+		if name != "" {
+			s = name + " " + s
+		}
+		importsInUse = append(importsInUse, s)
 	}
 	sort.Strings(importsInUse)
 	tdata["imports"] = strings.Join(importsInUse, "\n\t")
@@ -152,13 +162,13 @@ func hasType(name string, data []interface{}) bool {
 // processRecords mutates the records as follow:
 //  - removes the package name if it is equal to the one where the methods are created
 //  - records imports into the imps map
-func processRecords(records []genRecord, name string, imps map[string]bool) {
+func processRecords(records []genRecord, name string, imps map[string]string) {
 	for i, rec := range records {
 		switch rec.FuncKind {
 		case "time":
-			imps["time"] = true
+			imps["time"] = ""
 		case "bigfloat", "bigint", "bigrat":
-			imps["math/big"] = true
+			imps["math/big"] = ""
 		}
 		records[i].Kind = strings.ReplaceAll(rec.Kind, name, "")
 		records[i].Name = strings.ReplaceAll(rec.Name, name, "")
@@ -377,20 +387,20 @@ const _%type%Layout = "%layout%"
 func (%rcv% *%type%) MarshalBinaryTo(w io.Writer) (err error) {
 	_w, _done := iobyte.NewWriter(w); defer _done(&err)
 	_b := %pkg%.Buffers.Get(); defer %pkg%.Buffers.Put(_b)
-	err = %pkg%.Write_layout(_w, _b, _%type%Layout); if err != nil { return }
+	err = %pkgrw%.Write_layout(_w, _b, _%type%Layout); if err != nil { return }
 `,
 		Call: `
-%tab%err = %pkg%.Write_%funckind%(_w, _b, %conv%); if err != nil { return }
+%tab%err = %pkgrw%.Write_%funckind%(_w, _b, %conv%); if err != nil { return }
 `,
 		Slice: `
 %tab%{
 %tab%	_s := %value%
 %tab%	_n = len(_s)
-%tab%	err = %pkg%.Write_len(_w, _b, _n); if err != nil { return }
+%tab%	err = %pkgrw%.Write_len(_w, _b, _n); if err != nil { return }
 %tab%	for _k, _kn := 0, _n; _k < _kn; _k++ {%include%	%tab%}
 %tab%}`,
 		ByteSlice: `
-%tab%err = %pkg%.Write_bytes(_w, _b, %conv%); if err != nil { return }
+%tab%err = %pkgrw%.Write_bytes(_w, _b, %conv%); if err != nil { return }
 `,
 		Array: `
 %tab%{
@@ -398,7 +408,7 @@ func (%rcv% *%type%) MarshalBinaryTo(w io.Writer) (err error) {
 %tab%	for _k, _kn := 0, len(_s); _k < _kn; _k++ {%include%	%tab%}
 %tab%}`,
 		ByteArray: `
-%tab%err = %pkg%.Write_bytea(_w, (%conv%)[:]); if err != nil { return }
+%tab%err = %pkgrw%.Write_bytea(_w, (%conv%)[:]); if err != nil { return }
 `,
 		Struct: `
 %tab%err = %idlevel%.MarshalBinaryTo(_w); if err != nil { return }
@@ -418,15 +428,15 @@ func (%rcv% *%type%) MarshalBinaryTo(w io.Writer) (err error) {
 		Map: `
 %tab%{
 %tab%	_s := %value%
-%tab%	err = %pkg%.Write_len(_w, _b, len(_s)); if err != nil { return }
+%tab%	err = %pkgrw%.Write_len(_w, _b, len(_s)); if err != nil { return }
 %tab%	for _k := range _s {%includekey%%include%	%tab%}
 %tab%}`,
 		Pointer: `
-%tab%err = %pkg%.Write_bool(_w, _b, %idlevel% == nil); if err != nil { return }
+%tab%err = %pkgrw%.Write_bool(_w, _b, %idlevel% == nil); if err != nil { return }
 %tab%if %idlevel% != nil {%include%	%tab%}
 `,
 		Big: `
-%tab%err = %pkg%.Write_%funckind%(_w, _b, _bb, %conv%); if err != nil { return }
+%tab%err = %pkgrw%.Write_%funckind%(_w, _b, _bb, %conv%); if err != nil { return }
 `,
 		Tail: `
 	return
@@ -451,14 +461,14 @@ func (%rcv% *%type%) MarshalBinaryTo(w io.Writer) (err error) {
 func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	_r := iobyte.NewReader(r)
 	_b := %pkg%.Buffers.Get(); defer %pkg%.Buffers.Put(_b)
-	err = %pkg%.Read_layout(_r, _b, _%type%Layout); if err != nil { return }
+	err = %pkgrw%.Read_layout(_r, _b, _%type%Layout); if err != nil { return }
 `,
 		Call: `
-%tab%_%funckind%, err = %pkg%.Read_%funckind%(_r, _b); if err != nil { return }
+%tab%_%funckind%, err = %pkgrw%.Read_%funckind%(_r, _b); if err != nil { return }
 %tab%%value% = %conv%
 `,
 		Slice: `
-%tab%_n, err = %pkg%.Read_len(_r); if err != nil { return }
+%tab%_n, err = %pkgrw%.Read_len(_r); if err != nil { return }
 %tab%if _c := cap(%value%); _n > _c || _c - _n > _c/8 { %value% = make(%kind%, _n) } else { %value% = (%value%)[:_n] }
 %tab%if _n > 0 {
 %tab%	_s := %value%
@@ -466,7 +476,7 @@ func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {
 %tab%}
 `,
 		ByteSlice: `
-%tab%%value%, err = %pkg%.Read_bytes(_r, _b, nil); if err != nil { return }
+%tab%%value%, err = %pkgrw%.Read_bytes(_r, _b, nil); if err != nil { return }
 `,
 		Array: `
 %tab%{
@@ -475,7 +485,7 @@ func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {
 %tab%}
 `,
 		ByteArray: `
-%tab%err = %pkg%.Read_bytea(_r, (%value%)[:]); if err != nil { return }
+%tab%err = %pkgrw%.Read_bytea(_r, (%value%)[:]); if err != nil { return }
 `,
 		Struct: `
 %tab%err = %idlevel%.UnmarshalBinaryFrom(_r); if err != nil { return }
@@ -494,7 +504,7 @@ func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {
 %tab%}
 `,
 		Map: `
-%tab%_n, err = %pkg%.Read_len(_r); if err != nil { return }
+%tab%_n, err = %pkgrw%.Read_len(_r); if err != nil { return }
 %tab%if _n == 0 {  %idlevel% = nil } else {
 %tab%	%idlevel% = make(%kind%, _n)
 %tab%	_s := %idlevel%
@@ -503,11 +513,11 @@ func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {
 %tab%}
 `,
 		Pointer: `
-%tab%_bool, err = %pkg%.Read_bool(_r, _b); if err != nil { return }
+%tab%_bool, err = %pkgrw%.Read_bool(_r, _b); if err != nil { return }
 %tab%if _bool { %idlevel% = nil } else {%alloc%%include%%tab%}
 `,
 		Big: `
-%tab%_%funckind%, err = %pkg%.Read_%funckind%(_r, _b, _bb); if err != nil { return }
+%tab%_%funckind%, err = %pkgrw%.Read_%funckind%(_r, _b, _bb); if err != nil { return }
 %tab%%value% = %conv%
 `,
 		Tail: `

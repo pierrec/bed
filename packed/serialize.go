@@ -1,4 +1,4 @@
-package serializer
+package packed
 
 import (
 	"encoding/binary"

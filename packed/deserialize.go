@@ -1,4 +1,4 @@
-package serializer
+package packed
 
 import (
 	"encoding/binary"
@@ -11,6 +11,7 @@ import (
 
 	"github.com/pierrec/packer"
 	"github.com/pierrec/packer/iobyte"
+	"github.com/pierrec/serializer"
 )
 
 func Read_layout(r iobyte.ByteReader, buf []byte, layout string) error {
@@ -19,7 +20,7 @@ func Read_layout(r iobyte.ByteReader, buf []byte, layout string) error {
 		return err
 	}
 	if !strings.HasPrefix(s, layout) {
-		return ErrInvalidData
+		return serializer.ErrInvalidData
 	}
 	return nil
 }
