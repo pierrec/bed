@@ -1,9 +1,9 @@
 package testpkg
 
 import (
+	"github.com/pierrec/bed"
+	readwrite "github.com/pierrec/bed/packed"
 	"github.com/pierrec/packer/iobyte"
-	"github.com/pierrec/serializer"
-	readwrite "github.com/pierrec/serializer/packed"
 	"io"
 )
 
@@ -12,8 +12,8 @@ const _ArrayLayout = "R4CR4DR4ER4FR4GR4HR4R4JR4KR4LR4PR4QR4Y"
 func (a *Array) MarshalBinaryTo(w io.Writer) (err error) {
 	_w, _done := iobyte.NewWriter(w)
 	defer _done(&err)
-	_b := serializer.Buffers.Get()
-	defer serializer.Buffers.Put(_b)
+	_b := bed.Buffers.Get()
+	defer bed.Buffers.Put(_b)
 	err = readwrite.Write_layout(_w, _b, _ArrayLayout)
 	if err != nil {
 		return
@@ -137,8 +137,8 @@ func (a *Array) MarshalBinaryTo(w io.Writer) (err error) {
 
 func (a *Array) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	_r := iobyte.NewReader(r)
-	_b := serializer.Buffers.Get()
-	defer serializer.Buffers.Put(_b)
+	_b := bed.Buffers.Get()
+	defer bed.Buffers.Put(_b)
 	err = readwrite.Read_layout(_r, _b, _ArrayLayout)
 	if err != nil {
 		return
@@ -302,8 +302,8 @@ const _ArrayPtrLayout = "WR4CWR4DWR4EWR4FWR4GWR4HWR4WR4JWR4KWR4LWR4PWR4QWR4Y"
 func (a *ArrayPtr) MarshalBinaryTo(w io.Writer) (err error) {
 	_w, _done := iobyte.NewWriter(w)
 	defer _done(&err)
-	_b := serializer.Buffers.Get()
-	defer serializer.Buffers.Put(_b)
+	_b := bed.Buffers.Get()
+	defer bed.Buffers.Put(_b)
 	err = readwrite.Write_layout(_w, _b, _ArrayPtrLayout)
 	if err != nil {
 		return
@@ -517,8 +517,8 @@ func (a *ArrayPtr) MarshalBinaryTo(w io.Writer) (err error) {
 
 func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	_r := iobyte.NewReader(r)
-	_b := serializer.Buffers.Get()
-	defer serializer.Buffers.Put(_b)
+	_b := bed.Buffers.Get()
+	defer bed.Buffers.Put(_b)
 	err = readwrite.Read_layout(_r, _b, _ArrayPtrLayout)
 	if err != nil {
 		return
@@ -800,8 +800,8 @@ const _ArrayAnonLayout = "R4ZCYR4XZHK"
 func (a *ArrayAnon) MarshalBinaryTo(w io.Writer) (err error) {
 	_w, _done := iobyte.NewWriter(w)
 	defer _done(&err)
-	_b := serializer.Buffers.Get()
-	defer serializer.Buffers.Put(_b)
+	_b := bed.Buffers.Get()
+	defer bed.Buffers.Put(_b)
 	err = readwrite.Write_layout(_w, _b, _ArrayAnonLayout)
 	if err != nil {
 		return
@@ -862,8 +862,8 @@ func (a *ArrayAnon) MarshalBinaryTo(w io.Writer) (err error) {
 
 func (a *ArrayAnon) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	_r := iobyte.NewReader(r)
-	_b := serializer.Buffers.Get()
-	defer serializer.Buffers.Put(_b)
+	_b := bed.Buffers.Get()
+	defer bed.Buffers.Put(_b)
 	err = readwrite.Read_layout(_r, _b, _ArrayAnonLayout)
 	if err != nil {
 		return

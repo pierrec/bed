@@ -1,4 +1,4 @@
-package serializer_test
+package bed_test
 
 import (
 	"os"
@@ -6,13 +6,13 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/pierrec/serializer"
-	"github.com/pierrec/serializer/testpkg"
+	"github.com/pierrec/bed"
+	"github.com/pierrec/bed/testpkg"
 )
 
 func TestGen(t *testing.T) {
 	_s := func(v ...interface{}) []interface{} { return v }
-	config := serializer.Config{PkgName: "testpkg", Receiver: ""}
+	config := bed.Config{PkgName: "testpkg", Receiver: ""}
 	type tcase struct {
 		out  string
 		data []interface{}
@@ -33,7 +33,7 @@ func TestGen(t *testing.T) {
 			}
 			defer out.Close()
 
-			if err := serializer.Gen(out, config, tc.data...); err != nil {
+			if err := bed.Gen(out, config, tc.data...); err != nil {
 				t.Fatal(err)
 			}
 		})

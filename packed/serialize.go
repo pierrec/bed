@@ -1,16 +1,15 @@
 package packed
 
 import (
-	"encoding/binary"
 	"io"
 	"math"
 	"math/big"
 	"math/bits"
 	"time"
 
+	"github.com/pierrec/bed/raw"
 	"github.com/pierrec/packer"
 	"github.com/pierrec/packer/iobyte"
-	"github.com/pierrec/serializer/raw"
 )
 
 func Write_layout(w iobyte.ByteWriter, buf []byte, layout string) error {
@@ -35,13 +34,11 @@ func Write_int8(w iobyte.ByteWriter, _ []byte, v int8) error {
 }
 
 func Write_int16(w iobyte.ByteWriter, buf []byte, v int16) error {
-	binary.LittleEndian.PutUint16(buf, uint16(v))
-	_, err := w.Write(buf[:2])
-	return err
+	return raw.Write_int16(w, buf, v)
 }
 
 func Write_int32(w iobyte.ByteWriter, buf []byte, v int32) error {
-	return packer.PackUint64To(w, buf, uint64(v))
+	return packer.PackUint32To(w, buf, uint32(v))
 }
 
 func Write_int64(w iobyte.ByteWriter, buf []byte, v int64) error {
@@ -57,13 +54,11 @@ func Write_uint8(w iobyte.ByteWriter, _ []byte, v uint8) error {
 }
 
 func Write_uint16(w iobyte.ByteWriter, buf []byte, v uint16) error {
-	binary.LittleEndian.PutUint16(buf, v)
-	_, err := w.Write(buf[:2])
-	return err
+	return raw.Write_uint16(w, buf, v)
 }
 
 func Write_uint32(w iobyte.ByteWriter, buf []byte, v uint32) error {
-	return packer.PackUint64To(w, buf, uint64(v))
+	return packer.PackUint32To(w, buf, v)
 }
 
 func Write_uint64(w iobyte.ByteWriter, buf []byte, v uint64) error {
@@ -72,7 +67,7 @@ func Write_uint64(w iobyte.ByteWriter, buf []byte, v uint64) error {
 
 func Write_float32(w iobyte.ByteWriter, buf []byte, v float32) error {
 	u := bits.Reverse32(math.Float32bits(v))
-	return packer.PackUint64To(w, buf, uint64(u))
+	return packer.PackUint32To(w, buf, u)
 }
 
 func Write_float64(w iobyte.ByteWriter, buf []byte, v float64) error {
@@ -95,15 +90,24 @@ func Write_complex128(w iobyte.ByteWriter, buf []byte, v complex128) error {
 }
 
 func Write_string(w iobyte.ByteWriter, buf []byte, v string) error {
-	return raw.Write_string(w, buf, v)
+	if err := Write_int(w, buf, len(v)); err != nil {
+		return err
+	}
+	_, err := w.WriteString(v)
+	return err
 }
 
 func Write_bytes(w iobyte.ByteWriter, buf []byte, v []byte) error {
-	return raw.Write_bytes(w, buf, v)
+	if err := Write_int(w, buf, len(v)); err != nil {
+		return err
+	}
+	_, err := w.Write(v)
+	return err
 }
 
 func Write_bytea(w io.Writer, v []byte) error {
-	return raw.Write_bytea(w, v)
+	_, err := w.Write(v)
+	return err
 }
 
 func Write_time(w iobyte.ByteWriter, buf []byte, t time.Time) error {

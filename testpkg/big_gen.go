@@ -1,9 +1,9 @@
 package testpkg
 
 import (
+	"github.com/pierrec/bed"
+	readwrite "github.com/pierrec/bed/packed"
 	"github.com/pierrec/packer/iobyte"
-	"github.com/pierrec/serializer"
-	readwrite "github.com/pierrec/serializer/packed"
 	"io"
 	"math/big"
 )
@@ -13,15 +13,15 @@ const _BigLayout = "ZZZ"
 func (b *Big) MarshalBinaryTo(w io.Writer) (err error) {
 	_w, _done := iobyte.NewWriter(w)
 	defer _done(&err)
-	_b := serializer.Buffers.Get()
-	defer serializer.Buffers.Put(_b)
+	_b := bed.Buffers.Get()
+	defer bed.Buffers.Put(_b)
 	err = readwrite.Write_layout(_w, _b, _BigLayout)
 	if err != nil {
 		return
 	}
 
-	var _bb = serializer.BigBuffers.Get()
-	defer serializer.BigBuffers.Put(_bb)
+	var _bb = bed.BigBuffers.Get()
+	defer bed.BigBuffers.Put(_bb)
 
 	err = readwrite.Write_bigfloat(_w, _b, _bb, b.Float)
 	if err != nil {
@@ -43,15 +43,15 @@ func (b *Big) MarshalBinaryTo(w io.Writer) (err error) {
 
 func (b *Big) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	_r := iobyte.NewReader(r)
-	_b := serializer.Buffers.Get()
-	defer serializer.Buffers.Put(_b)
+	_b := bed.Buffers.Get()
+	defer bed.Buffers.Put(_b)
 	err = readwrite.Read_layout(_r, _b, _BigLayout)
 	if err != nil {
 		return
 	}
 
-	var _bb = serializer.BigBuffers.Get()
-	defer serializer.BigBuffers.Put(_bb)
+	var _bb = bed.BigBuffers.Get()
+	defer bed.BigBuffers.Put(_bb)
 	var _bigfloat big.Float
 	var _bigint big.Int
 	var _bigrat big.Rat
@@ -82,15 +82,15 @@ const _BigPtrLayout = "WZWZWZ"
 func (b *BigPtr) MarshalBinaryTo(w io.Writer) (err error) {
 	_w, _done := iobyte.NewWriter(w)
 	defer _done(&err)
-	_b := serializer.Buffers.Get()
-	defer serializer.Buffers.Put(_b)
+	_b := bed.Buffers.Get()
+	defer bed.Buffers.Put(_b)
 	err = readwrite.Write_layout(_w, _b, _BigPtrLayout)
 	if err != nil {
 		return
 	}
 
-	var _bb = serializer.BigBuffers.Get()
-	defer serializer.BigBuffers.Put(_bb)
+	var _bb = bed.BigBuffers.Get()
+	defer bed.BigBuffers.Put(_bb)
 
 	err = readwrite.Write_bool(_w, _b, b.Float == nil)
 	if err != nil {
@@ -130,15 +130,15 @@ func (b *BigPtr) MarshalBinaryTo(w io.Writer) (err error) {
 
 func (b *BigPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	_r := iobyte.NewReader(r)
-	_b := serializer.Buffers.Get()
-	defer serializer.Buffers.Put(_b)
+	_b := bed.Buffers.Get()
+	defer bed.Buffers.Put(_b)
 	err = readwrite.Read_layout(_r, _b, _BigPtrLayout)
 	if err != nil {
 		return
 	}
 
-	var _bb = serializer.BigBuffers.Get()
-	defer serializer.BigBuffers.Put(_bb)
+	var _bb = bed.BigBuffers.Get()
+	defer bed.BigBuffers.Put(_bb)
 	var _bigfloat big.Float
 	var _bigint big.Int
 	var _bigrat big.Rat
@@ -197,15 +197,15 @@ const _BigPtrSliceLayout = "XWZXWZXWZ"
 func (b *BigPtrSlice) MarshalBinaryTo(w io.Writer) (err error) {
 	_w, _done := iobyte.NewWriter(w)
 	defer _done(&err)
-	_b := serializer.Buffers.Get()
-	defer serializer.Buffers.Put(_b)
+	_b := bed.Buffers.Get()
+	defer bed.Buffers.Put(_b)
 	err = readwrite.Write_layout(_w, _b, _BigPtrSliceLayout)
 	if err != nil {
 		return
 	}
 
-	var _bb = serializer.BigBuffers.Get()
-	defer serializer.BigBuffers.Put(_bb)
+	var _bb = bed.BigBuffers.Get()
+	defer bed.BigBuffers.Put(_bb)
 	var _n int
 
 	{
@@ -273,15 +273,15 @@ func (b *BigPtrSlice) MarshalBinaryTo(w io.Writer) (err error) {
 
 func (b *BigPtrSlice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	_r := iobyte.NewReader(r)
-	_b := serializer.Buffers.Get()
-	defer serializer.Buffers.Put(_b)
+	_b := bed.Buffers.Get()
+	defer bed.Buffers.Put(_b)
 	err = readwrite.Read_layout(_r, _b, _BigPtrSliceLayout)
 	if err != nil {
 		return
 	}
 
-	var _bb = serializer.BigBuffers.Get()
-	defer serializer.BigBuffers.Put(_bb)
+	var _bb = bed.BigBuffers.Get()
+	defer bed.BigBuffers.Put(_bb)
 	var _bigfloat big.Float
 	var _bigint big.Int
 	var _bigrat big.Rat
@@ -383,15 +383,15 @@ const _BigSliceLayout = "XZXZXZ"
 func (b *BigSlice) MarshalBinaryTo(w io.Writer) (err error) {
 	_w, _done := iobyte.NewWriter(w)
 	defer _done(&err)
-	_b := serializer.Buffers.Get()
-	defer serializer.Buffers.Put(_b)
+	_b := bed.Buffers.Get()
+	defer bed.Buffers.Put(_b)
 	err = readwrite.Write_layout(_w, _b, _BigSliceLayout)
 	if err != nil {
 		return
 	}
 
-	var _bb = serializer.BigBuffers.Get()
-	defer serializer.BigBuffers.Put(_bb)
+	var _bb = bed.BigBuffers.Get()
+	defer bed.BigBuffers.Put(_bb)
 	var _n int
 
 	{
@@ -441,15 +441,15 @@ func (b *BigSlice) MarshalBinaryTo(w io.Writer) (err error) {
 
 func (b *BigSlice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	_r := iobyte.NewReader(r)
-	_b := serializer.Buffers.Get()
-	defer serializer.Buffers.Put(_b)
+	_b := bed.Buffers.Get()
+	defer bed.Buffers.Put(_b)
 	err = readwrite.Read_layout(_r, _b, _BigSliceLayout)
 	if err != nil {
 		return
 	}
 
-	var _bb = serializer.BigBuffers.Get()
-	defer serializer.BigBuffers.Put(_bb)
+	var _bb = bed.BigBuffers.Get()
+	defer bed.BigBuffers.Put(_bb)
 	var _bigfloat big.Float
 	var _bigint big.Int
 	var _bigrat big.Rat
@@ -523,15 +523,15 @@ const _BigArrayLayout = "R4ZR4ZR4Z"
 func (b *BigArray) MarshalBinaryTo(w io.Writer) (err error) {
 	_w, _done := iobyte.NewWriter(w)
 	defer _done(&err)
-	_b := serializer.Buffers.Get()
-	defer serializer.Buffers.Put(_b)
+	_b := bed.Buffers.Get()
+	defer bed.Buffers.Put(_b)
 	err = readwrite.Write_layout(_w, _b, _BigArrayLayout)
 	if err != nil {
 		return
 	}
 
-	var _bb = serializer.BigBuffers.Get()
-	defer serializer.BigBuffers.Put(_bb)
+	var _bb = bed.BigBuffers.Get()
+	defer bed.BigBuffers.Put(_bb)
 
 	{
 		_s := &b.Float
@@ -565,15 +565,15 @@ func (b *BigArray) MarshalBinaryTo(w io.Writer) (err error) {
 
 func (b *BigArray) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	_r := iobyte.NewReader(r)
-	_b := serializer.Buffers.Get()
-	defer serializer.Buffers.Put(_b)
+	_b := bed.Buffers.Get()
+	defer bed.Buffers.Put(_b)
 	err = readwrite.Read_layout(_r, _b, _BigArrayLayout)
 	if err != nil {
 		return
 	}
 
-	var _bb = serializer.BigBuffers.Get()
-	defer serializer.BigBuffers.Put(_bb)
+	var _bb = bed.BigBuffers.Get()
+	defer bed.BigBuffers.Put(_bb)
 	var _bigfloat big.Float
 	var _bigint big.Int
 	var _bigrat big.Rat
@@ -619,15 +619,15 @@ const _BigMapLayout = "VCZVCZVCZ"
 func (b *BigMap) MarshalBinaryTo(w io.Writer) (err error) {
 	_w, _done := iobyte.NewWriter(w)
 	defer _done(&err)
-	_b := serializer.Buffers.Get()
-	defer serializer.Buffers.Put(_b)
+	_b := bed.Buffers.Get()
+	defer bed.Buffers.Put(_b)
 	err = readwrite.Write_layout(_w, _b, _BigMapLayout)
 	if err != nil {
 		return
 	}
 
-	var _bb = serializer.BigBuffers.Get()
-	defer serializer.BigBuffers.Put(_bb)
+	var _bb = bed.BigBuffers.Get()
+	defer bed.BigBuffers.Put(_bb)
 
 	{
 		_s := b.Float
@@ -688,15 +688,15 @@ func (b *BigMap) MarshalBinaryTo(w io.Writer) (err error) {
 
 func (b *BigMap) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	_r := iobyte.NewReader(r)
-	_b := serializer.Buffers.Get()
-	defer serializer.Buffers.Put(_b)
+	_b := bed.Buffers.Get()
+	defer bed.Buffers.Put(_b)
 	err = readwrite.Read_layout(_r, _b, _BigMapLayout)
 	if err != nil {
 		return
 	}
 
-	var _bb = serializer.BigBuffers.Get()
-	defer serializer.BigBuffers.Put(_bb)
+	var _bb = bed.BigBuffers.Get()
+	defer bed.BigBuffers.Put(_bb)
 	var _bigfloat big.Float
 	var _bigint big.Int
 	var _bigrat big.Rat

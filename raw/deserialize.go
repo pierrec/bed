@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/pierrec/bed"
 	"github.com/pierrec/packer/iobyte"
-	"github.com/pierrec/serializer"
 )
 
 func Read_layout(r iobyte.ByteReader, buf []byte, layout string) error {
@@ -19,7 +19,7 @@ func Read_layout(r iobyte.ByteReader, buf []byte, layout string) error {
 		return err
 	}
 	if !strings.HasPrefix(s, layout) {
-		return serializer.ErrInvalidData
+		return bed.ErrInvalidData
 	}
 	return nil
 }

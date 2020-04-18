@@ -8,7 +8,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/pierrec/serializer"
+	"github.com/pierrec/bed"
 )
 
 func TestMethods(t *testing.T) {
@@ -87,13 +87,13 @@ func TestMethods(t *testing.T) {
 	for _, tc := range []interface{}{basic, slice, array, sliceAnon, mapp} {
 		label := fmt.Sprintf("%T", tc)
 		t.Run(label, func(t *testing.T) {
-			from := tc.(serializer.Interface)
+			from := tc.(bed.Interface)
 			var buf bytes.Buffer
 			if err := from.MarshalBinaryTo(&buf); err != nil {
 				t.Fatal(err)
 			}
 			typ := reflect.TypeOf(tc).Elem()
-			into := reflect.New(typ).Interface().(serializer.Interface)
+			into := reflect.New(typ).Interface().(bed.Interface)
 			if err := into.UnmarshalBinaryFrom(&buf); err != nil {
 				t.Fatal(err)
 			}

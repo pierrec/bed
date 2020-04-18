@@ -1,18 +1,28 @@
 package packed
 
 import (
+	"io"
 	"math"
 	"math/big"
 	"math/bits"
+	"strings"
 	"time"
 
+	"github.com/pierrec/bed"
+	"github.com/pierrec/bed/raw"
 	"github.com/pierrec/packer"
 	"github.com/pierrec/packer/iobyte"
-	"github.com/pierrec/serializer/raw"
 )
 
 func Read_layout(r iobyte.ByteReader, buf []byte, layout string) error {
-	return raw.Read_layout(r, buf, layout)
+	s, err := Read_string(r, buf)
+	if err != nil {
+		return err
+	}
+	if !strings.HasPrefix(s, layout) {
+		return bed.ErrInvalidData
+	}
+	return nil
 }
 
 func Read_bool(r iobyte.ByteReader, _ []byte) (bool, error) {
@@ -32,7 +42,8 @@ func Read_int(r iobyte.ByteReader, buf []byte) (int, error) {
 }
 
 func Read_int8(r iobyte.ByteReader, _ []byte) (int8, error) {
-	return raw.Read_int8(r, nil)
+	u, err := r.ReadByte()
+	return int8(u), err
 }
 
 func Read_int16(r iobyte.ByteReader, buf []byte) (int16, error) {
@@ -116,15 +127,42 @@ func Read_complex128(r iobyte.ByteReader, buf []byte) (complex128, error) {
 }
 
 func Read_string(r iobyte.ByteReader, buf []byte) (string, error) {
-	return raw.Read_string(r, buf)
+	n, err := Read_int(r, buf)
+	if err != nil || n == 0 {
+		return "", err
+	}
+	if n > cap(buf) {
+		buf = make([]byte, n)
+	} else {
+		buf = buf[:n]
+	}
+	_, err = io.ReadFull(r, buf)
+	if err != nil {
+		return "", err
+	}
+	return string(buf), nil
 }
 
 func Read_bytes(r iobyte.ByteReader, buf, out []byte) ([]byte, error) {
-	return raw.Read_bytes(r, buf, out)
+	n, err := Read_int(r, buf)
+	if err != nil || n == 0 {
+		return nil, err
+	}
+	if len(out) < n {
+		out = make([]byte, n)
+	} else {
+		out = out[:n]
+	}
+	_, err = io.ReadFull(r, out)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func Read_bytea(r iobyte.ByteReader, buf []byte) error {
-	return raw.Read_bytea(r, buf)
+	_, err := io.ReadFull(r, buf)
+	return err
 }
 
 func Read_time(r iobyte.ByteReader, buf []byte) (t time.Time, err error) {
