@@ -1,4 +1,4 @@
-package packed
+package raw
 
 import (
 	"encoding/binary"
@@ -6,62 +6,82 @@ import (
 	"math"
 	"math/big"
 	"math/bits"
+	"strings"
 	"time"
 
-	"github.com/pierrec/packer"
 	"github.com/pierrec/packer/iobyte"
-	"github.com/pierrec/serializer/raw"
+	"github.com/pierrec/serializer"
 )
 
 func Read_layout(r iobyte.ByteReader, buf []byte, layout string) error {
-	return raw.Read_layout(r, buf, layout)
+	s, err := Read_string(r, buf)
+	if err != nil {
+		return err
+	}
+	if !strings.HasPrefix(s, layout) {
+		return serializer.ErrInvalidData
+	}
+	return nil
 }
 
 func Read_bool(r iobyte.ByteReader, _ []byte) (bool, error) {
-	return raw.Read_bool(r, nil)
+	b, err := r.ReadByte()
+	if err != nil {
+		return false, err
+	}
+	return b == _true, nil
 }
 
 func Read_len(r iobyte.ByteReader) (int, error) {
-	return raw.Read_len(r)
+	n, err := binary.ReadUvarint(r)
+	return int(n), err
 }
 
 func Read_int(r iobyte.ByteReader, buf []byte) (int, error) {
-	v, err := packer.UnpackUint64From(r, buf)
-	if err != nil {
+	if _, err := io.ReadFull(r, buf[:8]); err != nil {
 		return 0, err
 	}
+	v := binary.LittleEndian.Uint64(buf)
 	return int(v), nil
 }
 
 func Read_int8(r iobyte.ByteReader, _ []byte) (int8, error) {
-	return raw.Read_int8(r, nil)
-}
-
-func Read_int16(r iobyte.ByteReader, buf []byte) (int16, error) {
-	return raw.Read_int16(r, buf)
-}
-
-func Read_int32(r iobyte.ByteReader, buf []byte) (int32, error) {
-	v, err := packer.UnpackUint32From(r, buf)
+	b, err := r.ReadByte()
 	if err != nil {
 		return 0, err
 	}
+	return int8(b), nil
+}
+
+func Read_int16(r iobyte.ByteReader, buf []byte) (int16, error) {
+	if _, err := io.ReadFull(r, buf[:2]); err != nil {
+		return 0, err
+	}
+	v := binary.LittleEndian.Uint16(buf)
+	return int16(v), nil
+}
+
+func Read_int32(r iobyte.ByteReader, buf []byte) (int32, error) {
+	if _, err := io.ReadFull(r, buf[:4]); err != nil {
+		return 0, err
+	}
+	v := binary.LittleEndian.Uint32(buf)
 	return int32(v), nil
 }
 
 func Read_int64(r iobyte.ByteReader, buf []byte) (int64, error) {
-	v, err := packer.UnpackUint64From(r, buf)
-	if err != nil {
+	if _, err := io.ReadFull(r, buf[:8]); err != nil {
 		return 0, err
 	}
+	v := binary.LittleEndian.Uint64(buf)
 	return int64(v), nil
 }
 
 func Read_uint(r iobyte.ByteReader, buf []byte) (uint, error) {
-	v, err := packer.UnpackUint64From(r, buf)
-	if err != nil {
+	if _, err := io.ReadFull(r, buf[:8]); err != nil {
 		return 0, err
 	}
+	v := binary.LittleEndian.Uint64(buf)
 	return uint(v), nil
 }
 
@@ -70,19 +90,31 @@ func Read_uint8(r iobyte.ByteReader, _ []byte) (uint8, error) {
 }
 
 func Read_uint16(r iobyte.ByteReader, buf []byte) (uint16, error) {
-	return raw.Read_uint16(r, buf)
+	if _, err := io.ReadFull(r, buf[:2]); err != nil {
+		return 0, err
+	}
+	v := binary.LittleEndian.Uint16(buf)
+	return v, nil
 }
 
 func Read_uint32(r iobyte.ByteReader, buf []byte) (uint32, error) {
-	return packer.UnpackUint32From(r, buf)
+	if _, err := io.ReadFull(r, buf[:4]); err != nil {
+		return 0, err
+	}
+	v := binary.LittleEndian.Uint32(buf)
+	return v, nil
 }
 
 func Read_uint64(r iobyte.ByteReader, buf []byte) (uint64, error) {
-	return packer.UnpackUint64From(r, buf)
+	if _, err := io.ReadFull(r, buf[:8]); err != nil {
+		return 0, err
+	}
+	v := binary.LittleEndian.Uint64(buf)
+	return v, nil
 }
 
 func Read_float32(r iobyte.ByteReader, buf []byte) (float32, error) {
-	v, err := packer.UnpackUint32From(r, buf)
+	v, err := Read_uint32(r, buf)
 	if err != nil {
 		return 0, err
 	}
@@ -91,7 +123,7 @@ func Read_float32(r iobyte.ByteReader, buf []byte) (float32, error) {
 }
 
 func Read_float64(r iobyte.ByteReader, buf []byte) (float64, error) {
-	v, err := packer.UnpackUint64From(r, buf)
+	v, err := Read_uint64(r, buf)
 	if err != nil {
 		return 0, err
 	}
