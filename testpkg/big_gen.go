@@ -1,6 +1,7 @@
 package testpkg
 
 import (
+	"github.com/pierrec/packer/iobyte"
 	"io"
 	"math/big"
 
@@ -10,7 +11,7 @@ import (
 const _BigLayout = "ZZZ"
 
 func (b *Big) MarshalBinaryTo(w io.Writer) (err error) {
-	_w, _done := serializer.NewWriter(w)
+	_w, _done := iobyte.NewWriter(w)
 	defer _done(&err)
 	_b := serializer.Buffers.Get()
 	defer serializer.Buffers.Put(_b)
@@ -41,7 +42,7 @@ func (b *Big) MarshalBinaryTo(w io.Writer) (err error) {
 }
 
 func (b *Big) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	_r := serializer.NewReader(r)
+	_r := iobyte.NewReader(r)
 	_b := serializer.Buffers.Get()
 	defer serializer.Buffers.Put(_b)
 	err = serializer.Read_layout(_r, _b, _BigLayout)
@@ -79,7 +80,7 @@ func (b *Big) UnmarshalBinaryFrom(r io.Reader) (err error) {
 const _BigPtrLayout = "WZWZWZ"
 
 func (b *BigPtr) MarshalBinaryTo(w io.Writer) (err error) {
-	_w, _done := serializer.NewWriter(w)
+	_w, _done := iobyte.NewWriter(w)
 	defer _done(&err)
 	_b := serializer.Buffers.Get()
 	defer serializer.Buffers.Put(_b)
@@ -128,7 +129,7 @@ func (b *BigPtr) MarshalBinaryTo(w io.Writer) (err error) {
 }
 
 func (b *BigPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	_r := serializer.NewReader(r)
+	_r := iobyte.NewReader(r)
 	_b := serializer.Buffers.Get()
 	defer serializer.Buffers.Put(_b)
 	err = serializer.Read_layout(_r, _b, _BigPtrLayout)
@@ -194,7 +195,7 @@ func (b *BigPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 const _BigPtrSliceLayout = "XWZXWZXWZ"
 
 func (b *BigPtrSlice) MarshalBinaryTo(w io.Writer) (err error) {
-	_w, _done := serializer.NewWriter(w)
+	_w, _done := iobyte.NewWriter(w)
 	defer _done(&err)
 	_b := serializer.Buffers.Get()
 	defer serializer.Buffers.Put(_b)
@@ -271,7 +272,7 @@ func (b *BigPtrSlice) MarshalBinaryTo(w io.Writer) (err error) {
 }
 
 func (b *BigPtrSlice) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	_r := serializer.NewReader(r)
+	_r := iobyte.NewReader(r)
 	_b := serializer.Buffers.Get()
 	defer serializer.Buffers.Put(_b)
 	err = serializer.Read_layout(_r, _b, _BigPtrSliceLayout)
@@ -380,7 +381,7 @@ func (b *BigPtrSlice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 const _BigSliceLayout = "XZXZXZ"
 
 func (b *BigSlice) MarshalBinaryTo(w io.Writer) (err error) {
-	_w, _done := serializer.NewWriter(w)
+	_w, _done := iobyte.NewWriter(w)
 	defer _done(&err)
 	_b := serializer.Buffers.Get()
 	defer serializer.Buffers.Put(_b)
@@ -439,7 +440,7 @@ func (b *BigSlice) MarshalBinaryTo(w io.Writer) (err error) {
 }
 
 func (b *BigSlice) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	_r := serializer.NewReader(r)
+	_r := iobyte.NewReader(r)
 	_b := serializer.Buffers.Get()
 	defer serializer.Buffers.Put(_b)
 	err = serializer.Read_layout(_r, _b, _BigSliceLayout)
@@ -520,7 +521,7 @@ func (b *BigSlice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 const _BigArrayLayout = "R4ZR4ZR4Z"
 
 func (b *BigArray) MarshalBinaryTo(w io.Writer) (err error) {
-	_w, _done := serializer.NewWriter(w)
+	_w, _done := iobyte.NewWriter(w)
 	defer _done(&err)
 	_b := serializer.Buffers.Get()
 	defer serializer.Buffers.Put(_b)
@@ -563,7 +564,7 @@ func (b *BigArray) MarshalBinaryTo(w io.Writer) (err error) {
 }
 
 func (b *BigArray) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	_r := serializer.NewReader(r)
+	_r := iobyte.NewReader(r)
 	_b := serializer.Buffers.Get()
 	defer serializer.Buffers.Put(_b)
 	err = serializer.Read_layout(_r, _b, _BigArrayLayout)
@@ -616,7 +617,7 @@ func (b *BigArray) UnmarshalBinaryFrom(r io.Reader) (err error) {
 const _BigMapLayout = "VCZVCZVCZ"
 
 func (b *BigMap) MarshalBinaryTo(w io.Writer) (err error) {
-	_w, _done := serializer.NewWriter(w)
+	_w, _done := iobyte.NewWriter(w)
 	defer _done(&err)
 	_b := serializer.Buffers.Get()
 	defer serializer.Buffers.Put(_b)
@@ -686,7 +687,7 @@ func (b *BigMap) MarshalBinaryTo(w io.Writer) (err error) {
 }
 
 func (b *BigMap) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	_r := serializer.NewReader(r)
+	_r := iobyte.NewReader(r)
 	_b := serializer.Buffers.Get()
 	defer serializer.Buffers.Put(_b)
 	err = serializer.Read_layout(_r, _b, _BigMapLayout)

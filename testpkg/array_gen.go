@@ -1,6 +1,7 @@
 package testpkg
 
 import (
+	"github.com/pierrec/packer/iobyte"
 	"io"
 
 	"github.com/pierrec/serializer"
@@ -9,7 +10,7 @@ import (
 const _ArrayLayout = "R4CR4DR4ER4FR4GR4HR4R4JR4KR4LR4PR4QR4Y"
 
 func (a *Array) MarshalBinaryTo(w io.Writer) (err error) {
-	_w, _done := serializer.NewWriter(w)
+	_w, _done := iobyte.NewWriter(w)
 	defer _done(&err)
 	_b := serializer.Buffers.Get()
 	defer serializer.Buffers.Put(_b)
@@ -135,7 +136,7 @@ func (a *Array) MarshalBinaryTo(w io.Writer) (err error) {
 }
 
 func (a *Array) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	_r := serializer.NewReader(r)
+	_r := iobyte.NewReader(r)
 	_b := serializer.Buffers.Get()
 	defer serializer.Buffers.Put(_b)
 	err = serializer.Read_layout(_r, _b, _ArrayLayout)
@@ -299,7 +300,7 @@ func (a *Array) UnmarshalBinaryFrom(r io.Reader) (err error) {
 const _ArrayPtrLayout = "WR4CWR4DWR4EWR4FWR4GWR4HWR4WR4JWR4KWR4LWR4PWR4QWR4Y"
 
 func (a *ArrayPtr) MarshalBinaryTo(w io.Writer) (err error) {
-	_w, _done := serializer.NewWriter(w)
+	_w, _done := iobyte.NewWriter(w)
 	defer _done(&err)
 	_b := serializer.Buffers.Get()
 	defer serializer.Buffers.Put(_b)
@@ -515,7 +516,7 @@ func (a *ArrayPtr) MarshalBinaryTo(w io.Writer) (err error) {
 }
 
 func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	_r := serializer.NewReader(r)
+	_r := iobyte.NewReader(r)
 	_b := serializer.Buffers.Get()
 	defer serializer.Buffers.Put(_b)
 	err = serializer.Read_layout(_r, _b, _ArrayPtrLayout)
@@ -797,7 +798,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 const _ArrayAnonLayout = "R4ZCYR4XZHK"
 
 func (a *ArrayAnon) MarshalBinaryTo(w io.Writer) (err error) {
-	_w, _done := serializer.NewWriter(w)
+	_w, _done := iobyte.NewWriter(w)
 	defer _done(&err)
 	_b := serializer.Buffers.Get()
 	defer serializer.Buffers.Put(_b)
@@ -860,7 +861,7 @@ func (a *ArrayAnon) MarshalBinaryTo(w io.Writer) (err error) {
 }
 
 func (a *ArrayAnon) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	_r := serializer.NewReader(r)
+	_r := iobyte.NewReader(r)
 	_b := serializer.Buffers.Get()
 	defer serializer.Buffers.Put(_b)
 	err = serializer.Read_layout(_r, _b, _ArrayAnonLayout)

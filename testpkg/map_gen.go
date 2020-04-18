@@ -1,6 +1,7 @@
 package testpkg
 
 import (
+	"github.com/pierrec/packer/iobyte"
 	"io"
 
 	"github.com/pierrec/serializer"
@@ -9,7 +10,7 @@ import (
 const _MapLayout = "VCCVBBVYCVYXCVWHHVWCCVCWCVWCWCVZCYC"
 
 func (m *Map) MarshalBinaryTo(w io.Writer) (err error) {
-	_w, _done := serializer.NewWriter(w)
+	_w, _done := iobyte.NewWriter(w)
 	defer _done(&err)
 	_b := serializer.Buffers.Get()
 	defer serializer.Buffers.Put(_b)
@@ -236,7 +237,7 @@ func (m *Map) MarshalBinaryTo(w io.Writer) (err error) {
 }
 
 func (m *Map) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	_r := serializer.NewReader(r)
+	_r := iobyte.NewReader(r)
 	_b := serializer.Buffers.Get()
 	defer serializer.Buffers.Put(_b)
 	err = serializer.Read_layout(_r, _b, _MapLayout)

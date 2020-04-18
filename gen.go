@@ -75,7 +75,8 @@ import (
 		"pkg":     localpkgName,
 	}
 	imps := map[string]bool{
-		"io": true,
+		"io":                               true,
+		"github.com/pierrec/packer/iobyte": true,
 	}
 
 	// Generate the methods code into buf first so that proper imports can be determined.
@@ -374,7 +375,7 @@ var (
 const _%type%Layout = "%layout%"
 
 func (%rcv% *%type%) MarshalBinaryTo(w io.Writer) (err error) {
-	_w, _done := %pkg%.NewWriter(w); defer _done(&err)
+	_w, _done := iobyte.NewWriter(w); defer _done(&err)
 	_b := %pkg%.Buffers.Get(); defer %pkg%.Buffers.Put(_b)
 	err = %pkg%.Write_layout(_w, _b, _%type%Layout); if err != nil { return }
 `,
@@ -448,7 +449,7 @@ func (%rcv% *%type%) MarshalBinaryTo(w io.Writer) (err error) {
 		WithDecl: true,
 		Head: `
 func (%rcv% *%type%) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	_r := %pkg%.NewReader(r)
+	_r := iobyte.NewReader(r)
 	_b := %pkg%.Buffers.Get(); defer %pkg%.Buffers.Put(_b)
 	err = %pkg%.Read_layout(_r, _b, _%type%Layout); if err != nil { return }
 `,

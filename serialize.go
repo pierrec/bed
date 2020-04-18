@@ -7,9 +7,12 @@ import (
 	"math/big"
 	"math/bits"
 	"time"
+
+	"github.com/pierrec/packer"
+	"github.com/pierrec/packer/iobyte"
 )
 
-func Write_layout(w ByteWriter, buf []byte, layout string) error {
+func Write_layout(w iobyte.ByteWriter, buf []byte, layout string) error {
 	return Write_string(w, buf, layout)
 }
 
@@ -18,7 +21,7 @@ const (
 	_true  = 1
 )
 
-func Write_bool(w ByteWriter, _ []byte, v bool) error {
+func Write_bool(w iobyte.ByteWriter, _ []byte, v bool) error {
 	if v {
 		return w.WriteByte(_true)
 	}
@@ -26,81 +29,81 @@ func Write_bool(w ByteWriter, _ []byte, v bool) error {
 }
 
 // Write_Len is used when the value is most likely `small` (less than 1<<16).
-func Write_len(w ByteWriter, buf []byte, v int) error {
+func Write_len(w iobyte.ByteWriter, buf []byte, v int) error {
 	n := binary.PutUvarint(buf, uint64(v))
 	_, err := w.Write(buf[:n])
 	return err
 }
 
-func Write_int(w ByteWriter, buf []byte, v int) error {
-	return packUint64To(w, buf, uint64(v))
+func Write_int(w iobyte.ByteWriter, buf []byte, v int) error {
+	return packer.PackUint64To(w, buf, uint64(v))
 }
 
-func Write_int8(w ByteWriter, _ []byte, v int8) error {
+func Write_int8(w iobyte.ByteWriter, _ []byte, v int8) error {
 	return w.WriteByte(byte(v))
 }
 
-func Write_int16(w ByteWriter, buf []byte, v int16) error {
+func Write_int16(w iobyte.ByteWriter, buf []byte, v int16) error {
 	binary.LittleEndian.PutUint16(buf, uint16(v))
 	_, err := w.Write(buf[:2])
 	return err
 }
 
-func Write_int32(w ByteWriter, buf []byte, v int32) error {
-	return packUint64To(w, buf, uint64(v))
+func Write_int32(w iobyte.ByteWriter, buf []byte, v int32) error {
+	return packer.PackUint64To(w, buf, uint64(v))
 }
 
-func Write_int64(w ByteWriter, buf []byte, v int64) error {
-	return packUint64To(w, buf, uint64(v))
+func Write_int64(w iobyte.ByteWriter, buf []byte, v int64) error {
+	return packer.PackUint64To(w, buf, uint64(v))
 }
 
-func Write_uint(w ByteWriter, buf []byte, v uint) error {
-	return packUint64To(w, buf, uint64(v))
+func Write_uint(w iobyte.ByteWriter, buf []byte, v uint) error {
+	return packer.PackUint64To(w, buf, uint64(v))
 }
 
-func Write_uint8(w ByteWriter, _ []byte, v uint8) error {
+func Write_uint8(w iobyte.ByteWriter, _ []byte, v uint8) error {
 	return w.WriteByte(v)
 }
 
-func Write_uint16(w ByteWriter, buf []byte, v uint16) error {
+func Write_uint16(w iobyte.ByteWriter, buf []byte, v uint16) error {
 	binary.LittleEndian.PutUint16(buf, v)
 	_, err := w.Write(buf[:2])
 	return err
 }
 
-func Write_uint32(w ByteWriter, buf []byte, v uint32) error {
-	return packUint64To(w, buf, uint64(v))
+func Write_uint32(w iobyte.ByteWriter, buf []byte, v uint32) error {
+	return packer.PackUint64To(w, buf, uint64(v))
 }
 
-func Write_uint64(w ByteWriter, buf []byte, v uint64) error {
-	return packUint64To(w, buf, v)
+func Write_uint64(w iobyte.ByteWriter, buf []byte, v uint64) error {
+	return packer.PackUint64To(w, buf, v)
 }
 
-func Write_float32(w ByteWriter, buf []byte, v float32) error {
+func Write_float32(w iobyte.ByteWriter, buf []byte, v float32) error {
 	u := bits.Reverse32(math.Float32bits(v))
-	return packUint64To(w, buf, uint64(u))
+	return packer.PackUint64To(w, buf, uint64(u))
 }
 
-func Write_float64(w ByteWriter, buf []byte, v float64) error {
+func Write_float64(w iobyte.ByteWriter, buf []byte, v float64) error {
 	u := bits.Reverse64(math.Float64bits(v))
-	return packUint64To(w, buf, u)
+	return packer.PackUint64To(w, buf, u)
 }
 
-func Write_complex64(w ByteWriter, buf []byte, v complex64) error {
+func Write_complex64(w iobyte.ByteWriter, buf []byte, v complex64) error {
 	if err := Write_float32(w, buf, real(v)); err != nil {
 		return err
 	}
 	return Write_float32(w, buf, imag(v))
 }
 
-func Write_complex128(w ByteWriter, buf []byte, v complex128) error {
+func Write_complex128(w iobyte.ByteWriter, buf []byte, v complex128) error {
 	if err := Write_float64(w, buf, real(v)); err != nil {
 		return err
 	}
 	return Write_float64(w, buf, imag(v))
 }
 
-func Write_string(w ByteWriter, buf []byte, v string) error {
+func Write_string(w iobyte.ByteWriter, buf []byte, v string) error {
 	if err := Write_int(w, buf, len(v)); err != nil {
 		return err
 	}
@@ -108,7 +111,7 @@ func Write_string(w ByteWriter, buf []byte, v string) error {
 	return err
 }
 
-func Write_bytes(w ByteWriter, buf []byte, v []byte) error {
+func Write_bytes(w iobyte.ByteWriter, buf []byte, v []byte) error {
 	if err := Write_int(w, buf, len(v)); err != nil {
 		return err
 	}
@@ -121,7 +124,7 @@ func Write_bytea(w io.Writer, v []byte) error {
 	return err
 }
 
-func Write_time(w ByteWriter, buf []byte, t time.Time) error {
+func Write_time(w iobyte.ByteWriter, buf []byte, t time.Time) error {
 	if t.IsZero() {
 		_, err := w.Write([]byte{0, 0})
 		return err
@@ -157,13 +160,13 @@ func Write_time(w ByteWriter, buf []byte, t time.Time) error {
 	return err
 }
 
-func Write_bigfloat(w ByteWriter, buf, bigbuf []byte, v big.Float) error {
+func Write_bigfloat(w iobyte.ByteWriter, buf, bigbuf []byte, v big.Float) error {
 	prec := int(v.MinPrec())
 	bigbuf = v.Append(bigbuf[:0], 'g', prec)
 	return Write_bytes(w, buf, bigbuf)
 }
 
-func Write_bigint(w ByteWriter, buf, bigbuf []byte, v big.Int) error {
+func Write_bigint(w iobyte.ByteWriter, buf, bigbuf []byte, v big.Int) error {
 	sign := v.Sign() + 1
 	if err := Write_uint8(w, buf, uint8(sign)); err != nil {
 		return err
@@ -175,7 +178,7 @@ func Write_bigint(w ByteWriter, buf, bigbuf []byte, v big.Int) error {
 	return Write_bytes(w, buf, v.Bytes())
 }
 
-func Write_bigrat(w ByteWriter, buf, bigbuf []byte, v big.Rat) error {
+func Write_bigrat(w iobyte.ByteWriter, buf, bigbuf []byte, v big.Rat) error {
 	if err := Write_bigint(w, buf, bigbuf, *v.Num()); err != nil {
 		return err
 	}

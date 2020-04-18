@@ -151,7 +151,7 @@ func TestRead_int64(t *testing.T) {
 
 func TestRead_uint(t *testing.T) {
 	for _, tc := range []uint{0, 1, 10, 128, 256, 1014, 1 << 10, 1 << 20} {
-		label := fmt.Sprintf("%v", tc)
+		label := fmt.Sprintf("%x", tc)
 		t.Run(label, func(t *testing.T) {
 			b := Buffers.Get()
 			defer Buffers.Put(b)
@@ -197,7 +197,7 @@ func TestRead_uint8(t *testing.T) {
 
 func TestRead_uint16(t *testing.T) {
 	for _, tc := range []uint16{0, 1, 10, 127, 1 << 10} {
-		label := fmt.Sprintf("%v", tc)
+		label := fmt.Sprintf("%x", tc)
 		t.Run(label, func(t *testing.T) {
 			b := Buffers.Get()
 			defer Buffers.Put(b)
@@ -220,7 +220,7 @@ func TestRead_uint16(t *testing.T) {
 
 func TestRead_uint32(t *testing.T) {
 	for _, tc := range []uint32{0, 1, 10, 127, 1 << 10, 1 << 20, 1 << 30} {
-		label := fmt.Sprintf("%v", tc)
+		label := fmt.Sprintf("%x", tc)
 		t.Run(label, func(t *testing.T) {
 			b := Buffers.Get()
 			defer Buffers.Put(b)
@@ -243,7 +243,7 @@ func TestRead_uint32(t *testing.T) {
 
 func TestRead_uint64(t *testing.T) {
 	for _, tc := range []uint64{0, 1, 10, 127, 1 << 10, 1 << 20, 1 << 30, 1 << 60} {
-		label := fmt.Sprintf("%v", tc)
+		label := fmt.Sprintf("%x", tc)
 		t.Run(label, func(t *testing.T) {
 			b := Buffers.Get()
 			defer Buffers.Put(b)
