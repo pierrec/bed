@@ -8,7 +8,6 @@ import (
 	"math/bits"
 	"time"
 
-	"github.com/pierrec/packer"
 	"github.com/pierrec/packer/iobyte"
 )
 
@@ -36,7 +35,9 @@ func Write_len(w iobyte.ByteWriter, buf []byte, v int) error {
 }
 
 func Write_int(w iobyte.ByteWriter, buf []byte, v int) error {
-	return packer.PackUint64To(w, buf, uint64(v))
+	binary.LittleEndian.PutUint64(buf, uint64(v))
+	_, err := w.Write(buf[:8])
+	return err
 }
 
 func Write_int8(w iobyte.ByteWriter, _ []byte, v int8) error {
@@ -50,15 +51,21 @@ func Write_int16(w iobyte.ByteWriter, buf []byte, v int16) error {
 }
 
 func Write_int32(w iobyte.ByteWriter, buf []byte, v int32) error {
-	return packer.PackUint64To(w, buf, uint64(v))
+	binary.LittleEndian.PutUint32(buf, uint32(v))
+	_, err := w.Write(buf[:4])
+	return err
 }
 
 func Write_int64(w iobyte.ByteWriter, buf []byte, v int64) error {
-	return packer.PackUint64To(w, buf, uint64(v))
+	binary.LittleEndian.PutUint64(buf, uint64(v))
+	_, err := w.Write(buf[:8])
+	return err
 }
 
 func Write_uint(w iobyte.ByteWriter, buf []byte, v uint) error {
-	return packer.PackUint64To(w, buf, uint64(v))
+	binary.LittleEndian.PutUint64(buf, uint64(v))
+	_, err := w.Write(buf[:8])
+	return err
 }
 
 func Write_uint8(w iobyte.ByteWriter, _ []byte, v uint8) error {
@@ -72,21 +79,25 @@ func Write_uint16(w iobyte.ByteWriter, buf []byte, v uint16) error {
 }
 
 func Write_uint32(w iobyte.ByteWriter, buf []byte, v uint32) error {
-	return packer.PackUint64To(w, buf, uint64(v))
+	binary.LittleEndian.PutUint32(buf, v)
+	_, err := w.Write(buf[:4])
+	return err
 }
 
 func Write_uint64(w iobyte.ByteWriter, buf []byte, v uint64) error {
-	return packer.PackUint64To(w, buf, v)
+	binary.LittleEndian.PutUint64(buf, v)
+	_, err := w.Write(buf[:8])
+	return err
 }
 
 func Write_float32(w iobyte.ByteWriter, buf []byte, v float32) error {
 	u := bits.Reverse32(math.Float32bits(v))
-	return packer.PackUint64To(w, buf, uint64(u))
+	return Write_uint32(w, buf, u)
 }
 
 func Write_float64(w iobyte.ByteWriter, buf []byte, v float64) error {
 	u := bits.Reverse64(math.Float64bits(v))
-	return packer.PackUint64To(w, buf, u)
+	return Write_uint64(w, buf, u)
 }
 
 func Write_complex64(w iobyte.ByteWriter, buf []byte, v complex64) error {

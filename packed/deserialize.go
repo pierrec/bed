@@ -1,8 +1,6 @@
 package packed
 
 import (
-	"encoding/binary"
-	"io"
 	"math"
 	"math/big"
 	"math/bits"
@@ -118,125 +116,29 @@ func Read_complex128(r iobyte.ByteReader, buf []byte) (complex128, error) {
 }
 
 func Read_string(r iobyte.ByteReader, buf []byte) (string, error) {
-	n, err := Read_int(r, buf)
-	if err != nil || n == 0 {
-		return "", err
-	}
-	if n > cap(buf) {
-		buf = make([]byte, n)
-	} else {
-		buf = buf[:n]
-	}
-	_, err = io.ReadFull(r, buf)
-	if err != nil {
-		return "", err
-	}
-	return string(buf), nil
+	return raw.Read_string(r, buf)
 }
 
 func Read_bytes(r iobyte.ByteReader, buf, out []byte) ([]byte, error) {
-	n, err := Read_int(r, buf)
-	if err != nil || n == 0 {
-		return nil, err
-	}
-	if len(out) < n {
-		out = make([]byte, n)
-	} else {
-		out = out[:n]
-	}
-	_, err = io.ReadFull(r, out)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
+	return raw.Read_bytes(r, buf, out)
 }
 
 func Read_bytea(r iobyte.ByteReader, buf []byte) error {
-	_, err := io.ReadFull(r, buf)
-	return err
+	return raw.Read_bytea(r, buf)
 }
 
 func Read_time(r iobyte.ByteReader, buf []byte) (t time.Time, err error) {
-	_ = buf[:10]
-	if _, err = io.ReadFull(r, buf[:2]); err != nil {
-		return
-	}
-	year := binary.LittleEndian.Uint16(buf)
-	if year == 0 {
-		return
-	}
-	if _, err = io.ReadFull(r, buf[:4]); err != nil {
-		return
-	}
-
-	u := binary.LittleEndian.Uint32(buf)
-
-	var ns int
-	if u&1 > 0 {
-		if _, err = io.ReadFull(r, buf[4:8]); err != nil {
-			return
-		}
-		ns = int(binary.LittleEndian.Uint32(buf[4:]))
-	}
-
-	const (
-		fiveMask = 1<<5 - 1
-		sixMask  = 1<<6 - 1
-	)
-
-	u >>= 1
-	offset := u & fiveMask
-	u >>= 5
-	sec := u & sixMask
-	u >>= 6
-	min := u & sixMask
-	u >>= 6
-	hour := u & fiveMask
-	u >>= 5
-	day := u & fiveMask
-	u >>= 5
-	month := u
-
-	loc := time.FixedZone("", int(offset)*(60*60))
-
-	t = time.Date(int(year), time.Month(month), int(day), int(hour), int(min), int(sec), ns, loc)
-
-	return
+	return raw.Read_time(r, buf)
 }
 
 func Read_bigfloat(r iobyte.ByteReader, buf, bigbuf []byte) (b big.Float, err error) {
-	bigbuf, err = Read_bytes(r, buf, bigbuf)
-	if err == nil {
-		err = b.UnmarshalText(bigbuf)
-	}
-	return
+	return raw.Read_bigfloat(r, buf, bigbuf)
 }
 
 func Read_bigint(r iobyte.ByteReader, buf, bigbuf []byte) (b big.Int, err error) {
-	sign, err := r.ReadByte()
-	if err != nil || sign == 1 {
-		return
-	}
-	bigbuf, err = Read_bytes(r, buf, bigbuf)
-	if err != nil {
-		return
-	}
-	b.SetBytes(bigbuf)
-	if sign == 0 {
-		b.Neg(&b)
-	}
-	return
+	return raw.Read_bigint(r, buf, bigbuf)
 }
 
 func Read_bigrat(r iobyte.ByteReader, buf, bigbuf []byte) (b big.Rat, err error) {
-	num, err := Read_bigint(r, buf, bigbuf)
-	if err != nil {
-		return
-	}
-	denom, err := Read_bigint(r, buf, bigbuf)
-	if err != nil {
-		return
-	}
-	b.SetFrac(&num, &denom)
-	return
+	return raw.Read_bigrat(r, buf, bigbuf)
 }
