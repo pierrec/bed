@@ -135,11 +135,10 @@ func (a *Array) MarshalBinaryTo(w io.Writer) (err error) {
 	return
 }
 
-func (a *Array) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	_r := iobyte.NewReader(r)
+func (a *Array) UnmarshalBinaryFrom(r iobyte.ByteReader) (err error) {
 	_b := bed.Buffers.Get()
 	defer bed.Buffers.Put(_b)
-	err = readwrite.Read_layout(_r, _b, _ArrayLayout)
+	err = readwrite.Read_layout(r, _b, _ArrayLayout)
 	if err != nil {
 		return
 	}
@@ -160,7 +159,7 @@ func (a *Array) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	{
 		_s := &a.Int
 		for _k, _kn := 0, len(_s); _k < _kn; _k++ {
-			_int, err = readwrite.Read_int(_r, _b)
+			_int, err = readwrite.Read_int(r, _b)
 			if err != nil {
 				return
 			}
@@ -171,7 +170,7 @@ func (a *Array) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	{
 		_s := &a.Int8
 		for _k, _kn := 0, len(_s); _k < _kn; _k++ {
-			_int8, err = readwrite.Read_int8(_r, _b)
+			_int8, err = readwrite.Read_int8(r, _b)
 			if err != nil {
 				return
 			}
@@ -182,7 +181,7 @@ func (a *Array) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	{
 		_s := &a.Int16
 		for _k, _kn := 0, len(_s); _k < _kn; _k++ {
-			_int16, err = readwrite.Read_int16(_r, _b)
+			_int16, err = readwrite.Read_int16(r, _b)
 			if err != nil {
 				return
 			}
@@ -193,7 +192,7 @@ func (a *Array) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	{
 		_s := &a.Int32
 		for _k, _kn := 0, len(_s); _k < _kn; _k++ {
-			_int32, err = readwrite.Read_int32(_r, _b)
+			_int32, err = readwrite.Read_int32(r, _b)
 			if err != nil {
 				return
 			}
@@ -204,7 +203,7 @@ func (a *Array) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	{
 		_s := &a.Int64
 		for _k, _kn := 0, len(_s); _k < _kn; _k++ {
-			_int64, err = readwrite.Read_int64(_r, _b)
+			_int64, err = readwrite.Read_int64(r, _b)
 			if err != nil {
 				return
 			}
@@ -215,7 +214,7 @@ func (a *Array) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	{
 		_s := &a.Uint
 		for _k, _kn := 0, len(_s); _k < _kn; _k++ {
-			_uint, err = readwrite.Read_uint(_r, _b)
+			_uint, err = readwrite.Read_uint(r, _b)
 			if err != nil {
 				return
 			}
@@ -223,7 +222,7 @@ func (a *Array) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	err = readwrite.Read_bytea(_r, (a.Uint8)[:])
+	err = readwrite.Read_bytea(r, (a.Uint8)[:])
 	if err != nil {
 		return
 	}
@@ -231,7 +230,7 @@ func (a *Array) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	{
 		_s := &a.Uint16
 		for _k, _kn := 0, len(_s); _k < _kn; _k++ {
-			_uint16, err = readwrite.Read_uint16(_r, _b)
+			_uint16, err = readwrite.Read_uint16(r, _b)
 			if err != nil {
 				return
 			}
@@ -242,7 +241,7 @@ func (a *Array) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	{
 		_s := &a.Uint32
 		for _k, _kn := 0, len(_s); _k < _kn; _k++ {
-			_uint32, err = readwrite.Read_uint32(_r, _b)
+			_uint32, err = readwrite.Read_uint32(r, _b)
 			if err != nil {
 				return
 			}
@@ -253,7 +252,7 @@ func (a *Array) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	{
 		_s := &a.Uint64
 		for _k, _kn := 0, len(_s); _k < _kn; _k++ {
-			_uint64, err = readwrite.Read_uint64(_r, _b)
+			_uint64, err = readwrite.Read_uint64(r, _b)
 			if err != nil {
 				return
 			}
@@ -264,7 +263,7 @@ func (a *Array) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	{
 		_s := &a.Complex64
 		for _k, _kn := 0, len(_s); _k < _kn; _k++ {
-			_complex64, err = readwrite.Read_complex64(_r, _b)
+			_complex64, err = readwrite.Read_complex64(r, _b)
 			if err != nil {
 				return
 			}
@@ -275,7 +274,7 @@ func (a *Array) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	{
 		_s := &a.Complex128
 		for _k, _kn := 0, len(_s); _k < _kn; _k++ {
-			_complex128, err = readwrite.Read_complex128(_r, _b)
+			_complex128, err = readwrite.Read_complex128(r, _b)
 			if err != nil {
 				return
 			}
@@ -286,7 +285,7 @@ func (a *Array) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	{
 		_s := &a.String
 		for _k, _kn := 0, len(_s); _k < _kn; _k++ {
-			_string, err = readwrite.Read_string(_r, _b)
+			_string, err = readwrite.Read_string(r, _b)
 			if err != nil {
 				return
 			}
@@ -515,11 +514,10 @@ func (a *ArrayPtr) MarshalBinaryTo(w io.Writer) (err error) {
 	return
 }
 
-func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	_r := iobyte.NewReader(r)
+func (a *ArrayPtr) UnmarshalBinaryFrom(r iobyte.ByteReader) (err error) {
 	_b := bed.Buffers.Get()
 	defer bed.Buffers.Put(_b)
-	err = readwrite.Read_layout(_r, _b, _ArrayPtrLayout)
+	err = readwrite.Read_layout(r, _b, _ArrayPtrLayout)
 	if err != nil {
 		return
 	}
@@ -538,7 +536,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	var _uint32 uint32
 	var _uint64 uint64
 
-	_bool, err = readwrite.Read_bool(_r, _b)
+	_bool, err = readwrite.Read_bool(r, _b)
 	if err != nil {
 		return
 	}
@@ -549,7 +547,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		{
 			_s := &*a.Int
 			for _k, _kn := 0, len(_s); _k < _kn; _k++ {
-				_int, err = readwrite.Read_int(_r, _b)
+				_int, err = readwrite.Read_int(r, _b)
 				if err != nil {
 					return
 				}
@@ -558,7 +556,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_bool, err = readwrite.Read_bool(_r, _b)
+	_bool, err = readwrite.Read_bool(r, _b)
 	if err != nil {
 		return
 	}
@@ -569,7 +567,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		{
 			_s := &*a.Int8
 			for _k, _kn := 0, len(_s); _k < _kn; _k++ {
-				_int8, err = readwrite.Read_int8(_r, _b)
+				_int8, err = readwrite.Read_int8(r, _b)
 				if err != nil {
 					return
 				}
@@ -578,7 +576,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_bool, err = readwrite.Read_bool(_r, _b)
+	_bool, err = readwrite.Read_bool(r, _b)
 	if err != nil {
 		return
 	}
@@ -589,7 +587,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		{
 			_s := &*a.Int16
 			for _k, _kn := 0, len(_s); _k < _kn; _k++ {
-				_int16, err = readwrite.Read_int16(_r, _b)
+				_int16, err = readwrite.Read_int16(r, _b)
 				if err != nil {
 					return
 				}
@@ -598,7 +596,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_bool, err = readwrite.Read_bool(_r, _b)
+	_bool, err = readwrite.Read_bool(r, _b)
 	if err != nil {
 		return
 	}
@@ -609,7 +607,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		{
 			_s := &*a.Int32
 			for _k, _kn := 0, len(_s); _k < _kn; _k++ {
-				_int32, err = readwrite.Read_int32(_r, _b)
+				_int32, err = readwrite.Read_int32(r, _b)
 				if err != nil {
 					return
 				}
@@ -618,7 +616,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_bool, err = readwrite.Read_bool(_r, _b)
+	_bool, err = readwrite.Read_bool(r, _b)
 	if err != nil {
 		return
 	}
@@ -629,7 +627,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		{
 			_s := &*a.Int64
 			for _k, _kn := 0, len(_s); _k < _kn; _k++ {
-				_int64, err = readwrite.Read_int64(_r, _b)
+				_int64, err = readwrite.Read_int64(r, _b)
 				if err != nil {
 					return
 				}
@@ -638,7 +636,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_bool, err = readwrite.Read_bool(_r, _b)
+	_bool, err = readwrite.Read_bool(r, _b)
 	if err != nil {
 		return
 	}
@@ -649,7 +647,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		{
 			_s := &*a.Uint
 			for _k, _kn := 0, len(_s); _k < _kn; _k++ {
-				_uint, err = readwrite.Read_uint(_r, _b)
+				_uint, err = readwrite.Read_uint(r, _b)
 				if err != nil {
 					return
 				}
@@ -658,7 +656,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_bool, err = readwrite.Read_bool(_r, _b)
+	_bool, err = readwrite.Read_bool(r, _b)
 	if err != nil {
 		return
 	}
@@ -666,13 +664,13 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		a.Uint8 = nil
 	} else {
 		a.Uint8 = new([4]uint8)
-		err = readwrite.Read_bytea(_r, (*a.Uint8)[:])
+		err = readwrite.Read_bytea(r, (*a.Uint8)[:])
 		if err != nil {
 			return
 		}
 	}
 
-	_bool, err = readwrite.Read_bool(_r, _b)
+	_bool, err = readwrite.Read_bool(r, _b)
 	if err != nil {
 		return
 	}
@@ -683,7 +681,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		{
 			_s := &*a.Uint16
 			for _k, _kn := 0, len(_s); _k < _kn; _k++ {
-				_uint16, err = readwrite.Read_uint16(_r, _b)
+				_uint16, err = readwrite.Read_uint16(r, _b)
 				if err != nil {
 					return
 				}
@@ -692,7 +690,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_bool, err = readwrite.Read_bool(_r, _b)
+	_bool, err = readwrite.Read_bool(r, _b)
 	if err != nil {
 		return
 	}
@@ -703,7 +701,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		{
 			_s := &*a.Uint32
 			for _k, _kn := 0, len(_s); _k < _kn; _k++ {
-				_uint32, err = readwrite.Read_uint32(_r, _b)
+				_uint32, err = readwrite.Read_uint32(r, _b)
 				if err != nil {
 					return
 				}
@@ -712,7 +710,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_bool, err = readwrite.Read_bool(_r, _b)
+	_bool, err = readwrite.Read_bool(r, _b)
 	if err != nil {
 		return
 	}
@@ -723,7 +721,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		{
 			_s := &*a.Uint64
 			for _k, _kn := 0, len(_s); _k < _kn; _k++ {
-				_uint64, err = readwrite.Read_uint64(_r, _b)
+				_uint64, err = readwrite.Read_uint64(r, _b)
 				if err != nil {
 					return
 				}
@@ -732,7 +730,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_bool, err = readwrite.Read_bool(_r, _b)
+	_bool, err = readwrite.Read_bool(r, _b)
 	if err != nil {
 		return
 	}
@@ -743,7 +741,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		{
 			_s := &*a.Complex64
 			for _k, _kn := 0, len(_s); _k < _kn; _k++ {
-				_complex64, err = readwrite.Read_complex64(_r, _b)
+				_complex64, err = readwrite.Read_complex64(r, _b)
 				if err != nil {
 					return
 				}
@@ -752,7 +750,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_bool, err = readwrite.Read_bool(_r, _b)
+	_bool, err = readwrite.Read_bool(r, _b)
 	if err != nil {
 		return
 	}
@@ -763,7 +761,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		{
 			_s := &*a.Complex128
 			for _k, _kn := 0, len(_s); _k < _kn; _k++ {
-				_complex128, err = readwrite.Read_complex128(_r, _b)
+				_complex128, err = readwrite.Read_complex128(r, _b)
 				if err != nil {
 					return
 				}
@@ -772,7 +770,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_bool, err = readwrite.Read_bool(_r, _b)
+	_bool, err = readwrite.Read_bool(r, _b)
 	if err != nil {
 		return
 	}
@@ -783,7 +781,7 @@ func (a *ArrayPtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		{
 			_s := &*a.String
 			for _k, _kn := 0, len(_s); _k < _kn; _k++ {
-				_string, err = readwrite.Read_string(_r, _b)
+				_string, err = readwrite.Read_string(r, _b)
 				if err != nil {
 					return
 				}
@@ -860,11 +858,10 @@ func (a *ArrayAnon) MarshalBinaryTo(w io.Writer) (err error) {
 	return
 }
 
-func (a *ArrayAnon) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	_r := iobyte.NewReader(r)
+func (a *ArrayAnon) UnmarshalBinaryFrom(r iobyte.ByteReader) (err error) {
 	_b := bed.Buffers.Get()
 	defer bed.Buffers.Put(_b)
-	err = readwrite.Read_layout(_r, _b, _ArrayAnonLayout)
+	err = readwrite.Read_layout(r, _b, _ArrayAnonLayout)
 	if err != nil {
 		return
 	}
@@ -881,13 +878,13 @@ func (a *ArrayAnon) UnmarshalBinaryFrom(r io.Reader) (err error) {
 			{
 				_s := &_s[_k]
 
-				_int, err = readwrite.Read_int(_r, _b)
+				_int, err = readwrite.Read_int(r, _b)
 				if err != nil {
 					return
 				}
 				_s.Int = _int
 
-				_string, err = readwrite.Read_string(_r, _b)
+				_string, err = readwrite.Read_string(r, _b)
 				if err != nil {
 					return
 				}
@@ -900,7 +897,7 @@ func (a *ArrayAnon) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	{
 		_s := &a.AnonSlice
 		for _k, _kn := 0, len(_s); _k < _kn; _k++ {
-			_n, err = readwrite.Read_len(_r)
+			_n, err = readwrite.Read_len(r)
 			if err != nil {
 				return
 			}
@@ -918,13 +915,13 @@ func (a *ArrayAnon) UnmarshalBinaryFrom(r io.Reader) (err error) {
 					{
 						_s := &_s[_k]
 
-						_uint, err = readwrite.Read_uint(_r, _b)
+						_uint, err = readwrite.Read_uint(r, _b)
 						if err != nil {
 							return
 						}
 						_s.Uint = _uint
 
-						_uint32, err = readwrite.Read_uint32(_r, _b)
+						_uint32, err = readwrite.Read_uint32(r, _b)
 						if err != nil {
 							return
 						}

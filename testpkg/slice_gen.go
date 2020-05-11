@@ -249,11 +249,10 @@ func (s *Slice) MarshalBinaryTo(w io.Writer) (err error) {
 	return
 }
 
-func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	_r := iobyte.NewReader(r)
+func (s *Slice) UnmarshalBinaryFrom(r iobyte.ByteReader) (err error) {
 	_b := bed.Buffers.Get()
 	defer bed.Buffers.Put(_b)
-	err = readwrite.Read_layout(_r, _b, _SliceLayout)
+	err = readwrite.Read_layout(r, _b, _SliceLayout)
 	if err != nil {
 		return
 	}
@@ -273,7 +272,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	var _uint32 uint32
 	var _uint64 uint64
 
-	_n, err = readwrite.Read_len(_r)
+	_n, err = readwrite.Read_len(r)
 	if err != nil {
 		return
 	}
@@ -285,7 +284,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _n > 0 {
 		_s := s.Bool
 		for _k, _kn := 0, _n; _k < _kn; _k++ {
-			_bool, err = readwrite.Read_bool(_r, _b)
+			_bool, err = readwrite.Read_bool(r, _b)
 			if err != nil {
 				return
 			}
@@ -293,7 +292,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_n, err = readwrite.Read_len(_r)
+	_n, err = readwrite.Read_len(r)
 	if err != nil {
 		return
 	}
@@ -305,7 +304,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _n > 0 {
 		_s := s.Int
 		for _k, _kn := 0, _n; _k < _kn; _k++ {
-			_int, err = readwrite.Read_int(_r, _b)
+			_int, err = readwrite.Read_int(r, _b)
 			if err != nil {
 				return
 			}
@@ -313,7 +312,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_n, err = readwrite.Read_len(_r)
+	_n, err = readwrite.Read_len(r)
 	if err != nil {
 		return
 	}
@@ -325,7 +324,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _n > 0 {
 		_s := s.Int8
 		for _k, _kn := 0, _n; _k < _kn; _k++ {
-			_int8, err = readwrite.Read_int8(_r, _b)
+			_int8, err = readwrite.Read_int8(r, _b)
 			if err != nil {
 				return
 			}
@@ -333,7 +332,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_n, err = readwrite.Read_len(_r)
+	_n, err = readwrite.Read_len(r)
 	if err != nil {
 		return
 	}
@@ -345,7 +344,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _n > 0 {
 		_s := s.Int16
 		for _k, _kn := 0, _n; _k < _kn; _k++ {
-			_int16, err = readwrite.Read_int16(_r, _b)
+			_int16, err = readwrite.Read_int16(r, _b)
 			if err != nil {
 				return
 			}
@@ -353,7 +352,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_n, err = readwrite.Read_len(_r)
+	_n, err = readwrite.Read_len(r)
 	if err != nil {
 		return
 	}
@@ -365,7 +364,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _n > 0 {
 		_s := s.Int32
 		for _k, _kn := 0, _n; _k < _kn; _k++ {
-			_int32, err = readwrite.Read_int32(_r, _b)
+			_int32, err = readwrite.Read_int32(r, _b)
 			if err != nil {
 				return
 			}
@@ -373,7 +372,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_n, err = readwrite.Read_len(_r)
+	_n, err = readwrite.Read_len(r)
 	if err != nil {
 		return
 	}
@@ -385,7 +384,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _n > 0 {
 		_s := s.Int64
 		for _k, _kn := 0, _n; _k < _kn; _k++ {
-			_int64, err = readwrite.Read_int64(_r, _b)
+			_int64, err = readwrite.Read_int64(r, _b)
 			if err != nil {
 				return
 			}
@@ -393,7 +392,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_n, err = readwrite.Read_len(_r)
+	_n, err = readwrite.Read_len(r)
 	if err != nil {
 		return
 	}
@@ -405,7 +404,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _n > 0 {
 		_s := s.Uint
 		for _k, _kn := 0, _n; _k < _kn; _k++ {
-			_uint, err = readwrite.Read_uint(_r, _b)
+			_uint, err = readwrite.Read_uint(r, _b)
 			if err != nil {
 				return
 			}
@@ -413,12 +412,12 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	s.Uint8, err = readwrite.Read_bytes(_r, _b, nil)
+	s.Uint8, err = readwrite.Read_bytes(r, _b, nil)
 	if err != nil {
 		return
 	}
 
-	_n, err = readwrite.Read_len(_r)
+	_n, err = readwrite.Read_len(r)
 	if err != nil {
 		return
 	}
@@ -430,7 +429,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _n > 0 {
 		_s := s.Uint16
 		for _k, _kn := 0, _n; _k < _kn; _k++ {
-			_uint16, err = readwrite.Read_uint16(_r, _b)
+			_uint16, err = readwrite.Read_uint16(r, _b)
 			if err != nil {
 				return
 			}
@@ -438,7 +437,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_n, err = readwrite.Read_len(_r)
+	_n, err = readwrite.Read_len(r)
 	if err != nil {
 		return
 	}
@@ -450,7 +449,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _n > 0 {
 		_s := s.Uint32
 		for _k, _kn := 0, _n; _k < _kn; _k++ {
-			_uint32, err = readwrite.Read_uint32(_r, _b)
+			_uint32, err = readwrite.Read_uint32(r, _b)
 			if err != nil {
 				return
 			}
@@ -458,7 +457,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_n, err = readwrite.Read_len(_r)
+	_n, err = readwrite.Read_len(r)
 	if err != nil {
 		return
 	}
@@ -470,7 +469,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _n > 0 {
 		_s := s.Uint64
 		for _k, _kn := 0, _n; _k < _kn; _k++ {
-			_uint64, err = readwrite.Read_uint64(_r, _b)
+			_uint64, err = readwrite.Read_uint64(r, _b)
 			if err != nil {
 				return
 			}
@@ -478,7 +477,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_n, err = readwrite.Read_len(_r)
+	_n, err = readwrite.Read_len(r)
 	if err != nil {
 		return
 	}
@@ -490,7 +489,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _n > 0 {
 		_s := s.Complex64
 		for _k, _kn := 0, _n; _k < _kn; _k++ {
-			_complex64, err = readwrite.Read_complex64(_r, _b)
+			_complex64, err = readwrite.Read_complex64(r, _b)
 			if err != nil {
 				return
 			}
@@ -498,7 +497,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_n, err = readwrite.Read_len(_r)
+	_n, err = readwrite.Read_len(r)
 	if err != nil {
 		return
 	}
@@ -510,7 +509,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _n > 0 {
 		_s := s.Complex128
 		for _k, _kn := 0, _n; _k < _kn; _k++ {
-			_complex128, err = readwrite.Read_complex128(_r, _b)
+			_complex128, err = readwrite.Read_complex128(r, _b)
 			if err != nil {
 				return
 			}
@@ -518,7 +517,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_n, err = readwrite.Read_len(_r)
+	_n, err = readwrite.Read_len(r)
 	if err != nil {
 		return
 	}
@@ -530,7 +529,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _n > 0 {
 		_s := s.String
 		for _k, _kn := 0, _n; _k < _kn; _k++ {
-			_string, err = readwrite.Read_string(_r, _b)
+			_string, err = readwrite.Read_string(r, _b)
 			if err != nil {
 				return
 			}
@@ -538,7 +537,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_n, err = readwrite.Read_len(_r)
+	_n, err = readwrite.Read_len(r)
 	if err != nil {
 		return
 	}
@@ -550,7 +549,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	if _n > 0 {
 		_s := s.Maps
 		for _k, _kn := 0, _n; _k < _kn; _k++ {
-			_n, err = readwrite.Read_len(_r)
+			_n, err = readwrite.Read_len(r)
 			if err != nil {
 				return
 			}
@@ -561,13 +560,13 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 				_s := _s[_k]
 				var _k string
 				for _j, _jn := 0, _n; _j < _jn; _j++ {
-					_string, err = readwrite.Read_string(_r, _b)
+					_string, err = readwrite.Read_string(r, _b)
 					if err != nil {
 						return
 					}
 					_k = _string
 
-					_n, err = readwrite.Read_len(_r)
+					_n, err = readwrite.Read_len(r)
 					if err != nil {
 						return
 					}
@@ -579,7 +578,7 @@ func (s *Slice) UnmarshalBinaryFrom(r io.Reader) (err error) {
 					if _n > 0 {
 						_s := _s[_k]
 						for _k, _kn := 0, _n; _k < _kn; _k++ {
-							_int, err = readwrite.Read_int(_r, _b)
+							_int, err = readwrite.Read_int(r, _b)
 							if err != nil {
 								return
 							}
@@ -940,11 +939,10 @@ func (s *SlicePtr) MarshalBinaryTo(w io.Writer) (err error) {
 	return
 }
 
-func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	_r := iobyte.NewReader(r)
+func (s *SlicePtr) UnmarshalBinaryFrom(r iobyte.ByteReader) (err error) {
 	_b := bed.Buffers.Get()
 	defer bed.Buffers.Put(_b)
-	err = readwrite.Read_layout(_r, _b, _SlicePtrLayout)
+	err = readwrite.Read_layout(r, _b, _SlicePtrLayout)
 	if err != nil {
 		return
 	}
@@ -964,7 +962,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	var _uint32 uint32
 	var _uint64 uint64
 
-	_bool, err = readwrite.Read_bool(_r, _b)
+	_bool, err = readwrite.Read_bool(r, _b)
 	if err != nil {
 		return
 	}
@@ -972,7 +970,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		s.Bool = nil
 	} else {
 		s.Bool = new([]bool)
-		_n, err = readwrite.Read_len(_r)
+		_n, err = readwrite.Read_len(r)
 		if err != nil {
 			return
 		}
@@ -984,7 +982,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		if _n > 0 {
 			_s := *s.Bool
 			for _k, _kn := 0, _n; _k < _kn; _k++ {
-				_bool, err = readwrite.Read_bool(_r, _b)
+				_bool, err = readwrite.Read_bool(r, _b)
 				if err != nil {
 					return
 				}
@@ -993,7 +991,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_bool, err = readwrite.Read_bool(_r, _b)
+	_bool, err = readwrite.Read_bool(r, _b)
 	if err != nil {
 		return
 	}
@@ -1001,7 +999,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		s.Int = nil
 	} else {
 		s.Int = new([]int)
-		_n, err = readwrite.Read_len(_r)
+		_n, err = readwrite.Read_len(r)
 		if err != nil {
 			return
 		}
@@ -1013,7 +1011,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		if _n > 0 {
 			_s := *s.Int
 			for _k, _kn := 0, _n; _k < _kn; _k++ {
-				_int, err = readwrite.Read_int(_r, _b)
+				_int, err = readwrite.Read_int(r, _b)
 				if err != nil {
 					return
 				}
@@ -1022,7 +1020,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_bool, err = readwrite.Read_bool(_r, _b)
+	_bool, err = readwrite.Read_bool(r, _b)
 	if err != nil {
 		return
 	}
@@ -1030,7 +1028,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		s.Int8 = nil
 	} else {
 		s.Int8 = new([]int8)
-		_n, err = readwrite.Read_len(_r)
+		_n, err = readwrite.Read_len(r)
 		if err != nil {
 			return
 		}
@@ -1042,7 +1040,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		if _n > 0 {
 			_s := *s.Int8
 			for _k, _kn := 0, _n; _k < _kn; _k++ {
-				_int8, err = readwrite.Read_int8(_r, _b)
+				_int8, err = readwrite.Read_int8(r, _b)
 				if err != nil {
 					return
 				}
@@ -1051,7 +1049,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_bool, err = readwrite.Read_bool(_r, _b)
+	_bool, err = readwrite.Read_bool(r, _b)
 	if err != nil {
 		return
 	}
@@ -1059,7 +1057,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		s.Int16 = nil
 	} else {
 		s.Int16 = new([]int16)
-		_n, err = readwrite.Read_len(_r)
+		_n, err = readwrite.Read_len(r)
 		if err != nil {
 			return
 		}
@@ -1071,7 +1069,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		if _n > 0 {
 			_s := *s.Int16
 			for _k, _kn := 0, _n; _k < _kn; _k++ {
-				_int16, err = readwrite.Read_int16(_r, _b)
+				_int16, err = readwrite.Read_int16(r, _b)
 				if err != nil {
 					return
 				}
@@ -1080,7 +1078,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_bool, err = readwrite.Read_bool(_r, _b)
+	_bool, err = readwrite.Read_bool(r, _b)
 	if err != nil {
 		return
 	}
@@ -1088,7 +1086,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		s.Int32 = nil
 	} else {
 		s.Int32 = new([]int32)
-		_n, err = readwrite.Read_len(_r)
+		_n, err = readwrite.Read_len(r)
 		if err != nil {
 			return
 		}
@@ -1100,7 +1098,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		if _n > 0 {
 			_s := *s.Int32
 			for _k, _kn := 0, _n; _k < _kn; _k++ {
-				_int32, err = readwrite.Read_int32(_r, _b)
+				_int32, err = readwrite.Read_int32(r, _b)
 				if err != nil {
 					return
 				}
@@ -1109,7 +1107,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_bool, err = readwrite.Read_bool(_r, _b)
+	_bool, err = readwrite.Read_bool(r, _b)
 	if err != nil {
 		return
 	}
@@ -1117,7 +1115,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		s.Int64 = nil
 	} else {
 		s.Int64 = new([]int64)
-		_n, err = readwrite.Read_len(_r)
+		_n, err = readwrite.Read_len(r)
 		if err != nil {
 			return
 		}
@@ -1129,7 +1127,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		if _n > 0 {
 			_s := *s.Int64
 			for _k, _kn := 0, _n; _k < _kn; _k++ {
-				_int64, err = readwrite.Read_int64(_r, _b)
+				_int64, err = readwrite.Read_int64(r, _b)
 				if err != nil {
 					return
 				}
@@ -1138,7 +1136,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_bool, err = readwrite.Read_bool(_r, _b)
+	_bool, err = readwrite.Read_bool(r, _b)
 	if err != nil {
 		return
 	}
@@ -1146,7 +1144,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		s.Uint = nil
 	} else {
 		s.Uint = new([]uint)
-		_n, err = readwrite.Read_len(_r)
+		_n, err = readwrite.Read_len(r)
 		if err != nil {
 			return
 		}
@@ -1158,7 +1156,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		if _n > 0 {
 			_s := *s.Uint
 			for _k, _kn := 0, _n; _k < _kn; _k++ {
-				_uint, err = readwrite.Read_uint(_r, _b)
+				_uint, err = readwrite.Read_uint(r, _b)
 				if err != nil {
 					return
 				}
@@ -1167,20 +1165,20 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_bool, err = readwrite.Read_bool(_r, _b)
+	_bool, err = readwrite.Read_bool(r, _b)
 	if err != nil {
 		return
 	}
 	if _bool {
 		s.Uint8 = nil
 	} else {
-		*s.Uint8, err = readwrite.Read_bytes(_r, _b, nil)
+		*s.Uint8, err = readwrite.Read_bytes(r, _b, nil)
 		if err != nil {
 			return
 		}
 	}
 
-	_bool, err = readwrite.Read_bool(_r, _b)
+	_bool, err = readwrite.Read_bool(r, _b)
 	if err != nil {
 		return
 	}
@@ -1188,7 +1186,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		s.Uint16 = nil
 	} else {
 		s.Uint16 = new([]uint16)
-		_n, err = readwrite.Read_len(_r)
+		_n, err = readwrite.Read_len(r)
 		if err != nil {
 			return
 		}
@@ -1200,7 +1198,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		if _n > 0 {
 			_s := *s.Uint16
 			for _k, _kn := 0, _n; _k < _kn; _k++ {
-				_uint16, err = readwrite.Read_uint16(_r, _b)
+				_uint16, err = readwrite.Read_uint16(r, _b)
 				if err != nil {
 					return
 				}
@@ -1209,7 +1207,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_bool, err = readwrite.Read_bool(_r, _b)
+	_bool, err = readwrite.Read_bool(r, _b)
 	if err != nil {
 		return
 	}
@@ -1217,7 +1215,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		s.Uint32 = nil
 	} else {
 		s.Uint32 = new([]uint32)
-		_n, err = readwrite.Read_len(_r)
+		_n, err = readwrite.Read_len(r)
 		if err != nil {
 			return
 		}
@@ -1229,7 +1227,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		if _n > 0 {
 			_s := *s.Uint32
 			for _k, _kn := 0, _n; _k < _kn; _k++ {
-				_uint32, err = readwrite.Read_uint32(_r, _b)
+				_uint32, err = readwrite.Read_uint32(r, _b)
 				if err != nil {
 					return
 				}
@@ -1238,7 +1236,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_bool, err = readwrite.Read_bool(_r, _b)
+	_bool, err = readwrite.Read_bool(r, _b)
 	if err != nil {
 		return
 	}
@@ -1246,7 +1244,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		s.Uint64 = nil
 	} else {
 		s.Uint64 = new([]uint64)
-		_n, err = readwrite.Read_len(_r)
+		_n, err = readwrite.Read_len(r)
 		if err != nil {
 			return
 		}
@@ -1258,7 +1256,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		if _n > 0 {
 			_s := *s.Uint64
 			for _k, _kn := 0, _n; _k < _kn; _k++ {
-				_uint64, err = readwrite.Read_uint64(_r, _b)
+				_uint64, err = readwrite.Read_uint64(r, _b)
 				if err != nil {
 					return
 				}
@@ -1267,7 +1265,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_bool, err = readwrite.Read_bool(_r, _b)
+	_bool, err = readwrite.Read_bool(r, _b)
 	if err != nil {
 		return
 	}
@@ -1275,7 +1273,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		s.Complex64 = nil
 	} else {
 		s.Complex64 = new([]complex64)
-		_n, err = readwrite.Read_len(_r)
+		_n, err = readwrite.Read_len(r)
 		if err != nil {
 			return
 		}
@@ -1287,7 +1285,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		if _n > 0 {
 			_s := *s.Complex64
 			for _k, _kn := 0, _n; _k < _kn; _k++ {
-				_complex64, err = readwrite.Read_complex64(_r, _b)
+				_complex64, err = readwrite.Read_complex64(r, _b)
 				if err != nil {
 					return
 				}
@@ -1296,7 +1294,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_bool, err = readwrite.Read_bool(_r, _b)
+	_bool, err = readwrite.Read_bool(r, _b)
 	if err != nil {
 		return
 	}
@@ -1304,7 +1302,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		s.Complex128 = nil
 	} else {
 		s.Complex128 = new([]complex128)
-		_n, err = readwrite.Read_len(_r)
+		_n, err = readwrite.Read_len(r)
 		if err != nil {
 			return
 		}
@@ -1316,7 +1314,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		if _n > 0 {
 			_s := *s.Complex128
 			for _k, _kn := 0, _n; _k < _kn; _k++ {
-				_complex128, err = readwrite.Read_complex128(_r, _b)
+				_complex128, err = readwrite.Read_complex128(r, _b)
 				if err != nil {
 					return
 				}
@@ -1325,7 +1323,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_bool, err = readwrite.Read_bool(_r, _b)
+	_bool, err = readwrite.Read_bool(r, _b)
 	if err != nil {
 		return
 	}
@@ -1333,7 +1331,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		s.String = nil
 	} else {
 		s.String = new([]string)
-		_n, err = readwrite.Read_len(_r)
+		_n, err = readwrite.Read_len(r)
 		if err != nil {
 			return
 		}
@@ -1345,7 +1343,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		if _n > 0 {
 			_s := *s.String
 			for _k, _kn := 0, _n; _k < _kn; _k++ {
-				_string, err = readwrite.Read_string(_r, _b)
+				_string, err = readwrite.Read_string(r, _b)
 				if err != nil {
 					return
 				}
@@ -1354,7 +1352,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		}
 	}
 
-	_bool, err = readwrite.Read_bool(_r, _b)
+	_bool, err = readwrite.Read_bool(r, _b)
 	if err != nil {
 		return
 	}
@@ -1362,7 +1360,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		s.Maps = nil
 	} else {
 		s.Maps = new([]map[string][]int)
-		_n, err = readwrite.Read_len(_r)
+		_n, err = readwrite.Read_len(r)
 		if err != nil {
 			return
 		}
@@ -1374,7 +1372,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 		if _n > 0 {
 			_s := *s.Maps
 			for _k, _kn := 0, _n; _k < _kn; _k++ {
-				_n, err = readwrite.Read_len(_r)
+				_n, err = readwrite.Read_len(r)
 				if err != nil {
 					return
 				}
@@ -1385,13 +1383,13 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 					_s := _s[_k]
 					var _k string
 					for _j, _jn := 0, _n; _j < _jn; _j++ {
-						_string, err = readwrite.Read_string(_r, _b)
+						_string, err = readwrite.Read_string(r, _b)
 						if err != nil {
 							return
 						}
 						_k = _string
 
-						_n, err = readwrite.Read_len(_r)
+						_n, err = readwrite.Read_len(r)
 						if err != nil {
 							return
 						}
@@ -1403,7 +1401,7 @@ func (s *SlicePtr) UnmarshalBinaryFrom(r io.Reader) (err error) {
 						if _n > 0 {
 							_s := _s[_k]
 							for _k, _kn := 0, _n; _k < _kn; _k++ {
-								_int, err = readwrite.Read_int(_r, _b)
+								_int, err = readwrite.Read_int(r, _b)
 								if err != nil {
 									return
 								}
@@ -1475,11 +1473,10 @@ func (s *SliceAnon) MarshalBinaryTo(w io.Writer) (err error) {
 	return
 }
 
-func (s *SliceAnon) UnmarshalBinaryFrom(r io.Reader) (err error) {
-	_r := iobyte.NewReader(r)
+func (s *SliceAnon) UnmarshalBinaryFrom(r iobyte.ByteReader) (err error) {
 	_b := bed.Buffers.Get()
 	defer bed.Buffers.Put(_b)
-	err = readwrite.Read_layout(_r, _b, _SliceAnonLayout)
+	err = readwrite.Read_layout(r, _b, _SliceAnonLayout)
 	if err != nil {
 		return
 	}
@@ -1493,13 +1490,13 @@ func (s *SliceAnon) UnmarshalBinaryFrom(r io.Reader) (err error) {
 	{
 		_s := &s.Anon
 
-		_int, err = readwrite.Read_int(_r, _b)
+		_int, err = readwrite.Read_int(r, _b)
 		if err != nil {
 			return
 		}
 		_s.Int = _int
 
-		_string, err = readwrite.Read_string(_r, _b)
+		_string, err = readwrite.Read_string(r, _b)
 		if err != nil {
 			return
 		}
@@ -1507,7 +1504,7 @@ func (s *SliceAnon) UnmarshalBinaryFrom(r io.Reader) (err error) {
 
 	}
 
-	_n, err = readwrite.Read_len(_r)
+	_n, err = readwrite.Read_len(r)
 	if err != nil {
 		return
 	}
@@ -1525,13 +1522,13 @@ func (s *SliceAnon) UnmarshalBinaryFrom(r io.Reader) (err error) {
 			{
 				_s := &_s[_k]
 
-				_uint, err = readwrite.Read_uint(_r, _b)
+				_uint, err = readwrite.Read_uint(r, _b)
 				if err != nil {
 					return
 				}
 				_s.Uint = _uint
 
-				_uint32, err = readwrite.Read_uint32(_r, _b)
+				_uint32, err = readwrite.Read_uint32(r, _b)
 				if err != nil {
 					return
 				}

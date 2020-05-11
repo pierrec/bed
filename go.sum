@@ -10,5 +10,11 @@ github.com/pierrec/packer v0.0.0-20200418152655-f01610c81127 h1:KjuVwmq0lzb8fJpz
 github.com/pierrec/packer v0.0.0-20200418152655-f01610c81127/go.mod h1:GKrs5lzNeoNBN0l+jHHePFsqiNgXrZT5vQvGt28rWjI=
 github.com/pierrec/packer v0.0.0-20200418161032-f151de03e295 h1:52OM//8vZ3w6mZJoIFHHrj8/S/bIK+2SJ4zutvtjU8Q=
 github.com/pierrec/packer v0.0.0-20200418161032-f151de03e295/go.mod h1:GKrs5lzNeoNBN0l+jHHePFsqiNgXrZT5vQvGt28rWjI=
+github.com/pierrec/packer v0.0.0-20200419205151-e85913d208e3 h1:Nl8lpODCHC6HR/oFxlgmUMOEKFDJljuwIiHj3P6M4l4=
+github.com/pierrec/packer v0.0.0-20200419205151-e85913d208e3/go.mod h1:GKrs5lzNeoNBN0l+jHHePFsqiNgXrZT5vQvGt28rWjI=
+github.com/pierrec/packer v0.0.0-20200419211718-decbba9fa6fa h1:yVA4oBytvOmjYjiQzeJL83TlMb/g2y7WbnrspRVtPMk=
+github.com/pierrec/packer v0.0.0-20200419211718-decbba9fa6fa/go.mod h1:GKrs5lzNeoNBN0l+jHHePFsqiNgXrZT5vQvGt28rWjI=
+github.com/pierrec/packer v0.0.0-20200511195152-97c9fc3a108d h1:NSvbbIG7Tbo7Wb4qw86M7dBfemN4aUHRl23k6WNOXpc=
+github.com/pierrec/packer v0.0.0-20200511195152-97c9fc3a108d/go.mod h1:GKrs5lzNeoNBN0l+jHHePFsqiNgXrZT5vQvGt28rWjI=
 golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543 h1:E7g+9GITq07hpfrRu66IVDexMakfv52eLZ2CXBWiKr4=
 golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
